@@ -12,7 +12,7 @@ public class IdentityProviderFactory {
         return AWSCognitoIdentityProviderClientBuilder
                 .standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withRegion(Regions.EU_CENTRAL_1)
+                .withRegion(Regions.EU_WEST_2)
                 .build();
     }
 }

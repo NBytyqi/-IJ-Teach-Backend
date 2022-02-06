@@ -14,18 +14,12 @@ import com.interjoin.teach.entities.User;
 import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
 import com.interjoin.teach.utils.IdentityProviderFactory;
 import com.interjoin.teach.utils.SecretHashUtils;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.proc.BadJOSEException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -41,7 +35,11 @@ public class AuthService {
     private AWSCognitoIdentityProvider basicAuthCognitoIdentityProvider;
     private AWSCognitoIdentityProvider cognitoIdentityProvider;
 
-    public AuthService(AwsCognitoIdTokenProcessor cognitoIdTokenProcessor, AWSCredentialsConfig cognitoCreds, BasicAWSCredentials basicAwsCredentials, AWSCognitoIdentityProvider basicAuthCognitoIdentityProvider, AWSCognitoIdentityProvider cognitoIdentityProvider) {
+    private UserService userService;
+
+    public AuthService(AwsCognitoIdTokenProcessor cognitoIdTokenProcessor,
+                       AWSCredentialsConfig cognitoCreds,
+                       UserService userService) {
         this.cognitoCreds = cognitoCreds;
 
         basicAwsCredentials = new BasicAWSCredentials(this.cognitoCreds.getAwsAccessKey(), this.cognitoCreds.getAwsSecretKey());
@@ -51,6 +49,8 @@ public class AuthService {
         cognitoIdentityProvider = IdentityProviderFactory.getIdentityProvider(this.awsCreds);
 
         this.cognitoIdTokenProcessor = cognitoIdTokenProcessor;
+
+        this.userService = userService;
     }
 
     public void signUpUser(UserSignupRequest requestForm, String groupName) {
@@ -75,21 +75,16 @@ public class AuthService {
 
             addUserToGroup(requestForm.getEmail(), groupName);
 
-            User user = User.builder()
-                    .username(signUpResult.getUserSub())
-                    .email(requestForm.getEmail())
-                    .firstName(requestForm.getFirstName())
-                    .lastName(requestForm.getLastName())
-                    .createdDate(LocalDateTime.now())
+//            User user = User.builder()
+//                    .username(signUpResult.getUserSub())
+//                    .email(requestForm.getEmail())
+//                    .firstName(requestForm.getFirstName())
+//                    .lastName(requestForm.getLastName())
+//                    .createdDate(LocalDateTime.now())
+//
+//                    .build();
 
-                    .build();
-
-            this.userService.saveUser(user);
-//            authResponse = signIn(SignInRequestDTO.builder()
-//                                                  .email(requestForm.getEmail())
-//                                                  .password(requestForm.getPassword())
-//                                                  .build(), groupName);
-
+            this.userService.createUser(requestForm, groupName);
 
         } catch (AWSCognitoIdentityProviderException ex) {
             throw ex;
