@@ -64,6 +64,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>1.5.8</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
@@ -105,6 +111,25 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-maven-plugin</artifactId>
+                <version>0.2</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <apiDocsUrl>http://localhost:8080/api-docs</apiDocsUrl>
+                            <outputFileName>openapi.yaml</outputFileName>
+                            <outputDir>${project.basedir}/src/main/resources</outputDir>
+                        </configuration>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

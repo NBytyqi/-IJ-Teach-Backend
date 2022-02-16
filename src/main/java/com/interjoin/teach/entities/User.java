@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -41,6 +42,9 @@ public class User {
     )
     @Column(name = "uuid", updatable = false)
     private String uuid;
+
+    @JsonIgnore
+    private String cognitoUsername;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
@@ -90,6 +94,7 @@ public class User {
     private String role;
 
     @Column(name = "username")
+    @JsonIgnore
     private String username;
 
     @Column(name = "created_date")

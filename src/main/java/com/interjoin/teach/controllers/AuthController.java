@@ -1,7 +1,9 @@
 package com.interjoin.teach.controllers;
 
+import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
-import com.interjoin.teach.services.AuthService;
+import com.interjoin.teach.dtos.responses.AuthResponse;
+import com.interjoin.teach.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,22 +11,29 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService service;
+    private final UserService service;
 
     @PostMapping("/signup/teacher")
-    public ResponseEntity<Void> signupTeacher(@RequestBody UserSignupRequest request) {
-        service.signUpUser(request, "TEACHER");
+    public ResponseEntity<Void> signupTeacher(@Valid @RequestBody UserSignupRequest request) {
+        service.createUser(request, "TEACHER");
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/signup/student")
-    public ResponseEntity<Void> signupStudent(@RequestBody UserSignupRequest request) {
-        service.signUpUser(request, "STUDENT");
+    public ResponseEntity<Void> signupStudent(@Valid @RequestBody UserSignupRequest request) {
+        service.createUser(request, "STUDENT");
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/signin")
+    public ResponseEntity<AuthResponse> signInUser(@Valid @RequestBody UserSignInRequest request) {
+        return ResponseEntity.ok(service.signIn(request));
     }
 }
