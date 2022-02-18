@@ -1,6 +1,5 @@
 package com.interjoin.teach.dtos;
 
-import com.interjoin.teach.entities.SubjectCurriculum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,6 +34,6 @@ public class StudentSignupRequest {
 
     private String parentEmail;
 
-    private Set<SubjectCurriculum> subCurrList;
+    private Set<SubjectCurriculumResponse> subCurrList;
 
 }

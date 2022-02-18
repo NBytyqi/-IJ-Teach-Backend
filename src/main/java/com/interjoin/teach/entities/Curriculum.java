@@ -29,11 +29,6 @@ public class Curriculum {
     @Column(name = "curriculum_name", nullable = false)
     private String curriculumName;
 
-//    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "curriculums")
-//    private Set<Subject> subjects;
-
-//    @OneToMany(mappedBy = "curriculum")
-//    private Set<SubjectCurriculum> currSubs;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "subject_curriculum",

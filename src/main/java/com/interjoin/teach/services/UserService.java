@@ -1,22 +1,22 @@
 package com.interjoin.teach.services;
 
-import com.amazonaws.services.cognitoidp.model.AuthFlowType;
-import com.amazonaws.services.cognitoidp.model.InitiateAuthRequest;
-import com.amazonaws.services.cognitoidp.model.InitiateAuthResult;
+import com.interjoin.teach.dtos.SubjectCurriculumDto;
+import com.interjoin.teach.dtos.SubjectCurriculumResponse;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import com.interjoin.teach.entities.User;
 import com.interjoin.teach.mappers.UserMapper;
+import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import com.interjoin.teach.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -28,25 +28,29 @@ public class UserService {
 
     private final UserRepository repository;
     private final AwsService awsService;
+    private final SubjectCurriculumRepository subCurrRepository;
 
     public void createUser(UserSignupRequest request, String role) {
         User user = UserMapper.mapUserRequest(request);
 
         String usernameCreated = awsService.signUpUser(request, role);
-
         user.setUsername(usernameCreated);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
-            Set<SubjectCurriculum> courses = request.getSubCurrList();
+            Set<SubjectCurriculum> subCurrs = new HashSet<>();
             StringBuilder subCurrStr = new StringBuilder();
-            courses.stream().forEach(subjectCurriculum -> {
-//                subCurrStr.append(String.format("%s,%s", subjectCurriculum.getSubject().getSubjectName(), subjectCurriculum.getCurriculum().getCurriculumName()));
-            });
 
+            for(SubjectCurriculumDto data : request.getSubCurrList()) {
+                SubjectCurriculum subjectCurriculum = subCurrRepository.findFirstByCurriculumCurriculumNameAndSubjectSubjectName(data.getCurriculumName(), data.getSubjectName());
+                subCurrs.add(subjectCurriculum);
+                subCurrStr.append(String.format("%s,%s", data.getSubjectName(), data.getCurriculumName()));
+            }
+            user.setSubjectCurriculums(subCurrs);
             user.setSubCurrStr(subCurrStr.toString());
         }
         user.setUuid(UUID.randomUUID().toString());
         user.setRole(Optional.ofNullable(role.toUpperCase()).orElse("STUDENT"));
+        user.setCreatedDate(LocalDateTime.now());
 
         repository.save(user);
 

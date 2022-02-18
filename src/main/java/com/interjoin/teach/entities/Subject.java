@@ -1,6 +1,7 @@
 package com.interjoin.teach.entities;
 
 import lombok.*;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -39,6 +40,7 @@ public class Subject {
 //    @OneToMany(mappedBy = "subject")
 //    private Set<SubjectCurriculum> subCurr;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "subjects")
     private Set<Curriculum> curriculums;
 
