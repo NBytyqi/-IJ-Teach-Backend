@@ -71,7 +71,7 @@ public class User {
     // TODO - ADD SUBJECTS AND CURRICULUMS
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "student_curriculum_subject",
+    @JoinTable(name = "user_curriculum_subject",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = { @JoinColumn(name = "subject_id", referencedColumnName = "subject_id"),
                                     @JoinColumn(name = "curriculum_id", referencedColumnName = "curriculum_id")}

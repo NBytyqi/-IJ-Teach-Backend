@@ -1,27 +1,25 @@
 package com.interjoin.teach.entities;
 
+import com.interjoin.teach.embeddable.SubjectCurriculumKey;
 import lombok.Getter;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
-@Table(name = "subject_curriculum")
-@Entity
+
+@Entity(name = "subject_curriculum")
 @Getter
 public class SubjectCurriculum {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @EmbeddedId
+    private SubjectCurriculumKey id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("subject_id")
+    @JoinColumn(name = "subject_id")
     private Subject subject;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("curriculum_id")
+    @JoinColumn(name = "curriculum_id")
     private Curriculum curriculum;
 }

@@ -18,7 +18,7 @@ public class UserMapper {
                 .phoneNumber(request.getPhoneNumber())
                 .profilePicture(request.getProfilePicture())
                 .shortBio(request.getShortBio())
-                .subjectCurriculums(request.getSubCurrList())
+//                .subjectCurriculums(request.getSubCurrList())
                 .build();
     }
 

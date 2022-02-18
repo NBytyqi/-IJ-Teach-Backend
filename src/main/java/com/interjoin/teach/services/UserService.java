@@ -40,7 +40,7 @@ public class UserService {
             Set<SubjectCurriculum> courses = request.getSubCurrList();
             StringBuilder subCurrStr = new StringBuilder();
             courses.stream().forEach(subjectCurriculum -> {
-                subCurrStr.append(String.format("%s,%s", subjectCurriculum.getSubject().getSubjectName(), subjectCurriculum.getCurriculum().getCurriculumName()));
+//                subCurrStr.append(String.format("%s,%s", subjectCurriculum.getSubject().getSubjectName(), subjectCurriculum.getCurriculum().getCurriculumName()));
             });
 
             user.setSubCurrStr(subCurrStr.toString());

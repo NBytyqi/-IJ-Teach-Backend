@@ -1,0 +1,92 @@
+
+insert into subject(id, subject_name) values(1, 'Accounting');
+insert into subject(id, subject_name) values(2, 'Arabic');
+insert into subject(id, subject_name) values(3, 'Biology');
+insert into subject(id, subject_name) values(4, 'Business');
+insert into subject(id, subject_name) values(5, 'Chemistry');
+insert into subject(id, subject_name) values(6, 'Computer Science');
+insert into subject(id, subject_name) values(7, 'Economics');
+insert into subject(id, subject_name) values(8, 'English Language');
+insert into subject(id, subject_name) values(9, 'English Literature');
+insert into subject(id, subject_name) values(10, 'French');
+insert into subject(id, subject_name) values(11, 'Further Mathematics');
+insert into subject(id, subject_name) values(12, 'Geography');
+insert into subject(id, subject_name) values(13, 'German');
+insert into subject(id, subject_name) values(14, 'Italian');
+insert into subject(id, subject_name) values(15, 'Latin');
+insert into subject(id, subject_name) values(16, 'Mathematics');
+insert into subject(id, subject_name) values(17, 'Physical Education');
+insert into subject(id, subject_name) values(18, 'Physics');
+insert into subject(id, subject_name) values(19, 'Politics');
+insert into subject(id, subject_name) values(20, 'Psychology');
+insert into subject(id, subject_name) values(21, 'Religious Studies');
+insert into subject(id, subject_name) values(22, 'Spanish');
+insert into subject(id, subject_name) values(23, 'Sports Science');
+insert into subject(id, subject_name) values(24, 'English');
+insert into subject(id, subject_name) values(25, 'Chinese ab initio');
+insert into subject(id, subject_name) values(26, 'History');
+insert into subject(id, subject_name) values(27, 'Philosophy');
+insert into subject(id, subject_name) values(28, 'Mathematics: analysis and approaches');
+insert into subject(id, subject_name) values(29, 'Mathematics: applications and interpretation');
+insert into subject(id, subject_name) values(30, 'Greek');
+insert into subject(id, subject_name) values(31, 'Theory of Knowledge (TOK)');
+insert into subject(id, subject_name) values(32, 'Business Studies');
+insert into subject(id, subject_name) values(33, 'Chinese (Mandarin)');
+insert into subject(id, subject_name) values(34, 'Computer Science/IT');
+insert into subject(id, subject_name) values(35, 'ICT');
+insert into subject(id, subject_name) values(36, 'Science');
+insert into subject(id, subject_name) values(37, 'Statistics');
+insert into subject(id, subject_name) values(38, 'English (Language and Literature)');
+insert into subject(id, subject_name) values(39, 'English (Language Acquisition)');
+insert into subject(id, subject_name) values(40, 'French (Language and Literature)');
+insert into subject(id, subject_name) values(41, 'French (Language Acquisition)');
+insert into subject(id, subject_name) values(42, 'Integrated Humanities');
+insert into subject(id, subject_name) values(43, 'Integrated Sciences');
+insert into subject(id, subject_name) values(44, 'Extended Mathematics');
+insert into subject(id, subject_name) values(45, 'Finance');
+insert into subject(id, subject_name) values(46, 'Russian');
+insert into subject(id, subject_name) values(47, 'Law');
+insert into subject(id, subject_name) values(48, 'Marketing');
+insert into subject(id, subject_name) values(49, 'Mechanical Engineering');
+insert into subject(id, subject_name) values(50, 'Media Studies');
+insert into subject(id, subject_name) values(51, 'Medicine');
+insert into subject(id, subject_name) values(52, 'Software Engineering');
+insert into subject(id, subject_name) values(53, 'Arabic (Beginner)');
+insert into subject(id, subject_name) values(54, 'Arabic (Intermediate)');
+insert into subject(id, subject_name) values(55, 'Arabic (Advanced)');
+insert into subject(id, subject_name) values(56, 'English (Beginner)');
+insert into subject(id, subject_name) values(57, 'English (Intermediate)');
+insert into subject(id, subject_name) values(58, 'English (Advanced)');
+insert into subject(id, subject_name) values(59, 'French (Beginner)');
+insert into subject(id, subject_name) values(60, 'French (Intermediate)');
+insert into subject(id, subject_name) values(61, 'French (Advanced)');
+insert into subject(id, subject_name) values(62, 'Italian (Beginner)');
+insert into subject(id, subject_name) values(63, 'Italian (Intermediate)');
+insert into subject(id, subject_name) values(64, 'Italian (Advanced)');
+insert into subject(id, subject_name) values(65, 'Spanish (Beginner)');
+insert into subject(id, subject_name) values(66, 'Spanish (Intermediate)');
+insert into subject(id, subject_name) values(67, 'Spanish (Advanced)');
+insert into subject(id, subject_name) values(68, 'German (Beginner)');
+insert into subject(id, subject_name) values(69, 'German (Intermediate)');
+insert into subject(id, subject_name) values(70, 'German (Advanced)');
+insert into subject(id, subject_name) values(71, 'Mandarin (Beginner)');
+insert into subject(id, subject_name) values(72, 'Mandarin (Intermediate)');
+insert into subject(id, subject_name) values(73, 'Mandarin (Advanced)');
+insert into subject(id, subject_name) values(74, 'Russian (Beginner)');
+insert into subject(id, subject_name) values(75, 'Russian (Intermediate)');
+insert into subject(id, subject_name) values(76, 'Russian (Advanced)');
+insert into subject(id, subject_name) values(77, 'Latin (Beginner)');
+insert into subject(id, subject_name) values(78, 'Latin (Intermediate)');
+insert into subject(id, subject_name) values(79, 'Latin (Advanced)');
+insert into subject(id, subject_name) values(80, 'SAT Exam Prep');
+insert into subject(id, subject_name) values(81, 'SAT Math');
+insert into subject(id, subject_name) values(82, 'SAT Science');
+insert into subject(id, subject_name) values(83, 'SAT English');
+insert into subject(id, subject_name) values(84, 'ACT Exam Prep ');
+
+
+
+
+
+
+

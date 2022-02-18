@@ -1,20 +1,9 @@
 package com.interjoin.teach.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.Set;
 
 @Entity
@@ -22,6 +11,7 @@ import java.util.Set;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = "curriculums")
 public class Subject {
 
     @Id
@@ -36,15 +26,21 @@ public class Subject {
     @Column(name = "uuid", updatable = false)
     private String uuid;
 
-    @Column(name = "subject_name", nullable = false)
+    @Column(name = "subject_name", nullable = false, unique = true)
     private String subjectName;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "subject_curriculum",
-            joinColumns = @JoinColumn(name = "subject_id"),
-            inverseJoinColumns = @JoinColumn(name = "curriculum_id")
-    )
+//    @ManyToMany(fetch = FetchType.LAZY)
+//    @JoinTable(
+//            name = "subject_curriculum",
+//            joinColumns = @JoinColumn(name = "subject_id"),
+//            inverseJoinColumns = @JoinColumn(name = "curriculum_id")
+//    )
+
+//    @OneToMany(mappedBy = "subject")
+//    private Set<SubjectCurriculum> subCurr;
+
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "subjects")
     private Set<Curriculum> curriculums;
+
 
 }

@@ -1,18 +1,9 @@
 package com.interjoin.teach.entities;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.*;
 import java.util.Set;
 
 @Entity
@@ -20,6 +11,7 @@ import java.util.Set;
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = "subjects")
 public class Curriculum {
 
     @Id
@@ -37,6 +29,15 @@ public class Curriculum {
     @Column(name = "curriculum_name", nullable = false)
     private String curriculumName;
 
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "curriculums")
+//    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "curriculums")
+//    private Set<Subject> subjects;
+
+//    @OneToMany(mappedBy = "curriculum")
+//    private Set<SubjectCurriculum> currSubs;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "subject_curriculum",
+    joinColumns = @JoinColumn(name = "curriculum_id"),
+    inverseJoinColumns = @JoinColumn(name = "subject_id"))
     private Set<Subject> subjects;
 }
