@@ -19,6 +19,7 @@ public class UserMapper {
                 .profilePicture(request.getProfilePicture())
                 .shortBio(request.getShortBio())
 //                .subjectCurriculums(request.getSubCurrList())
+                .timeZone(request.getTimeZone())
                 .build();
     }
 

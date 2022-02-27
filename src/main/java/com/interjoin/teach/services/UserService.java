@@ -5,8 +5,10 @@ import com.interjoin.teach.dtos.SubjectCurriculumResponse;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
+import com.interjoin.teach.entities.AvailableTimes;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import com.interjoin.teach.entities.User;
+import com.interjoin.teach.mappers.AvailableTimesMapper;
 import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import com.interjoin.teach.repositories.UserRepository;
@@ -16,10 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 
 @Service
@@ -28,13 +27,15 @@ public class UserService {
 
     private final UserRepository repository;
     private final AwsService awsService;
+    private final AvailableTimesService availableTimesService;
+
     private final SubjectCurriculumRepository subCurrRepository;
 
     public void createUser(UserSignupRequest request, String role) {
         User user = UserMapper.mapUserRequest(request);
 
-        String usernameCreated = awsService.signUpUser(request, role);
-        user.setUsername(usernameCreated);
+//        String usernameCreated = awsService.signUpUser(request, role);
+//        user.setUsername(usernameCreated);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
@@ -51,6 +52,11 @@ public class UserService {
         user.setUuid(UUID.randomUUID().toString());
         user.setRole(Optional.ofNullable(role.toUpperCase()).orElse("STUDENT"));
         user.setCreatedDate(LocalDateTime.now());
+
+        // CHECK FOR AVAILABLE TIMES
+        if(role.toUpperCase().equals("TEACHER")) {
+            user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(), user.getTimeZone()));
+        }
 
         repository.save(user);
 

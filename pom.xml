@@ -120,7 +120,7 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <apiDocsUrl>http://192.241.134.118:8080/api-docs</apiDocsUrl>
+                            <apiDocsUrl>http://localhost:8080/api-docs</apiDocsUrl>
                             <outputFileName>openapi.yaml</outputFileName>
                             <outputDir>${project.basedir}/src/main/resources</outputDir>
                         </configuration>

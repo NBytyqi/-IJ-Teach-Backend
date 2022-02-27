@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -19,6 +20,9 @@ public class UserSignupRequest {
 
     @NotNull
     private String lastName;
+
+    @NotNull
+    private String timeZone;
 
     @NotNull
     @Email
@@ -42,4 +46,6 @@ public class UserSignupRequest {
 
     @NotNull
     private String password;
+
+    List<AvailableTimesDto> availableTimes;
 }
