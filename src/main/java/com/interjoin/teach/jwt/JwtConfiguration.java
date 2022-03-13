@@ -1,6 +1,7 @@
 package com.interjoin.teach.jwt;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -10,10 +11,11 @@ import org.springframework.stereotype.Component;
 )
 @Data
 public class JwtConfiguration {
+    @Value("${aws.poolId}")
     private String userPoolId;
     private String identityPoolId;
     private String jwkUrl;
-    private String region = "us-west-2";
+    private String region = "eu-west-2";
     private String userNameField = "username";
     private String groupsField = "cognito:groups";
     private int connectionTimeout = 2000;

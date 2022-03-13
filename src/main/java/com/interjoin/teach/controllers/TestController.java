@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.*;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/datat")
@@ -32,10 +33,20 @@ public class TestController {
 
     @GetMapping
     public List<AvailableTimesStringDto> test() {
-        User user = userService.getUserByEmail("bytyqinderim@gmail.com").get();
+        User user = userService.getUserByEmail("teacher2@gmail.com").get();
         List<AvailableTimes> availableTimes = service.findByUser(user);
 
         List<AvailableTimesStringDto> strings = DateUtils.map(availableTimes, "Europe/Belgrade");
+
+        strings.forEach(availableTimesStringDto -> {
+            availableTimesStringDto.setAvailableHourMinute(
+                    availableTimesStringDto.getAvailableHourMinute().stream().filter(specificDate -> {
+                        return specificDate.getDateTime().getDayOfWeek().toString().equals(availableTimesStringDto.getWeekDay().toUpperCase(Locale.ROOT));
+                    }).collect(Collectors.toList())
+            );
+
+        });
+
         return strings;
     }
 

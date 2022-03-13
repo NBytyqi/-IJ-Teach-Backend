@@ -26,9 +26,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .csrf()
             .disable()
             .authorizeRequests()
-            .antMatchers("/auth/signup/teacher", "/auth/signup/student")
-            .permitAll()
-
+                .anyRequest()
+                .permitAll()
+//            .antMatchers("/auth/signup/teacher", "/auth/signup/student", "/auth/signin", "/datat/**")
+//            .permitAll()
+//            .antMatchers("/**")
+//            .authenticated()
             .and()
             .addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }

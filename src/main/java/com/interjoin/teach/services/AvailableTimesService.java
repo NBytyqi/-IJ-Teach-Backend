@@ -8,7 +8,9 @@ import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.OffsetDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +22,42 @@ public class AvailableTimesService {
 
     public List<AvailableTimes> save(List<AvailableTimesDto> availableTimes, String timeZone) {
         List<AvailableTimes> results = new ArrayList<>();
-
+        DayOfWeek weekDay = DayOfWeek.MONDAY;
         for(AvailableTimesDto dto: availableTimes) {
             for(OffsetDateTime dateTime : dto.getAvailableTimes()) {
+                switch(dto.getWeekDay()) {
+                    case "monday": {
+                        weekDay = DayOfWeek.MONDAY;
+                        break;
+                    }
+                    case "tuesday": {
+                        weekDay = DayOfWeek.MONDAY;
+                        break;
+                    }
+                    case "wednesday": {
+                        weekDay = DayOfWeek.MONDAY;
+                        break;
+                    }
+                    case "thursday": {
+                        weekDay = DayOfWeek.MONDAY;
+                        break;
+                    }
+                    case "friday": {
+                        weekDay = DayOfWeek.MONDAY;
+                        break;
+                    }
+                    case "saturday": {
+                        weekDay = DayOfWeek.MONDAY;
+                        break;
+                    }
+                    case "sunday": {
+                        weekDay = DayOfWeek.MONDAY;
+                        break;
+                    }
+                }
                 results.add(AvailableTimes.builder()
                         .weekDay(dto.getWeekDay())
-                        .dateTime(DateUtils.map(dateTime, timeZone))
+                        .dateTime(dateTime.with(TemporalAdjusters.nextOrSame(weekDay)))
                         .build());
             }
         }

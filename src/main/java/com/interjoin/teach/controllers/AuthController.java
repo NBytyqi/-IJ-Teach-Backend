@@ -1,15 +1,13 @@
 package com.interjoin.teach.controllers;
 
+import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -35,5 +33,10 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<AuthResponse> signInUser(@Valid @RequestBody UserSignInRequest request) {
         return ResponseEntity.ok(service.signIn(request));
+    }
+
+    @GetMapping
+    public ResponseEntity<UserDto> getUserDetails() {
+        return ResponseEntity.ok(service.getCurrentUserDetailsAsDto());
     }
 }

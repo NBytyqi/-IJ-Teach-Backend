@@ -1,17 +1,14 @@
 package com.interjoin.teach.services;
 
-import com.interjoin.teach.dtos.SubjectCurriculumDto;
-import com.interjoin.teach.dtos.SubjectCurriculumResponse;
-import com.interjoin.teach.dtos.UserSignInRequest;
-import com.interjoin.teach.dtos.UserSignupRequest;
+import com.interjoin.teach.dtos.*;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.entities.AvailableTimes;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import com.interjoin.teach.entities.User;
-import com.interjoin.teach.mappers.AvailableTimesMapper;
 import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import com.interjoin.teach.repositories.UserRepository;
+import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -68,8 +66,16 @@ public class UserService {
         return principal;
     }
 
+    public UserDto getCurrentUserDetailsAsDto() {
+        return UserMapper.map(getCurrentUserDetails());
+    }
+
     public Optional<User> getUserByEmail(String email) {
         return repository.findByEmail(email);
+    }
+
+    public User findById(Long id) {
+        return repository.findById(id).get();
     }
 
     public AuthResponse signIn(UserSignInRequest request) {
@@ -95,6 +101,24 @@ public class UserService {
                 currentUser = optionalUser.get();
         }
         return currentUser;
+    }
+
+    public List<AvailableTimesStringDto> getAvailableTimesForTeacher(Long teacherId) {
+        User teacher = findById(teacherId);
+//        User currentStudent = getCurrentUserDetails();
+        List<AvailableTimes> times = availableTimesService.findByUser(teacher);
+
+        List<AvailableTimesStringDto> strings = DateUtils.map(times, "Europe/Belgrade");
+        strings.forEach(availableTimesStringDto -> {
+            availableTimesStringDto.setAvailableHourMinute(
+                    availableTimesStringDto.getAvailableHourMinute().stream().filter(specificDate -> {
+                        return specificDate.getDateTime().getDayOfWeek().toString().equals(availableTimesStringDto.getWeekDay().toUpperCase(Locale.ROOT));
+                    }).collect(Collectors.toList())
+            );
+
+        });
+
+        return strings;
     }
 }
 

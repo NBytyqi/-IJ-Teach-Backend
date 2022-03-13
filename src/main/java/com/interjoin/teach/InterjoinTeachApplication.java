@@ -1,5 +1,6 @@
 package com.interjoin.teach;
 
+import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.jwt.JwtConfiguration;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.RemoteJWKSet;
@@ -21,7 +22,7 @@ import java.net.URL;
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 
 @SpringBootApplication
-public class InterjoinTeachApplication {
+public class InterjoinTeachApplication implements CommandLineRunner{
 
     public static void main(String[] args) {
         SpringApplication.run(InterjoinTeachApplication.class, args);
@@ -43,4 +44,8 @@ public class InterjoinTeachApplication {
         return jwtProcessor;
     }
 
+    @Override
+    public void run(String... args) throws Exception {
+        AvailableTimesSignupDto signup = new AvailableTimesSignupDto("Africa/Djibouti");
+    }
 }
