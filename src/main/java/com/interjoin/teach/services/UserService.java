@@ -32,8 +32,8 @@ public class UserService {
     public void createUser(UserSignupRequest request, String role) {
         User user = UserMapper.mapUserRequest(request);
 
-//        String usernameCreated = awsService.signUpUser(request, role);
-//        user.setUsername(usernameCreated);
+        String usernameCreated = awsService.signUpUser(request, role);
+        user.setUsername(usernameCreated);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
@@ -50,13 +50,13 @@ public class UserService {
         user.setUuid(UUID.randomUUID().toString());
         user.setRole(Optional.ofNullable(role.toUpperCase()).orElse("STUDENT"));
         user.setCreatedDate(LocalDateTime.now());
-
+        user = repository.save(user);
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
-            user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(), user.getTimeZone()));
+            user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(), user.getTimeZone(), user.getId()));
         }
-
         repository.save(user);
+
 
     }
 
@@ -105,10 +105,10 @@ public class UserService {
 
     public List<AvailableTimesStringDto> getAvailableTimesForTeacher(Long teacherId) {
         User teacher = findById(teacherId);
-//        User currentStudent = getCurrentUserDetails();
+        User currentStudent = getCurrentUserDetails();
         List<AvailableTimes> times = availableTimesService.findByUser(teacher);
 
-        List<AvailableTimesStringDto> strings = DateUtils.map(times, "Europe/Belgrade");
+        List<AvailableTimesStringDto> strings = DateUtils.map(times, currentStudent.getTimeZone());
         strings.forEach(availableTimesStringDto -> {
             availableTimesStringDto.setAvailableHourMinute(
                     availableTimesStringDto.getAvailableHourMinute().stream().filter(specificDate -> {

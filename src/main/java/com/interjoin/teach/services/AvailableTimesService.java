@@ -20,7 +20,7 @@ public class AvailableTimesService {
 
     private final AvailableTimesRepository repository;
 
-    public List<AvailableTimes> save(List<AvailableTimesDto> availableTimes, String timeZone) {
+    public List<AvailableTimes> save(List<AvailableTimesDto> availableTimes, String timeZone, Long teacherId) {
         List<AvailableTimes> results = new ArrayList<>();
         DayOfWeek weekDay = DayOfWeek.MONDAY;
         for(AvailableTimesDto dto: availableTimes) {
@@ -31,33 +31,34 @@ public class AvailableTimesService {
                         break;
                     }
                     case "tuesday": {
-                        weekDay = DayOfWeek.MONDAY;
+                        weekDay = DayOfWeek.TUESDAY;
                         break;
                     }
                     case "wednesday": {
-                        weekDay = DayOfWeek.MONDAY;
+                        weekDay = DayOfWeek.WEDNESDAY;
                         break;
                     }
                     case "thursday": {
-                        weekDay = DayOfWeek.MONDAY;
+                        weekDay = DayOfWeek.THURSDAY;
                         break;
                     }
                     case "friday": {
-                        weekDay = DayOfWeek.MONDAY;
+                        weekDay = DayOfWeek.FRIDAY;
                         break;
                     }
                     case "saturday": {
-                        weekDay = DayOfWeek.MONDAY;
+                        weekDay = DayOfWeek.SATURDAY;
                         break;
                     }
                     case "sunday": {
-                        weekDay = DayOfWeek.MONDAY;
+                        weekDay = DayOfWeek.SUNDAY;
                         break;
                     }
                 }
                 results.add(AvailableTimes.builder()
                         .weekDay(dto.getWeekDay())
                         .dateTime(dateTime.with(TemporalAdjusters.nextOrSame(weekDay)))
+                                .teacherId(teacherId)
                         .build());
             }
         }
@@ -68,5 +69,9 @@ public class AvailableTimesService {
 
     public List<AvailableTimes> findByUser(User user) {
         return user.getAvailableTimes();
+    }
+
+    public List<AvailableTimes> findByUserAndWeekDay(Long teacherId, String weekDay) {
+        return repository.findByTeacherIdAndWeekDay(teacherId, weekDay);
     }
 }

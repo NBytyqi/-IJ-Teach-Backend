@@ -21,4 +21,6 @@ public class AvailableTimes {
 
     private String weekDay;
     private OffsetDateTime dateTime;
+
+    private Long teacherId;
 }

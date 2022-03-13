@@ -1,6 +1,5 @@
 package com.interjoin.teach.controllers;
 
-import com.interjoin.teach.controllers.support.DateSupport;
 import com.interjoin.teach.dtos.AvailableTimesStringDto;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.entities.AvailableTimes;
@@ -26,10 +25,6 @@ public class TestController {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    @PostMapping
-    public void test(@RequestBody DateSupport dateSupport) {
-        System.out.println(dateSupport);
-    }
 
     @GetMapping
     public List<AvailableTimesStringDto> test() {
