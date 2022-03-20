@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -109,6 +110,27 @@ public class UserService {
         List<AvailableTimes> times = availableTimesService.findByUser(teacher);
 
         List<AvailableTimesStringDto> strings = DateUtils.map(times, currentStudent.getTimeZone());
+        strings.forEach(availableTimesStringDto -> {
+            availableTimesStringDto.setAvailableHourMinute(
+                    availableTimesStringDto.getAvailableHourMinute().stream().filter(specificDate -> {
+                        return specificDate.getDateTime().getDayOfWeek().toString().equals(availableTimesStringDto.getWeekDay().toUpperCase(Locale.ROOT));
+                    }).collect(Collectors.toList())
+            );
+
+        });
+
+        return strings;
+    }
+
+    public List<AvailableTimesStringDto> getAvailableTimesForTeacherForDate(Long teacherId, LocalDate date) {
+        User teacher = findById(teacherId);
+        User currentStudent = getCurrentUserDetails();
+        List<AvailableTimes> times = availableTimesService.findByUser(teacher);
+
+        // we need to remove the booked ones
+
+
+        List<AvailableTimesStringDto> strings = availableTimesService.findByTeacherAndSpecificDay(teacherId, date, currentStudent.getTimeZone());
         strings.forEach(availableTimesStringDto -> {
             availableTimesStringDto.setAvailableHourMinute(
                     availableTimesStringDto.getAvailableHourMinute().stream().filter(specificDate -> {

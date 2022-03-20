@@ -9,6 +9,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -95,5 +96,7 @@ public class User {
     private List<AvailableTimes> availableTimes;
 
     private String timeZone;
+
+    private BigDecimal pricePerHour;
 
 }

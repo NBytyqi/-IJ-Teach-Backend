@@ -1,6 +1,7 @@
 package com.interjoin.teach.services;
 
 import com.interjoin.teach.dtos.AvailableTimesDto;
+import com.interjoin.teach.dtos.AvailableTimesStringDto;
 import com.interjoin.teach.entities.AvailableTimes;
 import com.interjoin.teach.entities.User;
 import com.interjoin.teach.repositories.AvailableTimesRepository;
@@ -9,10 +10,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -74,4 +77,12 @@ public class AvailableTimesService {
     public List<AvailableTimes> findByUserAndWeekDay(Long teacherId, String weekDay) {
         return repository.findByTeacherIdAndWeekDay(teacherId, weekDay);
     }
+
+    public List<AvailableTimesStringDto> findByTeacherAndSpecificDay(Long teacherId, LocalDate date, String studentTimezone) {
+        List<AvailableTimes> avTimes = findByUserAndWeekDay(teacherId, date.getDayOfWeek().name().toLowerCase(Locale.ROOT));
+        List<AvailableTimesStringDto> avTimesString = DateUtils.map(avTimes, studentTimezone);
+        System.out.println(avTimesString);
+        return avTimesString;
+    }
+
 }

@@ -1,6 +1,8 @@
 package com.interjoin.teach.services;
 
 import com.interjoin.teach.config.exceptions.SessionExistsException;
+import com.interjoin.teach.dtos.AvailableHourMinuteDto;
+import com.interjoin.teach.dtos.AvailableTimesStringDto;
 import com.interjoin.teach.dtos.SessionDto;
 import com.interjoin.teach.dtos.requests.BookSessionRequest;
 import com.interjoin.teach.entities.AvailableTimes;
@@ -9,14 +11,14 @@ import com.interjoin.teach.entities.User;
 import com.interjoin.teach.enums.SessionStatus;
 import com.interjoin.teach.mappers.SessionMapper;
 import com.interjoin.teach.repositories.SessionRepository;
+import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,8 +29,9 @@ public class SessionService {
     private final AvailableTimesService timesService;
 
     private final SessionRepository sessionRepository;
+    private final PaymentService paymentService;
 
-    public void bookSession(BookSessionRequest request) throws SessionExistsException {
+    public String bookSession(BookSessionRequest request) throws SessionExistsException {
         OffsetDateTime requestedBookTime = request.getDate().getDateTime();
         request.getDate().setDateTime(OffsetDateTime.from(requestedBookTime.atZoneSameInstant(ZoneId.systemDefault())));
         User teacher = userService.findById(request.getTeacherId());
@@ -49,9 +52,11 @@ public class SessionService {
                                  .teacher(teacher)
                                  .student(student)
                                  .dateSlot(request.getDate().getDateTime())
-                                 .sessionStatus(SessionStatus.PENDING)
+                                 .sessionStatus(SessionStatus.PAYMENT_PENDING)
                                  .build();
-        sessionRepository.save(session);
+        session = sessionRepository.save(session);
+
+        return paymentService.openPaymentPage(request, session.getId(), teacher.getPricePerHour(), student.getFirstName(), teacher.getFirstName(), "Math", "A1");
     }
 
 
@@ -75,5 +80,18 @@ public class SessionService {
             }
         }
         return false;
+    }
+
+    public List<AvailableHourMinuteDto> availableTimesPerDay(Long teacherId, LocalDate date) {
+
+        List<AvailableTimesStringDto> avTimesInStudentTimezone = userService.getAvailableTimesForTeacherForDate(teacherId, date);
+
+        List<OffsetDateTime> bookedSessions = DateUtils.mapMultipleTimes(sessionRepository.findByTeacherAndSpecificDate(teacherId, date).stream().map(session -> session.getDateSlot()).collect(Collectors.toList()), userService.getCurrentUserDetails().getTimeZone());
+
+        if(avTimesInStudentTimezone.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return avTimesInStudentTimezone.get(0).getAvailableHourMinute().stream().filter(avTime -> !bookedSessions.contains(avTime.getDateTime())).collect(Collectors.toList());
     }
 }

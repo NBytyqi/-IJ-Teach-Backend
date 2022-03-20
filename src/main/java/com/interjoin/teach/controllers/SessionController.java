@@ -23,8 +23,8 @@ public class SessionController {
 
     @PostMapping("/new")
     @RolesAllowed(value = { Roles.STUDENT })
-    public void bookNewSession(@Valid @RequestBody BookSessionRequest request) throws SessionExistsException {
-        sessionService.bookSession(request);
+    public ResponseEntity<String> bookNewSession(@Valid @RequestBody BookSessionRequest request) throws SessionExistsException {
+        return ResponseEntity.ok(sessionService.bookSession(request));
     }
 
     @PutMapping("/list")

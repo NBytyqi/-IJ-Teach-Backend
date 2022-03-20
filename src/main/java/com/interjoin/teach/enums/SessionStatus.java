@@ -1,5 +1,5 @@
 package com.interjoin.teach.enums;
 
 public enum SessionStatus {
-    PENDING, APPROVED, DECLINED
+    PAYMENT_PENDING, PENDING_APPROVAL, APPROVED, DECLINED
 }

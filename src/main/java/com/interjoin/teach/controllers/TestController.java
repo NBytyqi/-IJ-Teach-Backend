@@ -3,7 +3,10 @@ package com.interjoin.teach.controllers;
 import com.interjoin.teach.dtos.AvailableTimesStringDto;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.entities.AvailableTimes;
+import com.interjoin.teach.entities.Subject;
 import com.interjoin.teach.entities.User;
+import com.interjoin.teach.repositories.CurriculumRepository;
+import com.interjoin.teach.repositories.SubjectRepository;
 import com.interjoin.teach.repositories.UserRepository;
 import com.interjoin.teach.services.AvailableTimesService;
 import com.interjoin.teach.services.UserService;
@@ -24,6 +27,23 @@ public class TestController {
     private final AvailableTimesService service;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final SubjectRepository subjectRepository;
+    private final CurriculumRepository curriculumRepository;
+
+    @PostMapping("/addsubjects")
+    public void add(@RequestParam List<String> subjektet) {
+        for(String s : subjektet) {
+            try {
+                System.out.println(s);
+                subjectRepository.save(Subject.builder().subjectName(s).build());
+            } catch (Exception e) {
+                System.out.println("exception " + e);
+                continue;
+            }
+
+        }
+    }
+
 
 
     @GetMapping

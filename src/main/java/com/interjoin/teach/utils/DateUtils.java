@@ -28,9 +28,6 @@ public class DateUtils {
         return availableTimesStringDtos;
     }
 
-
-
-
     public static AvailableTimesStringDto map(List<OffsetDateTime> fromTimes, String timeZone, String weekDay) {
         AvailableTimesStringDto hourMinutes = AvailableTimesStringDto.builder().build();
         List<AvailableHourMinuteDto> available = new ArrayList<>();
@@ -52,6 +49,14 @@ public class DateUtils {
 
     public static OffsetDateTime map(OffsetDateTime time, String timeZone) {
         return OffsetDateTime.from(time.atZoneSameInstant(ZoneId.of(timeZone)));
+    }
+
+    public static List<OffsetDateTime> mapMultipleTimes(List<OffsetDateTime> times, String timeZone) {
+        List<OffsetDateTime> dates = new ArrayList<>();
+        for(OffsetDateTime time : times) {
+            dates.add(map(time, timeZone));
+        }
+        return dates;
     }
 
     public static void main(String[] arg) {
