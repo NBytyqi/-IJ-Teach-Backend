@@ -2,25 +2,19 @@ package com.interjoin.teach.config.exceptions;
 
 import org.springframework.http.HttpStatus;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class ExceptionMessage {
 
     private HttpStatus httpStatus;
     private String message;
-    private List<String> errors;
 
-    public ExceptionMessage(HttpStatus httpStatus, String message, List<String> errors) {
+    public ExceptionMessage(HttpStatus httpStatus, String message) {
         this.httpStatus = httpStatus;
         this.message = message;
-        this.errors = errors;
     }
 
     public ExceptionMessage(HttpStatus httpStatus, String message, String error) {
         this.httpStatus = httpStatus;
         this.message = message;
-        this.errors = Arrays.asList(error);
     }
 
     public HttpStatus getHttpStatus() {
@@ -39,11 +33,4 @@ public class ExceptionMessage {
         this.message = message;
     }
 
-    public List<String> getErrors() {
-        return errors;
-    }
-
-    public void setErrors(List<String> errors) {
-        this.errors = errors;
-    }
 }
