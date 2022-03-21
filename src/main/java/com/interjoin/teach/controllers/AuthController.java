@@ -1,5 +1,6 @@
 package com.interjoin.teach.controllers;
 
+import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
@@ -38,5 +39,10 @@ public class AuthController {
     @GetMapping
     public ResponseEntity<UserDto> getUserDetails() {
         return ResponseEntity.ok(service.getCurrentUserDetailsAsDto());
+    }
+
+    @GetMapping("/email")
+    public ResponseEntity<Boolean> checkIfUserEmailExists(@RequestParam String email) throws EmailAlreadyExistsException {
+        return ResponseEntity.ok(service.emailAlreadyExists(email));
     }
 }

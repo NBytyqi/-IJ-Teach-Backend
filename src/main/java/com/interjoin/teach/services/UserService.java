@@ -1,5 +1,6 @@
 package com.interjoin.teach.services;
 
+import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.dtos.*;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.entities.AvailableTimes;
@@ -141,6 +142,13 @@ public class UserService {
         });
 
         return strings;
+    }
+
+    public boolean emailAlreadyExists(String email) throws EmailAlreadyExistsException {
+        if(repository.findByEmail(email).isPresent()) {
+            throw new EmailAlreadyExistsException();
+        }
+        return false;
     }
 }
 

@@ -1,6 +1,7 @@
 package com.interjoin.teach.config.exceptions.controlleradvice;
 
 import com.amazonaws.services.cognitoidp.model.AWSCognitoIdentityProviderException;
+import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.ExceptionMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,14 @@ public class ResponseEntityExHandler extends ResponseEntityExceptionHandler {
             AWSCognitoIdentityProviderException.class)
     protected ResponseEntity<Object> handleConflict(AWSCognitoIdentityProviderException ex, WebRequest request) {
         String bodyOfException = ex.getErrorCode();
+        ExceptionMessage exceptionMessage = new ExceptionMessage(HttpStatus.BAD_REQUEST, bodyOfException, ex.getLocalizedMessage());
+        return new ResponseEntity<Object>(exceptionMessage, exceptionMessage.getHttpStatus());
+    }
+
+    @ExceptionHandler(value =
+            EmailAlreadyExistsException.class)
+    protected ResponseEntity<Object> handleConflict(EmailAlreadyExistsException ex, WebRequest request) {
+        String bodyOfException = "Email already in use";
         ExceptionMessage exceptionMessage = new ExceptionMessage(HttpStatus.BAD_REQUEST, bodyOfException, ex.getLocalizedMessage());
         return new ResponseEntity<Object>(exceptionMessage, exceptionMessage.getHttpStatus());
     }
