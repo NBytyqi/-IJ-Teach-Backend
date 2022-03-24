@@ -23,7 +23,6 @@ public class SubjectCurriculumController {
     @GetMapping("/all")
     public ResponseEntity<Set<SubjectCurriculumResponse>> getAll(HttpServletRequest request) {
         TimeZone timeZone = RequestContextUtils.getTimeZone(request);
-        System.out.println(timeZone.getDisplayName());
         return ResponseEntity.ok(subCurrService.getAll());
     }
 

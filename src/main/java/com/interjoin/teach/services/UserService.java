@@ -42,9 +42,12 @@ public class UserService {
             StringBuilder subCurrStr = new StringBuilder();
 
             for(SubjectCurriculumDto data : request.getSubCurrList()) {
-                SubjectCurriculum subjectCurriculum = subCurrRepository.findFirstByCurriculumCurriculumNameAndSubjectSubjectName(data.getCurriculumName(), data.getSubjectName());
-                subCurrs.add(subjectCurriculum);
-                subCurrStr.append(String.format("%s,%s", data.getSubjectName(), data.getCurriculumName()));
+                for(String subject : data.getSubjectNames()) {
+                    SubjectCurriculum subjectCurriculum = subCurrRepository.findFirstByCurriculumCurriculumNameAndSubjectSubjectName(data.getCurriculumName(), subject);
+                    subCurrs.add(subjectCurriculum);
+                    subCurrStr.append(String.format("%s,%s", subject, data.getCurriculumName()));
+                }
+
             }
             user.setSubjectCurriculums(subCurrs);
             user.setSubCurrStr(subCurrStr.toString());

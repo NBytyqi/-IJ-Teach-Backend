@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Bean;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.ZoneId;
+import java.util.Set;
 
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 
@@ -46,6 +48,8 @@ public class InterjoinTeachApplication implements CommandLineRunner{
 
     @Override
     public void run(String... args) throws Exception {
+        Set<String> timezones = ZoneId.getAvailableZoneIds();
+        System.out.println(timezones);
         AvailableTimesSignupDto signup = new AvailableTimesSignupDto("Africa/Djibouti");
     }
 }
