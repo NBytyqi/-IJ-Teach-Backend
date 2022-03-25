@@ -1,8 +1,11 @@
 package com.interjoin.teach.services;
 
+import com.amazonaws.services.cognitoidp.model.ConfirmSignUpRequest;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.dtos.*;
+import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
+import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.AvailableTimes;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import com.interjoin.teach.entities.User;
@@ -10,6 +13,7 @@ import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import com.interjoin.teach.repositories.UserRepository;
 import com.interjoin.teach.utils.DateUtils;
+import com.interjoin.teach.utils.SecretHashUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,11 +35,11 @@ public class UserService {
 
     private final SubjectCurriculumRepository subCurrRepository;
 
-    public void createUser(UserSignupRequest request, String role) {
+    public SignupResponseDto createUser(UserSignupRequest request, String role) {
         User user = UserMapper.mapUserRequest(request);
 
         String usernameCreated = awsService.signUpUser(request, role);
-        user.setUsername(usernameCreated);
+        user.setCognitoUsername(usernameCreated);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
@@ -62,7 +66,9 @@ public class UserService {
         }
         repository.save(user);
 
-
+        return SignupResponseDto.builder().firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .cognitoUsername(user.getCognitoUsername()).build();
     }
 
     private org.springframework.security.core.userdetails.User getCurrentUser() {
@@ -152,6 +158,14 @@ public class UserService {
             throw new EmailAlreadyExistsException();
         }
         return false;
+    }
+
+    public void verifyUser(OtpVerifyRequest request) {
+        this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
+    }
+
+    public void resendVerificationEmail(String cognitoUsername) {
+        this.awsService.resendVerificationEmail(cognitoUsername);
     }
 }
 

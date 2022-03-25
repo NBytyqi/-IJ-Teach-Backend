@@ -114,4 +114,23 @@ public class AwsService {
 
         basicAuthCognitoIdentityProvider.adminAddUserToGroup(addUserToGroupRequest);
     }
+
+    public void verifyUser(String username, String code) {
+
+        ConfirmSignUpRequest request = new ConfirmSignUpRequest();
+        request.setUsername(username);
+        request.setConfirmationCode(code);
+        request.setClientId(this.cognitoCreds.getClientId());
+        request.setSecretHash(SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), username));
+        basicAuthCognitoIdentityProvider.confirmSignUp(request);
+
+    }
+
+    public void resendVerificationEmail(String cognitoUsername) {
+        ResendConfirmationCodeRequest request = new ResendConfirmationCodeRequest();
+        request.setClientId(this.cognitoCreds.getClientId());
+        request.setSecretHash(SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), cognitoUsername));
+        request.setUsername(cognitoUsername);
+        basicAuthCognitoIdentityProvider.resendConfirmationCode(request);
+    }
 }

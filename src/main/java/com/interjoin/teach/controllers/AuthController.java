@@ -4,7 +4,9 @@ import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
+import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
+import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +22,13 @@ public class AuthController {
     private final UserService service;
 
     @PostMapping("/signup/teacher")
-    public ResponseEntity<Void> signupTeacher(@Valid @RequestBody UserSignupRequest request) {
-        service.createUser(request, "TEACHER");
-        return ResponseEntity.ok().build();
+    public ResponseEntity<SignupResponseDto> signupTeacher(@Valid @RequestBody UserSignupRequest request) {
+        return ResponseEntity.ok(service.createUser(request, "TEACHER"));
     }
 
     @PostMapping("/signup/student")
-    public ResponseEntity<Void> signupStudent(@Valid @RequestBody UserSignupRequest request) {
-        service.createUser(request, "STUDENT");
-        return ResponseEntity.ok().build();
+    public ResponseEntity<SignupResponseDto> signupStudent(@Valid @RequestBody UserSignupRequest request) {
+        return ResponseEntity.ok(service.createUser(request, "STUDENT"));
     }
 
     @PostMapping("/signin")
@@ -45,4 +45,18 @@ public class AuthController {
     public ResponseEntity<Boolean> checkIfUserEmailExists(@RequestParam String email) throws EmailAlreadyExistsException {
         return ResponseEntity.ok(service.emailAlreadyExists(email));
     }
+
+    // Used to verify email on cognito
+    @PostMapping("/checkotp")
+    public ResponseEntity<Void> checkOtpCode(@RequestBody OtpVerifyRequest request) {
+        service.verifyUser(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/resend-otp/{cognitoUsername}")
+    public ResponseEntity<Void> resendOtp(@PathVariable String cognitoUsername) {
+        service.resendVerificationEmail(cognitoUsername);
+        return ResponseEntity.ok().build();
+    }
+
 }
