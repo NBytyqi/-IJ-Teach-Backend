@@ -1,6 +1,5 @@
 package com.interjoin.teach.services;
 
-import com.amazonaws.services.cognitoidp.model.ConfirmSignUpRequest;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.dtos.*;
 import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
@@ -13,12 +12,14 @@ import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import com.interjoin.teach.repositories.UserRepository;
 import com.interjoin.teach.utils.DateUtils;
-import com.interjoin.teach.utils.SecretHashUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,6 +33,7 @@ public class UserService {
     private final UserRepository repository;
     private final AwsService awsService;
     private final AvailableTimesService availableTimesService;
+    private final ExperienceService experienceService;
 
     private final SubjectCurriculumRepository subCurrRepository;
 
@@ -59,7 +61,14 @@ public class UserService {
         user.setUuid(UUID.randomUUID().toString());
         user.setRole(Optional.ofNullable(role.toUpperCase()).orElse("STUDENT"));
         user.setCreatedDate(LocalDateTime.now());
+        user.setUuid(UUID.randomUUID().toString());
         user = repository.save(user);
+
+        // CHECK IF EXPERIENCE IS NULL
+        if(Optional.ofNullable(request.getExperiences()).isPresent() && !request.getExperiences().isEmpty()) {
+            experienceService.save(request.getExperiences(), user);
+        }
+
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
             user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(), user.getTimeZone(), user.getId()));
@@ -68,6 +77,7 @@ public class UserService {
 
         return SignupResponseDto.builder().firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .uuid(user.getUuid())
                 .cognitoUsername(user.getCognitoUsername()).build();
     }
 
@@ -107,7 +117,7 @@ public class UserService {
         org.springframework.security.core.userdetails.User principal = getCurrentUser();
         User currentUser = null;
         if(principal != null) {
-            Optional<User> optionalUser = repository.findByUsername(principal.getUsername());
+            Optional<User> optionalUser = repository.findByCognitoUsername(principal.getUsername());
             if(optionalUser.isPresent())
                 currentUser = optionalUser.get();
         }
@@ -160,12 +170,31 @@ public class UserService {
         return false;
     }
 
+    public User findByUuid(String uuid) {
+        return repository.findByUuid(uuid).orElseThrow(EntityNotFoundException::new);
+    }
+
     public void verifyUser(OtpVerifyRequest request) {
         this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
     }
 
     public void resendVerificationEmail(String cognitoUsername) {
         this.awsService.resendVerificationEmail(cognitoUsername);
+    }
+
+    public void addProfilePictureToCurrentUser(MultipartFile picture, String userUuid) {
+        User user = findByUuid(userUuid);
+        try {
+            user.setProfilePicture(picture.getBytes());
+            repository.save(user);
+        } catch (IOException e) {
+
+        }
+    }
+
+    public void uploadCV(MultipartFile file, String userUuid) throws IOException {
+//        User user = findByUuid(userUuid);
+        this.awsService.uploadFile(file.getOriginalFilename(), file, User.builder().email("bytyqinderim87@gmail.com").build());
     }
 }
 

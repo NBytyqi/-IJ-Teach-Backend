@@ -1,9 +1,14 @@
 package com.interjoin.teach.services;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.AnonymousAWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
 import com.amazonaws.services.cognitoidp.model.*;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.interjoin.teach.config.AWSCredentialsConfig;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
@@ -13,7 +18,9 @@ import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
 import com.interjoin.teach.utils.IdentityProviderFactory;
 import com.interjoin.teach.utils.SecretHashUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,15 +39,22 @@ public class AwsService {
     private AWSCognitoIdentityProvider basicAuthCognitoIdentityProvider;
     private AWSCognitoIdentityProvider cognitoIdentityProvider;
 
+    private final AmazonS3 s3Client;
+
 //    private UserService userService;
 
     public AwsService(AwsCognitoIdTokenProcessor cognitoIdTokenProcessor,
-                       AWSCredentialsConfig cognitoCreds) {
+                      AWSCredentialsConfig cognitoCreds) {
         this.cognitoCreds = cognitoCreds;
 
         basicAwsCredentials = new BasicAWSCredentials(this.cognitoCreds.getAwsAccessKey(), this.cognitoCreds.getAwsSecretKey());
 
         basicAuthCognitoIdentityProvider = IdentityProviderFactory.getIdentityProvider(basicAwsCredentials);
+
+        this.s3Client = AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(basicAwsCredentials))
+                .withRegion(Regions.EU_WEST_2)
+                .build();
 
         cognitoIdentityProvider = IdentityProviderFactory.getIdentityProvider(this.awsCreds);
 
@@ -133,4 +147,20 @@ public class AwsService {
         request.setUsername(cognitoUsername);
         basicAuthCognitoIdentityProvider.resendConfirmationCode(request);
     }
+
+    public void uploadFile(String fileName, MultipartFile multipartFile, User user) throws IOException {
+
+            try {
+                ObjectMetadata objectMetadata = new ObjectMetadata();
+                objectMetadata.setContentType(multipartFile.getContentType());
+                objectMetadata.setContentLength(multipartFile.getSize());
+                this.s3Client.putObject(this.cognitoCreds.getCvBucketName(), String.format("teacher/%s/%s", user.getEmail(), fileName), multipartFile.getInputStream(), objectMetadata);
+
+            }
+            catch (IOException e) {
+                throw e;
+            }
+
+    }
+
 }

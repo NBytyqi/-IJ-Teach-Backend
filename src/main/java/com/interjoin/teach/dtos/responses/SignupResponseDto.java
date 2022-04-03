@@ -13,4 +13,5 @@ public class SignupResponseDto {
     private String firstName;
     private String lastName;
     private String cognitoUsername;
+    private String uuid;
 }

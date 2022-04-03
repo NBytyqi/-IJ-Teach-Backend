@@ -35,8 +35,6 @@ public class UserSignupRequest {
     @NotNull
     private LocalDate dateOfBirth;
 
-    private byte[] profilePicture;
-
     private String parentEmail;
 
     private Set<SubjectCurriculumDto> subCurrList;
@@ -48,4 +46,10 @@ public class UserSignupRequest {
     private String password;
 
     List<AvailableTimesDto> availableTimes;
+
+    private List<String> experiences;
+
+    private String qualifications;
+    private String experience;
+
 }

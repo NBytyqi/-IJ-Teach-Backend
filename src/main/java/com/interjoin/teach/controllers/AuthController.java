@@ -11,8 +11,10 @@ import com.interjoin.teach.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/auth")
@@ -24,6 +26,16 @@ public class AuthController {
     @PostMapping("/signup/teacher")
     public ResponseEntity<SignupResponseDto> signupTeacher(@Valid @RequestBody UserSignupRequest request) {
         return ResponseEntity.ok(service.createUser(request, "TEACHER"));
+    }
+
+    @PostMapping("/profile-pic")
+    public void setUserProfilePic(@RequestParam("pic") MultipartFile picture, @RequestParam String userUuid) {
+        this.service.addProfilePictureToCurrentUser(picture, userUuid);
+    }
+
+    @PostMapping("/cv")
+    public void uploadUserCv(@RequestParam("cv") MultipartFile cv, @RequestParam String userUuid) throws IOException {
+        this.service.uploadCV(cv, userUuid);
     }
 
     @PostMapping("/signup/student")

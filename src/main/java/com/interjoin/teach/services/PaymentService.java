@@ -56,7 +56,7 @@ public class PaymentService {
                                         .setPriceData(
                                                 SessionCreateParams.LineItem.PriceData.builder()
                                                         .setCurrency("usd")
-                                                        .setUnitAmountDecimal(price.multiply(BigDecimal.valueOf(100)))
+                                                        .setUnitAmountDecimal(BigDecimal.valueOf(100).multiply(BigDecimal.valueOf(100)))
                                                         .setProductData(
                                                                 SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                                         .setName(subject)
@@ -83,14 +83,14 @@ public class PaymentService {
     public Customer getStripeUserByEmail(User user){
 
         Map<String, Object> params = new HashMap<>();
-        params.put("email", user.getEmail());
+        params.put("email", "bytyqinderim87@gmail.com");
         CustomerCollection customers =
                 Customer.list(params);
 
         if (customers.getData().isEmpty()) {
             Map<String, Object> customerParams = new HashMap<>();
-            customerParams.put("email", user.getEmail());
-            customerParams.put("name", user.getFirstName() + " " + user.getLastName());
+            customerParams.put("email", "bytyqinderim87@gmail.com");
+            customerParams.put("name", "John" + " " + "Smith");
 
             return Customer.create(customerParams);
         } else {

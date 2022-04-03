@@ -4,6 +4,8 @@ import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.entities.User;
 
+import java.util.Arrays;
+
 public class UserMapper {
 
     public static User mapUserRequest(UserSignupRequest request) {
@@ -16,9 +18,10 @@ public class UserMapper {
                 .longBio(request.getLongBio())
                 .parentEmail(request.getParentEmail())
                 .phoneNumber(request.getPhoneNumber())
-                .profilePicture(request.getProfilePicture())
                 .shortBio(request.getShortBio())
 //                .subjectCurriculums(request.getSubCurrList())
+                .qualifications(request.getQualifications())
+                .experience(request.getExperience())
                 .timeZone(request.getTimeZone())
                 .build();
     }
@@ -36,6 +39,7 @@ public class UserMapper {
                 .parentEmail(user.getParentEmail())
                 .shortBio(user.getShortBio())
                 .longBio(user.getLongBio())
+//                .profilePicture(Arrays.copyOf( user.getProfilePicture(), user.getProfilePicture().length ))
                 .build();
     }
 }
