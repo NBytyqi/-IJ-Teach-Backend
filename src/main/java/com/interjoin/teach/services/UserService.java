@@ -2,7 +2,10 @@ package com.interjoin.teach.services;
 
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.dtos.*;
+import com.interjoin.teach.dtos.requests.AgencySignupRequest;
+import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
+import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.AvailableTimes;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import com.interjoin.teach.entities.User;
@@ -14,7 +17,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -28,14 +34,34 @@ public class UserService {
     private final UserRepository repository;
     private final AwsService awsService;
     private final AvailableTimesService availableTimesService;
+    private final ExperienceService experienceService;
 
     private final SubjectCurriculumRepository subCurrRepository;
 
-    public void createUser(UserSignupRequest request, String role) {
+    public void createAgency(AgencySignupRequest request) {
+        String usernameCreated = awsService.signUpAgency(request);
+        User newAgency = User.builder()
+                .agency(true)
+                .email(request.getContactEmail())
+                .additionalComments(request.getAdditionalComments())
+                .agencyName(request.getAgencyName())
+                .numberOfTeachers(request.getNumberOfTeachers())
+                .location(request.getLocation())
+                .cognitoUsername(usernameCreated)
+                .role("AGENCY")
+                .uuid(UUID.randomUUID().toString())
+                .firstName(request.getAgencyName())
+                .lastName(request.getAgencyName())
+                .build();
+        repository.save(newAgency);
+
+    }
+
+    public SignupResponseDto createUser(UserSignupRequest request, String role) {
         User user = UserMapper.mapUserRequest(request);
 
         String usernameCreated = awsService.signUpUser(request, role);
-        user.setUsername(usernameCreated);
+        user.setCognitoUsername(usernameCreated);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
@@ -55,14 +81,25 @@ public class UserService {
         user.setUuid(UUID.randomUUID().toString());
         user.setRole(Optional.ofNullable(role.toUpperCase()).orElse("STUDENT"));
         user.setCreatedDate(LocalDateTime.now());
+        user.setUuid(UUID.randomUUID().toString());
+        user.setAgency(false);
         user = repository.save(user);
+
+        // CHECK IF EXPERIENCE IS NULL
+        if(Optional.ofNullable(request.getExperiences()).isPresent() && !request.getExperiences().isEmpty()) {
+            experienceService.save(request.getExperiences(), user);
+        }
+
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
             user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(), user.getTimeZone(), user.getId()));
         }
         repository.save(user);
 
-
+        return SignupResponseDto.builder().firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .uuid(user.getUuid())
+                .cognitoUsername(user.getCognitoUsername()).build();
     }
 
     private org.springframework.security.core.userdetails.User getCurrentUser() {
@@ -101,7 +138,7 @@ public class UserService {
         org.springframework.security.core.userdetails.User principal = getCurrentUser();
         User currentUser = null;
         if(principal != null) {
-            Optional<User> optionalUser = repository.findByUsername(principal.getUsername());
+            Optional<User> optionalUser = repository.findByCognitoUsername(principal.getUsername());
             if(optionalUser.isPresent())
                 currentUser = optionalUser.get();
         }
@@ -152,6 +189,41 @@ public class UserService {
             throw new EmailAlreadyExistsException();
         }
         return false;
+    }
+
+    public User findByUuid(String uuid) {
+        return repository.findByUuid(uuid).orElseThrow(EntityNotFoundException::new);
+    }
+
+    public void verifyUser(OtpVerifyRequest request) {
+        this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
+    }
+
+    public void resendVerificationEmail(String cognitoUsername) {
+        this.awsService.resendVerificationEmail(cognitoUsername);
+    }
+
+    public void addProfilePictureToCurrentUser(MultipartFile picture, String userUuid) {
+        User user = findByUuid(userUuid);
+        try {
+            user.setProfilePicture(picture.getBytes());
+            repository.save(user);
+        } catch (IOException e) {
+
+        }
+    }
+
+    public void forgotPassword(String username) {
+        this.awsService.forgotForUser(username);
+    }
+
+    public void resetPassword(ResetPasswordDTO request) throws IOException {
+        this.awsService.resetUserPassword(request);
+    }
+
+    public void uploadCV(MultipartFile file, String userUuid) throws IOException {
+//        User user = findByUuid(userUuid);
+        this.awsService.uploadFile(file.getOriginalFilename(), file, User.builder().email("bytyqinderim87@gmail.com").build());
     }
 }
 

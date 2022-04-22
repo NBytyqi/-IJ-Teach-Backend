@@ -24,7 +24,7 @@ public class PaymentService {
     private final String paymentSuccessUrl = "http://localhost:3000";
     private final String paymentCancelUrl = "http://localhost:3000";
 
-    public String openPaymentPage(BookSessionRequest sessionRequest, Long sessionId, BigDecimal price, String studentName, String teacherName, String subjectName, String curriculum) {
+    public String openPaymentPage(BookSessionRequest sessionRequest, Long sessionId, BigDecimal price, String studentName, String teacherName) {
 
         Stripe.apiKey = "sk_test_51KdsJaHiAI1FpLGq7shhYXjXrm3nsK5bM9ALw6Rk8YWSa6qLR40WS6NqFnwgwby5VyGD4hZITPIYe8gFoEQSUEJD00UIyHsMpM";
 
@@ -35,7 +35,7 @@ public class PaymentService {
         Map<String, String> datasetMetadata= new HashMap<>();
         datasetMetadata.put("sessionId", String.valueOf(sessionId));
 
-        final String subject = String.format("Session between %s and %s on subject: \"%s\" and Curriculum: \"%s\"", studentName, teacherName, subjectName, curriculum);
+        final String subject = String.format("Session between %s and %s on subject: \"%s\" and Curriculum: \"%s\"", studentName, teacherName, sessionRequest.getSubject(), sessionRequest.getCurriculum());
 
         SessionCreateParams params =
                 SessionCreateParams.builder()
@@ -90,7 +90,7 @@ public class PaymentService {
         if (customers.getData().isEmpty()) {
             Map<String, Object> customerParams = new HashMap<>();
             customerParams.put("email", user.getEmail());
-            customerParams.put("name", user.getFirstName() + " " + user.getLastName());
+            customerParams.put("name", String.format("%s %s", user.getFirstName(), user.getLastName()));
 
             return Customer.create(customerParams);
         } else {

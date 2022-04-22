@@ -95,8 +95,29 @@ public class User {
     @OneToMany(fetch = FetchType.LAZY)
     private List<AvailableTimes> availableTimes;
 
+    @OneToMany(mappedBy = "user")
+    private List<Experience> experiences = new java.util.ArrayList<>();
+
     private String timeZone;
 
     private BigDecimal pricePerHour;
+
+    private String qualifications;
+    private String experience;
+
+    // IF AGENCY
+    @Column(nullable = true)
+    private boolean agency;
+    @Column(nullable = true)
+    private String agencyName;
+    @Column(nullable = true)
+    private String agencyCode;
+//    private String location;
+    @Column(nullable = true)
+    private String additionalComments;
+    @Column(nullable = true)
+    private Integer numberOfTeachers;
+
+
 
 }

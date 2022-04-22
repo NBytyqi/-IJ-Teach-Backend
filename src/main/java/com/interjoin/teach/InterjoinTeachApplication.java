@@ -1,6 +1,5 @@
 package com.interjoin.teach;
 
-import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.jwt.JwtConfiguration;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.RemoteJWKSet;
@@ -11,20 +10,17 @@ import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.ZoneId;
-import java.util.Set;
 
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 
 @SpringBootApplication
-public class InterjoinTeachApplication implements CommandLineRunner{
+public class InterjoinTeachApplication{
 
     public static void main(String[] args) {
         SpringApplication.run(InterjoinTeachApplication.class, args);
@@ -46,10 +42,10 @@ public class InterjoinTeachApplication implements CommandLineRunner{
         return jwtProcessor;
     }
 
-    @Override
-    public void run(String... args) throws Exception {
-        Set<String> timezones = ZoneId.getAvailableZoneIds();
-        System.out.println(timezones);
-        AvailableTimesSignupDto signup = new AvailableTimesSignupDto("Africa/Djibouti");
-    }
+//    @Override
+//    public void run(String... args) throws Exception {
+//        Set<String> timezones = ZoneId.getAvailableZoneIds();
+//        System.out.println(timezones);
+//        AvailableTimesSignupDto signup = new AvailableTimesSignupDto("Africa/Djibouti");
+//    }
 }

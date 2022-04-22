@@ -14,4 +14,6 @@ public class BookSessionRequest {
     private AvailableHourMinuteDto date;
     @NotNull
     private Long teacherId;
+    private String subject;
+    private String curriculum;
 }

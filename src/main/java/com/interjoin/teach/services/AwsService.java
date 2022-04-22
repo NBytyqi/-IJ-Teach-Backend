@@ -1,22 +1,29 @@
 package com.interjoin.teach.services;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.AnonymousAWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
 import com.amazonaws.services.cognitoidp.model.*;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.interjoin.teach.config.AWSCredentialsConfig;
+import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
+import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.entities.User;
 import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
 import com.interjoin.teach.utils.IdentityProviderFactory;
 import com.interjoin.teach.utils.SecretHashUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 @Service
 public class AwsService {
@@ -32,15 +39,22 @@ public class AwsService {
     private AWSCognitoIdentityProvider basicAuthCognitoIdentityProvider;
     private AWSCognitoIdentityProvider cognitoIdentityProvider;
 
+    private final AmazonS3 s3Client;
+
 //    private UserService userService;
 
     public AwsService(AwsCognitoIdTokenProcessor cognitoIdTokenProcessor,
-                       AWSCredentialsConfig cognitoCreds) {
+                      AWSCredentialsConfig cognitoCreds) {
         this.cognitoCreds = cognitoCreds;
 
         basicAwsCredentials = new BasicAWSCredentials(this.cognitoCreds.getAwsAccessKey(), this.cognitoCreds.getAwsSecretKey());
 
         basicAuthCognitoIdentityProvider = IdentityProviderFactory.getIdentityProvider(basicAwsCredentials);
+
+        this.s3Client = AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(basicAwsCredentials))
+                .withRegion(Regions.EU_WEST_2)
+                .build();
 
         cognitoIdentityProvider = IdentityProviderFactory.getIdentityProvider(this.awsCreds);
 
@@ -81,6 +95,59 @@ public class AwsService {
         return userCreatedUsername;
     }
 
+    public void forgotForUser(String username) {
+
+        AdminResetUserPasswordRequest resetUserPasswordRequest = new AdminResetUserPasswordRequest()
+                .withUserPoolId(this.cognitoCreds.getPoolId())
+                .withUsername(username);
+        basicAuthCognitoIdentityProvider.adminResetUserPassword(resetUserPasswordRequest);
+    }
+
+    public void resetUserPassword(ResetPasswordDTO resetPassword) throws IOException, UserNotFoundException {
+        ConfirmForgotPasswordRequest confirmForgotPasswordRequest = new ConfirmForgotPasswordRequest()
+                .withUsername(resetPassword.getEmail())
+                .withClientId(this.cognitoCreds.getClientId())
+                .withConfirmationCode(resetPassword.getCode())
+                .withPassword(resetPassword.getNewPassword())
+                .withSecretHash(
+                        SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), resetPassword.getEmail())
+                );
+        basicAuthCognitoIdentityProvider.confirmForgotPassword(confirmForgotPasswordRequest);
+
+    }
+
+    public String signUpAgency(AgencySignupRequest requestForm) {
+
+        String userCreatedUsername = null;
+
+        List<AttributeType> attributeTypes = new ArrayList<>();
+        attributeTypes.addAll(Arrays.asList(new AttributeType().withName("email").withValue(requestForm.getContactEmail()),
+                new AttributeType().withName("custom:role").withValue("agency")
+        ));
+
+//        ResponseEntity<AuthenticationResponseDTO> authResponse;
+        try {
+            String secretVal = SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), requestForm.getContactEmail());
+            SignUpRequest signUpRequest = new SignUpRequest();
+            signUpRequest.setUsername(requestForm.getContactEmail());
+            signUpRequest.setUserAttributes(attributeTypes);
+
+            signUpRequest.setClientId(this.cognitoCreds.getClientId());
+            signUpRequest.setPassword("DefaultPass1!");
+            signUpRequest.setSecretHash(secretVal);
+
+            SignUpResult signUpResult = basicAuthCognitoIdentityProvider.signUp(signUpRequest);
+            userCreatedUsername = signUpResult.getUserSub();
+
+            addUserToGroup(requestForm.getContactEmail(), "AGENCY");
+
+
+        } catch (AWSCognitoIdentityProviderException ex) {
+            throw ex;
+        }
+            return userCreatedUsername;
+    }
+
     public AuthResponse signInUser(UserSignInRequest request) {
         InitiateAuthRequest initiateAuthRequest = new InitiateAuthRequest();
 
@@ -114,4 +181,39 @@ public class AwsService {
 
         basicAuthCognitoIdentityProvider.adminAddUserToGroup(addUserToGroupRequest);
     }
+
+    public void verifyUser(String username, String code) {
+
+        ConfirmSignUpRequest request = new ConfirmSignUpRequest();
+        request.setUsername(username);
+        request.setConfirmationCode(code);
+        request.setClientId(this.cognitoCreds.getClientId());
+        request.setSecretHash(SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), username));
+        basicAuthCognitoIdentityProvider.confirmSignUp(request);
+
+    }
+
+    public void resendVerificationEmail(String cognitoUsername) {
+        ResendConfirmationCodeRequest request = new ResendConfirmationCodeRequest();
+        request.setClientId(this.cognitoCreds.getClientId());
+        request.setSecretHash(SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), cognitoUsername));
+        request.setUsername(cognitoUsername);
+        basicAuthCognitoIdentityProvider.resendConfirmationCode(request);
+    }
+
+    public void uploadFile(String fileName, MultipartFile multipartFile, User user) throws IOException {
+
+            try {
+                ObjectMetadata objectMetadata = new ObjectMetadata();
+                objectMetadata.setContentType(multipartFile.getContentType());
+                objectMetadata.setContentLength(multipartFile.getSize());
+                this.s3Client.putObject(this.cognitoCreds.getCvBucketName(), String.format("teacher/%s/%s", user.getEmail(), fileName), multipartFile.getInputStream(), objectMetadata);
+
+            }
+            catch (IOException e) {
+                throw e;
+            }
+
+    }
+
 }

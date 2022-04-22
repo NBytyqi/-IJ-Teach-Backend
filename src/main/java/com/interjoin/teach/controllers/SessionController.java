@@ -6,6 +6,9 @@ import com.interjoin.teach.dtos.requests.BookSessionRequest;
 import com.interjoin.teach.roles.Roles;
 import com.interjoin.teach.services.SessionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +28,12 @@ public class SessionController {
     @RolesAllowed(value = { Roles.STUDENT })
     public ResponseEntity<String> bookNewSession(@Valid @RequestBody BookSessionRequest request) throws SessionExistsException {
         return ResponseEntity.ok(sessionService.bookSession(request));
+    }
+
+    @GetMapping("/history")
+    @RolesAllowed(value = { Roles.STUDENT })
+    public ResponseEntity<List<SessionDto>> getCurrentStudentHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+        return ResponseEntity.ok(sessionService.getStudentSessionHistory(pageable));
     }
 
     @PutMapping("/list")
