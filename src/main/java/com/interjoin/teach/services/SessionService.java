@@ -13,6 +13,7 @@ import com.interjoin.teach.mappers.SessionMapper;
 import com.interjoin.teach.repositories.SessionRepository;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -33,7 +34,17 @@ public class SessionService {
 
     public String bookSession(BookSessionRequest request) throws SessionExistsException {
         OffsetDateTime requestedBookTime = request.getDate().getDateTime();
-        request.getDate().setDateTime(OffsetDateTime.from(requestedBookTime.atZoneSameInstant(ZoneId.systemDefault())));
+            request.getDate().setDateTime(OffsetDateTime.from(requestedBookTime.atZoneSameInstant(ZoneId.systemDefault())));
+
+        // DATE OF SESSION
+        LocalDate dateOfSession = request.getDate().getDateOfSession();
+        request.getDate().setDateTime(
+                request.getDate().getDateTime()
+                        .withYear(dateOfSession.getYear())
+                        .withMonth(dateOfSession.getMonthValue())
+                        .withDayOfMonth(dateOfSession.getDayOfMonth())
+        );
+
         User teacher = userService.findById(request.getTeacherId());
         User student = userService.getCurrentUserDetails();
 
@@ -56,13 +67,13 @@ public class SessionService {
                                  .build();
         session = sessionRepository.save(session);
 
-        return paymentService.openPaymentPage(request, session.getId(), teacher.getPricePerHour(), student.getFirstName(), teacher.getFirstName(), "Math", "A1");
+        return paymentService.openPaymentPage(request, session.getId(), teacher.getPricePerHour(), student.getFirstName(), teacher.getFirstName());
     }
 
 
     public List<SessionDto> getCurrentTeacherSessions() {
         User teacher = userService.getCurrentUserDetails();
-        return SessionMapper.map(sessionRepository.findByTeacherOrderByDateSlotDesc(teacher));
+        return SessionMapper.map(sessionRepository.findByTeacherOrderByDateSlotDesc(teacher), teacher.getTimeZone());
     }
 
     private List<AvailableTimes> filterAvailableTimes(List<AvailableTimes> availableTimes, String weekDay) {
@@ -93,5 +104,12 @@ public class SessionService {
         }
 
         return avTimesInStudentTimezone.get(0).getAvailableHourMinute().stream().filter(avTime -> !bookedSessions.contains(avTime.getDateTime())).collect(Collectors.toList());
+    }
+
+    public List<SessionDto> getStudentSessionHistory(Pageable pageable) {
+        User currentStudent = userService.getCurrentUserDetails();
+        return sessionRepository.findByStudentAndDateSlotBefore(currentStudent, OffsetDateTime.now(), pageable)
+                                .stream().map(session -> SessionMapper.map(session, currentStudent.getTimeZone()))
+                                .collect(Collectors.toList());
     }
 }

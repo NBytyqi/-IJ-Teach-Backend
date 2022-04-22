@@ -30,4 +30,9 @@ public class Session {
 
     @Enumerated(EnumType.STRING)
     private SessionStatus sessionStatus;
+
+    @Column(name = "review", nullable = true)
+    private String review;
+    @Column(name = "review_score", nullable = true)
+    private Double reviewScore;
 }

@@ -10,8 +10,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.interjoin.teach.config.AWSCredentialsConfig;
+import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
+import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.entities.User;
 import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
@@ -21,9 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class AwsService {
@@ -93,6 +93,59 @@ public class AwsService {
             throw ex;
         }
         return userCreatedUsername;
+    }
+
+    public void forgotForUser(String username) {
+
+        AdminResetUserPasswordRequest resetUserPasswordRequest = new AdminResetUserPasswordRequest()
+                .withUserPoolId(this.cognitoCreds.getPoolId())
+                .withUsername(username);
+        basicAuthCognitoIdentityProvider.adminResetUserPassword(resetUserPasswordRequest);
+    }
+
+    public void resetUserPassword(ResetPasswordDTO resetPassword) throws IOException, UserNotFoundException {
+        ConfirmForgotPasswordRequest confirmForgotPasswordRequest = new ConfirmForgotPasswordRequest()
+                .withUsername(resetPassword.getEmail())
+                .withClientId(this.cognitoCreds.getClientId())
+                .withConfirmationCode(resetPassword.getCode())
+                .withPassword(resetPassword.getNewPassword())
+                .withSecretHash(
+                        SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), resetPassword.getEmail())
+                );
+        basicAuthCognitoIdentityProvider.confirmForgotPassword(confirmForgotPasswordRequest);
+
+    }
+
+    public String signUpAgency(AgencySignupRequest requestForm) {
+
+        String userCreatedUsername = null;
+
+        List<AttributeType> attributeTypes = new ArrayList<>();
+        attributeTypes.addAll(Arrays.asList(new AttributeType().withName("email").withValue(requestForm.getContactEmail()),
+                new AttributeType().withName("custom:role").withValue("agency")
+        ));
+
+//        ResponseEntity<AuthenticationResponseDTO> authResponse;
+        try {
+            String secretVal = SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), requestForm.getContactEmail());
+            SignUpRequest signUpRequest = new SignUpRequest();
+            signUpRequest.setUsername(requestForm.getContactEmail());
+            signUpRequest.setUserAttributes(attributeTypes);
+
+            signUpRequest.setClientId(this.cognitoCreds.getClientId());
+            signUpRequest.setPassword("DefaultPass1!");
+            signUpRequest.setSecretHash(secretVal);
+
+            SignUpResult signUpResult = basicAuthCognitoIdentityProvider.signUp(signUpRequest);
+            userCreatedUsername = signUpResult.getUserSub();
+
+            addUserToGroup(requestForm.getContactEmail(), "AGENCY");
+
+
+        } catch (AWSCognitoIdentityProviderException ex) {
+            throw ex;
+        }
+            return userCreatedUsername;
     }
 
     public AuthResponse signInUser(UserSignInRequest request) {

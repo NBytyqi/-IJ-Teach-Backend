@@ -2,6 +2,7 @@ package com.interjoin.teach.services;
 
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.dtos.*;
+import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
@@ -37,6 +38,25 @@ public class UserService {
 
     private final SubjectCurriculumRepository subCurrRepository;
 
+    public void createAgency(AgencySignupRequest request) {
+        String usernameCreated = awsService.signUpAgency(request);
+        User newAgency = User.builder()
+                .agency(true)
+                .email(request.getContactEmail())
+                .additionalComments(request.getAdditionalComments())
+                .agencyName(request.getAgencyName())
+                .numberOfTeachers(request.getNumberOfTeachers())
+                .location(request.getLocation())
+                .cognitoUsername(usernameCreated)
+                .role("AGENCY")
+                .uuid(UUID.randomUUID().toString())
+                .firstName(request.getAgencyName())
+                .lastName(request.getAgencyName())
+                .build();
+        repository.save(newAgency);
+
+    }
+
     public SignupResponseDto createUser(UserSignupRequest request, String role) {
         User user = UserMapper.mapUserRequest(request);
 
@@ -62,6 +82,7 @@ public class UserService {
         user.setRole(Optional.ofNullable(role.toUpperCase()).orElse("STUDENT"));
         user.setCreatedDate(LocalDateTime.now());
         user.setUuid(UUID.randomUUID().toString());
+        user.setAgency(false);
         user = repository.save(user);
 
         // CHECK IF EXPERIENCE IS NULL
@@ -190,6 +211,14 @@ public class UserService {
         } catch (IOException e) {
 
         }
+    }
+
+    public void forgotPassword(String username) {
+        this.awsService.forgotForUser(username);
+    }
+
+    public void resetPassword(ResetPasswordDTO request) throws IOException {
+        this.awsService.resetUserPassword(request);
     }
 
     public void uploadCV(MultipartFile file, String userUuid) throws IOException {

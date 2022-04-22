@@ -1,9 +1,11 @@
 package com.interjoin.teach.controllers;
 
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
+import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
+import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
@@ -33,6 +35,16 @@ public class AuthController {
         this.service.addProfilePictureToCurrentUser(picture, userUuid);
     }
 
+    @PutMapping("/forgot")
+    public void forgotPassword(@RequestParam("email") String email) {
+        this.service.forgotPassword(email);
+    }
+
+    @PutMapping("/reset")
+    public void resetPassword(@Valid @RequestBody  ResetPasswordDTO request) throws IOException {
+        this.service.resetPassword(request);
+    }
+
     @PostMapping("/cv")
     public void uploadUserCv(@RequestParam("cv") MultipartFile cv, @RequestParam String userUuid) throws IOException {
         this.service.uploadCV(cv, userUuid);
@@ -46,6 +58,12 @@ public class AuthController {
     @PostMapping("/signin")
     public ResponseEntity<AuthResponse> signInUser(@Valid @RequestBody UserSignInRequest request) {
         return ResponseEntity.ok(service.signIn(request));
+    }
+
+    @PostMapping("/signup/agency")
+    public ResponseEntity<Void> signupStudent(@Valid @RequestBody AgencySignupRequest request) {
+        service.createAgency(request);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
