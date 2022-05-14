@@ -7,8 +7,10 @@ import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
+import com.interjoin.teach.dtos.requests.UpdateProfileRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
+import com.interjoin.teach.services.SessionService;
 import com.interjoin.teach.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,7 @@ import java.io.IOException;
 public class AuthController {
 
     private final UserService service;
+    private final SessionService sessionService;
 
     @PostMapping("/signup/teacher")
     public ResponseEntity<SignupResponseDto> signupTeacher(@Valid @RequestBody UserSignupRequest request) {
@@ -74,6 +77,18 @@ public class AuthController {
     @GetMapping("/email")
     public ResponseEntity<Boolean> checkIfUserEmailExists(@RequestParam String email) throws EmailAlreadyExistsException {
         return ResponseEntity.ok(service.emailAlreadyExists(email));
+    }
+
+    @PostMapping("/update-profile")
+    public ResponseEntity<Void> updateProfile(@RequestBody UpdateProfileRequest request) {
+        service.updateProfile(request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteCurrentAccount() throws Exception {
+        sessionService.deleteCurrentUser();
+        return ResponseEntity.noContent().build();
     }
 
     // Used to verify email on cognito

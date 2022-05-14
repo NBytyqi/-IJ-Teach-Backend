@@ -1,9 +1,12 @@
 package com.interjoin.teach.dtos.responses;
 
+import com.interjoin.teach.dtos.SubjectCurriculumDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -14,4 +17,5 @@ public class SignupResponseDto {
     private String lastName;
     private String cognitoUsername;
     private String uuid;
+    private Set<SubjectCurriculumDto> subCurrList;
 }

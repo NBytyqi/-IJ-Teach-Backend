@@ -1,6 +1,7 @@
 package com.interjoin.teach.services;
 
 import com.interjoin.teach.config.exceptions.SessionExistsException;
+import com.interjoin.teach.config.exceptions.SessionNotValidException;
 import com.interjoin.teach.dtos.AvailableHourMinuteDto;
 import com.interjoin.teach.dtos.AvailableTimesStringDto;
 import com.interjoin.teach.dtos.SessionDto;
@@ -16,10 +17,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -70,10 +75,29 @@ public class SessionService {
         return paymentService.openPaymentPage(request, session.getId(), teacher.getPricePerHour(), student.getFirstName(), teacher.getFirstName());
     }
 
+    public Session findByUuid(String uuid) {
+        return sessionRepository.findByUuid(uuid).orElseThrow(EntityNotFoundException::new);
+    }
+
 
     public List<SessionDto> getCurrentTeacherSessions() {
         User teacher = userService.getCurrentUserDetails();
         return SessionMapper.map(sessionRepository.findByTeacherOrderByDateSlotDesc(teacher), teacher.getTimeZone());
+    }
+
+
+    // GET TEACHER/STUDENT SESSIONS FROM CURRENT DATE TIME AND ON
+    // TODO - Refactor method to user service
+    public void deleteCurrentUser() throws Exception {
+        User user = userService.getCurrentUserDetails();
+        List<Session> slots = sessionRepository.findByStudentOrTeacherAndDateSlotAfter(user, OffsetDateTime.now().minusDays(1));
+        if(!slots.isEmpty()) {
+            throw new Exception("User cannot be deleted since it has active session or future sessions");
+        }
+        sessionRepository.deleteUserSessions(user);
+        userService.deleteAccount();
+
+
     }
 
     private List<AvailableTimes> filterAvailableTimes(List<AvailableTimes> availableTimes, String weekDay) {
@@ -111,5 +135,19 @@ public class SessionService {
         return sessionRepository.findByStudentAndDateSlotBefore(currentStudent, OffsetDateTime.now(), pageable)
                                 .stream().map(session -> SessionMapper.map(session, currentStudent.getTimeZone()))
                                 .collect(Collectors.toList());
+    }
+
+    public void approveSession(String sessionUuid, boolean approve) throws SessionNotValidException {
+        User teacher = userService.getCurrentUserDetails();
+        Session session = sessionRepository.findByUuidAndTeacher(sessionUuid, teacher).orElseThrow(() -> new SessionNotValidException("Session is not found"));
+
+        if(session.getDateSlot().isBefore(OffsetDateTime.now())) {
+            throw new SessionNotValidException("Session is expired");
+        }
+
+        SessionStatus status = approve ? SessionStatus.APPROVED : SessionStatus.DECLINED;
+
+        session.setSessionStatus(status);
+        sessionRepository.save(session);
     }
 }

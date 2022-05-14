@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @Builder(toBuilder = true)
@@ -24,4 +25,5 @@ public class UserDto {
     private String parentEmail;
     private String shortBio;
     private String longBio;
+    private Set<SubjectCurriculumResponse> subCurrList;
 }

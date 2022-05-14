@@ -30,9 +30,13 @@ public class SubjectCurriculumMapper {
     public static Set<SubjectCurriculumResponse> map(Set<SubjectCurriculum> currs) {
         Set<SubjectCurriculumResponse> results = new HashSet<>();
 
-        for(SubjectCurriculum curr : currs) {
-//            results.add(map(curr));
-        }
+            currs.stream().map(SubjectCurriculum::getCurriculum).distinct().forEach(curriculum -> {
+                results.add(SubjectCurriculumResponse.builder()
+                                .curriculum(curriculum.getCurriculumName())
+                                .subjects(currs.stream().filter(sub -> sub.getCurriculum().equals(curriculum)).map(subject -> subject.getSubject().getSubjectName()).collect(Collectors.toSet()))
+                        .build());
+            });
+
         return results;
      }
 }

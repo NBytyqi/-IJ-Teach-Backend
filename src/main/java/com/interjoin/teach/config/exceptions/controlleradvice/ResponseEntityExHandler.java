@@ -4,6 +4,7 @@ import com.amazonaws.services.cognitoidp.model.AWSCognitoIdentityProviderExcepti
 import com.amazonaws.services.cognitoidp.model.CodeMismatchException;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.ExceptionMessage;
+import com.interjoin.teach.config.exceptions.ReviewSessionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -34,6 +35,15 @@ public class ResponseEntityExHandler extends ResponseEntityExceptionHandler {
             CodeMismatchException.class)
     protected ResponseEntity<Object> handleConflict(CodeMismatchException ex, WebRequest request) {
         String bodyOfException = "OTP code is not correct";
+        ExceptionMessage exceptionMessage = new ExceptionMessage(HttpStatus.BAD_REQUEST, bodyOfException, ex.getLocalizedMessage());
+        return new ResponseEntity<Object>(exceptionMessage, exceptionMessage.getHttpStatus());
+    }
+
+    // TODO
+    @ExceptionHandler(value =
+            ReviewSessionException.class)
+    protected ResponseEntity<Object> handleConflict(ReviewSessionException ex, WebRequest request) {
+        String bodyOfException = "You are not reviewing your session";
         ExceptionMessage exceptionMessage = new ExceptionMessage(HttpStatus.BAD_REQUEST, bodyOfException, ex.getLocalizedMessage());
         return new ResponseEntity<Object>(exceptionMessage, exceptionMessage.getHttpStatus());
     }

@@ -40,6 +40,7 @@ public class UserMapper {
                 .shortBio(user.getShortBio())
                 .longBio(user.getLongBio())
 //                .profilePicture(Arrays.copyOf( user.getProfilePicture(), user.getProfilePicture().length ))
+                .subCurrList(SubjectCurriculumMapper.map(user.getSubjectCurriculums()))
                 .build();
     }
 }

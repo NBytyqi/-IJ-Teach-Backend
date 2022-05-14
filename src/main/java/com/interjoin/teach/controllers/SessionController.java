@@ -1,6 +1,7 @@
 package com.interjoin.teach.controllers;
 
 import com.interjoin.teach.config.exceptions.SessionExistsException;
+import com.interjoin.teach.config.exceptions.SessionNotValidException;
 import com.interjoin.teach.dtos.SessionDto;
 import com.interjoin.teach.dtos.requests.BookSessionRequest;
 import com.interjoin.teach.roles.Roles;
@@ -9,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,9 +42,17 @@ public class SessionController {
         return ResponseEntity.ok(sessionService.getCurrentTeacherSessions());
     }
 
-    @PutMapping("/approve")
+    @PutMapping("/approve/{sessionUuid}")
     @RolesAllowed(value = { Roles.TEACHER })
-    public void approveBookSession() {
+    public ResponseEntity<Void> approveBookSession(@PathVariable String sessionUuid) throws SessionNotValidException {
+        sessionService.approveSession(sessionUuid, true);
+        return ResponseEntity.noContent().build();
+    }
 
+    @PutMapping("/decline/{sessionUuid}")
+    @RolesAllowed(value = { Roles.TEACHER })
+    public ResponseEntity<Void> declineBookSession(@PathVariable String sessionUuid) throws SessionNotValidException {
+        sessionService.approveSession(sessionUuid, false);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -7,8 +7,8 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
 import com.amazonaws.services.cognitoidp.model.*;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.interjoin.teach.config.AWSCredentialsConfig;
 import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserSignInRequest;
@@ -23,7 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
 public class AwsService {
@@ -60,6 +62,15 @@ public class AwsService {
 
         this.cognitoIdTokenProcessor = cognitoIdTokenProcessor;
 
+    }
+
+    public void updateUserPassword(String newPassword, String cognitoUsername) {
+        AdminSetUserPasswordRequest request = new AdminSetUserPasswordRequest();
+        request.setPassword(newPassword);
+        request.setUserPoolId(this.cognitoCreds.getPoolId());
+        request.setUsername(cognitoUsername);
+        request.setPermanent(true);
+        basicAuthCognitoIdentityProvider.adminSetUserPassword(request);
     }
 
 

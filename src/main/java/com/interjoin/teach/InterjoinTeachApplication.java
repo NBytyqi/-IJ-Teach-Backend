@@ -20,7 +20,7 @@ import java.net.URL;
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 
 @SpringBootApplication
-public class InterjoinTeachApplication{
+public class InterjoinTeachApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(InterjoinTeachApplication.class, args);

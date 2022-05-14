@@ -52,4 +52,7 @@ public class UserSignupRequest {
     private String qualifications;
     private String experience;
 
+    // IN CASE IT IS A TEACHER
+    private String agencyReferalCode;
+
 }

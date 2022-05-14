@@ -1,9 +1,11 @@
 package com.interjoin.teach.services;
 
+import com.amazonaws.services.cognitoidp.model.UserNotFoundException;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.dtos.*;
 import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
+import com.interjoin.teach.dtos.requests.UpdateProfileRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.AvailableTimes;
@@ -14,10 +16,15 @@ import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import com.interjoin.teach.repositories.UserRepository;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
@@ -57,6 +64,41 @@ public class UserService {
 
     }
 
+    public void updateProfile(UpdateProfileRequest request) {
+        User user = getCurrentUserDetails();
+        if(StringUtils.isNotBlank(request.getPassword())) {
+            System.out.println("Updating password");
+            this.awsService.updateUserPassword(request.getPassword(), user.getCognitoUsername());
+        }
+
+        if(StringUtils.isNotBlank(request.getLocation())) {
+            System.out.println("Updating location");
+            user.setLocation(request.getLocation());
+        }
+
+        if(StringUtils.isNotBlank(request.getPhone())) {
+            System.out.println("Updating phone");
+            user.setPhoneNumber(request.getPhone());
+        }
+
+        if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
+            Set<SubjectCurriculum> subCurrs = new HashSet<>();
+            StringBuilder subCurrStr = new StringBuilder();
+
+            for(SubjectCurriculumDto data : request.getSubCurrList()) {
+                for(String subject : data.getSubjectNames()) {
+                    SubjectCurriculum subjectCurriculum = subCurrRepository.findFirstByCurriculumCurriculumNameAndSubjectSubjectName(data.getCurriculumName(), subject);
+                    subCurrs.add(subjectCurriculum);
+                    subCurrStr.append(String.format("%s,%s", subject, data.getCurriculumName()));
+                }
+
+            }
+            user.setSubjectCurriculums(subCurrs);
+            user.setSubCurrStr(subCurrStr.toString());
+        }
+        repository.save(user);
+    }
+
     public SignupResponseDto createUser(UserSignupRequest request, String role) {
         User user = UserMapper.mapUserRequest(request);
 
@@ -93,13 +135,18 @@ public class UserService {
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
             user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(), user.getTimeZone(), user.getId()));
+            // SET THE AGENCY
+            user.setAgency(false);
+            user.setAgencyName(getAgencyNameByReferalCode(request.getAgencyReferalCode()));
         }
         repository.save(user);
 
         return SignupResponseDto.builder().firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .uuid(user.getUuid())
-                .cognitoUsername(user.getCognitoUsername()).build();
+                .cognitoUsername(user.getCognitoUsername())
+                .subCurrList(request.getSubCurrList())
+                .build();
     }
 
     private org.springframework.security.core.userdetails.User getCurrentUser() {
@@ -128,6 +175,7 @@ public class UserService {
 
             if(optionalUser.isPresent()) {
                 response = awsService.signInUser(request);
+                User user = optionalUser.get();
                 response.setUserDetails(UserMapper.map(optionalUser.get()));
             }
         }
@@ -143,6 +191,10 @@ public class UserService {
                 currentUser = optionalUser.get();
         }
         return currentUser;
+    }
+
+    public String getAgencyNameByReferalCode(String referalCode) {
+        return repository.findByAgencyCode(referalCode).map(User::getAgencyName).orElse(null);
     }
 
     public List<AvailableTimesStringDto> getAvailableTimesForTeacher(Long teacherId) {
@@ -224,6 +276,31 @@ public class UserService {
     public void uploadCV(MultipartFile file, String userUuid) throws IOException {
 //        User user = findByUuid(userUuid);
         this.awsService.uploadFile(file.getOriginalFilename(), file, User.builder().email("bytyqinderim87@gmail.com").build());
+    }
+
+
+    // TODO
+    public void deleteAccount() {
+        // CHECK IF THERE IS ANY SESSION LEFT FOR THE TEACHER
+//        subCurrRepository.d
+    }
+
+    public Page<UserDto> getAgencyUsers(Pageable pageable) {
+        User agencyUser = getCurrentUserDetails();
+        return repository.findByAgencyAndAgencyName(false, agencyUser.getAgencyName(), pageable).map(UserMapper::map);
+    }
+
+    public void removeAgencyTeacher(Long teacherId) {
+        User currentAgency = getCurrentUserDetails();
+        User teacher = repository.findById(teacherId).orElseThrow(EntityNotFoundException::new);
+
+        // CHECK IF USER IS ON CURRENT AGENCY
+        if(!teacher.getAgencyName().equals(currentAgency.getAgencyName())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        teacher.setAgencyName(null);
+        repository.save(teacher);
     }
 }
 
