@@ -1,6 +1,5 @@
 package com.interjoin.teach.services;
 
-import com.amazonaws.services.cognitoidp.model.UserNotFoundException;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.dtos.*;
 import com.interjoin.teach.dtos.requests.AgencySignupRequest;
@@ -17,6 +16,8 @@ import com.interjoin.teach.repositories.UserRepository;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.util.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -42,6 +44,10 @@ public class UserService {
     private final AwsService awsService;
     private final AvailableTimesService availableTimesService;
     private final ExperienceService experienceService;
+    private final PaymentService paymentService;
+
+    @Value("${verification.process.subject}")
+    private String VERIFICATION_PROCESS_SUBJECT;
 
     private final SubjectCurriculumRepository subCurrRepository;
 
@@ -62,6 +68,10 @@ public class UserService {
                 .build();
         repository.save(newAgency);
 
+    }
+
+    public UserDto getCurrentUserAsDto() {
+        return UserMapper.map(getCurrentUserDetails());
     }
 
     public void updateProfile(UpdateProfileRequest request) {
@@ -171,13 +181,11 @@ public class UserService {
         AuthResponse response = null;
 
         if(Optional.ofNullable(request).isPresent()) {
-            Optional<User> optionalUser = getUserByEmail(request.getEmail());
+            response = awsService.signInUser(request);
+            User user = getUserByEmail(request.getEmail()).orElseThrow(EntityNotFoundException::new);
 
-            if(optionalUser.isPresent()) {
-                response = awsService.signInUser(request);
-                User user = optionalUser.get();
-                response.setUserDetails(UserMapper.map(optionalUser.get()));
-            }
+            response.setUserDetails(UserMapper.map(user));
+            response.setRole(Optional.ofNullable(user.getRole()).orElse(null));
         }
         return response;
     }
@@ -194,7 +202,7 @@ public class UserService {
     }
 
     public String getAgencyNameByReferalCode(String referalCode) {
-        return repository.findByAgencyCode(referalCode).map(User::getAgencyName).orElse(null);
+        return repository.findFirstByAgencyCode(referalCode).map(User::getAgencyName).orElse(null);
     }
 
     public List<AvailableTimesStringDto> getAvailableTimesForTeacher(Long teacherId) {
@@ -255,10 +263,24 @@ public class UserService {
         this.awsService.resendVerificationEmail(cognitoUsername);
     }
 
+    public String purchaseVerification(String process) {
+        BigDecimal price = BigDecimal.valueOf(60L);
+        if(process.toLowerCase().equals("more")) {
+            price = BigDecimal.valueOf(100L);
+        }
+
+        User currentTeacher = getCurrentUserDetails();
+
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("teacherId", String.valueOf(currentTeacher.getId()));
+
+        return paymentService.openPaymentPage(price, VERIFICATION_PROCESS_SUBJECT, metadata);
+    }
+
     public void addProfilePictureToCurrentUser(MultipartFile picture, String userUuid) {
         User user = findByUuid(userUuid);
         try {
-            user.setProfilePicture(picture.getBytes());
+            user.setProfilePicture(IOUtils.toByteArray(picture.getInputStream()));
             repository.save(user);
         } catch (IOException e) {
 

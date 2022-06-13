@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/stripe")
@@ -53,13 +55,22 @@ public class StripePaymentController {
             }
 
             case "checkout.session.completed":
-                try {
-                    String sessionId = JsonPath.read(payload, "data.object.metadata.sessionId");
-                    System.out.println("Nderim session" + sessionId);
-                    System.out.println(payload);
-                } catch (PathNotFoundException ex) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dataset not found");
+
+                // sessionId in case there is a session
+                // teacherId in case there is an interjoin verification process
+                List<String> metadataToCheck = Arrays.asList("sessionId", "teacherId");
+                for(String metadata : metadataToCheck) {
+                    System.out.println("Continuuuing");
+                    try {
+                        String metadataValue = JsonPath.read(payload, "data.object.metadata." + metadata);
+                        System.out.println("Nderim session" + metadataValue);
+                        System.out.println();
+                        System.out.println(payload);
+                    } catch (PathNotFoundException ex) {
+                        System.out.println(ex);
+                    }
                 }
+
                 break;
             default:
                 // Unexpected event type

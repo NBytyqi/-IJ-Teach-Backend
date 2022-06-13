@@ -21,10 +21,7 @@ import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,7 +69,12 @@ public class SessionService {
                                  .build();
         session = sessionRepository.save(session);
 
-        return paymentService.openPaymentPage(request, session.getId(), teacher.getPricePerHour(), student.getFirstName(), teacher.getFirstName());
+       final String subject = String.format("Session between %s and %s on subject: \"%s\" and Curriculum: \"%s\"", student.getFirstName(), teacher.getFirstName(), request.getSubject(), request.getCurriculum());
+
+       Map<String, String> metadata = new HashMap<>();
+       metadata.put("sessionId", String.valueOf(session.getId()));
+
+       return paymentService.openPaymentPage(teacher.getPricePerHour(), subject, metadata);
     }
 
     public Session findByUuid(String uuid) {

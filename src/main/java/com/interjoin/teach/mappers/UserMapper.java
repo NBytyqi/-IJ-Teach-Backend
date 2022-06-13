@@ -5,6 +5,7 @@ import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.entities.User;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public class UserMapper {
 
@@ -38,8 +39,13 @@ public class UserMapper {
                 .profilePicture(user.getProfilePicture())
                 .parentEmail(user.getParentEmail())
                 .shortBio(user.getShortBio())
+                .previousSuccessfulSessions(user.getPreviousSuccessfulSessions())
                 .longBio(user.getLongBio())
-//                .profilePicture(Arrays.copyOf( user.getProfilePicture(), user.getProfilePicture().length ))
+                .qualifications(user.getQualifications())
+                .profilePicture(
+                        Optional.ofNullable(user.getProfilePicture()).map(prf ->
+                        Arrays.copyOf( user.getProfilePicture(), user.getProfilePicture().length ))
+                                .orElse(null))
                 .subCurrList(SubjectCurriculumMapper.map(user.getSubjectCurriculums()))
                 .build();
     }

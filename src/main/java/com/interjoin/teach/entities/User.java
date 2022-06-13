@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -54,6 +55,8 @@ public class User {
     private LocalDate dateOfBirth;
 
     @Lob
+    @Type(type="org.hibernate.type.BinaryType")
+    @Column(name = "profile_picture")
     private byte[] profilePicture;
 
     @Column(name = "parent_email")
@@ -117,6 +120,8 @@ public class User {
     private String additionalComments;
     @Column(nullable = true)
     private Integer numberOfTeachers;
+
+    private Long previousSuccessfulSessions;
 
 
 

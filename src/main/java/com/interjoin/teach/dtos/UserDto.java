@@ -26,4 +26,8 @@ public class UserDto {
     private String shortBio;
     private String longBio;
     private Set<SubjectCurriculumResponse> subCurrList;
+    private String qualifications;
+
+    private boolean favorite;
+    private Long previousSuccessfulSessions;
 }
