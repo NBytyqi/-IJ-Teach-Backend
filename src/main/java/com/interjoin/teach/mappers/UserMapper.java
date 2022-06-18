@@ -2,10 +2,12 @@ package com.interjoin.teach.mappers;
 
 import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignupRequest;
+import com.interjoin.teach.entities.Experience;
 import com.interjoin.teach.entities.User;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class UserMapper {
 
@@ -30,6 +32,7 @@ public class UserMapper {
     public static UserDto map(User user) {
         return UserDto.builder()
                 .id(user.getId())
+                .rating(user.getRating())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
@@ -47,6 +50,10 @@ public class UserMapper {
                         Arrays.copyOf( user.getProfilePicture(), user.getProfilePicture().length ))
                                 .orElse(null))
                 .subCurrList(SubjectCurriculumMapper.map(user.getSubjectCurriculums()))
+                .experiences(Optional.ofNullable(user.getExperiences()).map(ex -> ex.stream().map(Experience::getExperience).collect(Collectors.toList())).orElse(null))
+                .pricePerHour(user.getPricePerHour())
+                .agencyName(user.getAgencyName())
+                .verifiedTeacher(user.isVerifiedTeacher())
                 .build();
     }
 }

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -54,5 +55,7 @@ public class UserSignupRequest {
 
     // IN CASE IT IS A TEACHER
     private String agencyReferalCode;
+
+    private BigDecimal pricePerHour;
 
 }

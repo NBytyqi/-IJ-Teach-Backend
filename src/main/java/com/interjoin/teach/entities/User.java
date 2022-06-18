@@ -123,6 +123,10 @@ public class User {
 
     private Long previousSuccessfulSessions;
 
+    private Double rating;
+    @Column(nullable = true)
+    private boolean verifiedTeacher;
+
 
 
 }

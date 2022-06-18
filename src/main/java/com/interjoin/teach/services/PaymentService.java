@@ -19,16 +19,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private final UserService userService;
     private final String paymentSuccessUrl = "http://localhost:3000";
     private final String paymentCancelUrl = "http://localhost:3000";
 
 
-    public String openPaymentPage(BigDecimal price, String subject, Map<String, String> metadata) {
+    public String openPaymentPage(BigDecimal price, String subject, Map<String, String> metadata, User currentUser) {
 
         Stripe.apiKey = "sk_test_51KdsJaHiAI1FpLGq7shhYXjXrm3nsK5bM9ALw6Rk8YWSa6qLR40WS6NqFnwgwby5VyGD4hZITPIYe8gFoEQSUEJD00UIyHsMpM";
-
-        User currentUser = userService.getCurrentUserDetails();
 
         Customer customer = getStripeUserByEmail(currentUser);
 

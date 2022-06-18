@@ -148,6 +148,8 @@ public class UserService {
             // SET THE AGENCY
             user.setAgency(false);
             user.setAgencyName(getAgencyNameByReferalCode(request.getAgencyReferalCode()));
+            user.setQualifications(request.getQualifications());
+            user.setPricePerHour(request.getPricePerHour());
         }
         repository.save(user);
 
@@ -274,7 +276,7 @@ public class UserService {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("teacherId", String.valueOf(currentTeacher.getId()));
 
-        return paymentService.openPaymentPage(price, VERIFICATION_PROCESS_SUBJECT, metadata);
+        return paymentService.openPaymentPage(price, VERIFICATION_PROCESS_SUBJECT, metadata, currentTeacher);
     }
 
     public void addProfilePictureToCurrentUser(MultipartFile picture, String userUuid) {

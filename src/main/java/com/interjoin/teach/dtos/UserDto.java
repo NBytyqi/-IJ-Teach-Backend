@@ -5,7 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -30,4 +32,9 @@ public class UserDto {
 
     private boolean favorite;
     private Long previousSuccessfulSessions;
+    private Double rating;
+    private List<String> experiences;
+    private BigDecimal pricePerHour;
+    private String agencyName;
+    private boolean verifiedTeacher;
 }
