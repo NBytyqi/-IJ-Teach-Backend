@@ -10,6 +10,7 @@ import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.AvailableTimes;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import com.interjoin.teach.entities.User;
+import com.interjoin.teach.mappers.AvailableTimesMapper;
 import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import com.interjoin.teach.repositories.UserRepository;
@@ -91,6 +92,18 @@ public class UserService {
             user.setPhoneNumber(request.getPhone());
         }
 
+        if(StringUtils.isNotBlank(request.getShortBio())) {
+            user.setShortBio(request.getShortBio());
+        }
+
+        if(StringUtils.isNotBlank(request.getLongBio())) {
+            user.setLongBio(request.getLongBio());
+        }
+
+        if(Optional.ofNullable(request.getPricePerHour()).isPresent()) {
+            user.setPricePerHour(request.getPricePerHour());
+        }
+
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
             StringBuilder subCurrStr = new StringBuilder();
@@ -106,6 +119,9 @@ public class UserService {
             user.setSubjectCurriculums(subCurrs);
             user.setSubCurrStr(subCurrStr.toString());
         }
+        //delete old available times
+        availableTimesService.deleteAllByUser(user);
+        user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(),  user.getTimeZone(), user));
         repository.save(user);
     }
 
@@ -142,9 +158,12 @@ public class UserService {
             experienceService.save(request.getExperiences(), user);
         }
 
+
+        request = transformDays(request);
+
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
-            user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(), user.getTimeZone(), user.getId()));
+            user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(), user.getTimeZone(), user));
             // SET THE AGENCY
             user.setAgency(false);
             user.setAgencyName(getAgencyNameByReferalCode(request.getAgencyReferalCode()));
@@ -159,6 +178,43 @@ public class UserService {
                 .cognitoUsername(user.getCognitoUsername())
                 .subCurrList(request.getSubCurrList())
                 .build();
+    }
+
+    private UserSignupRequest transformDays(UserSignupRequest request) {
+        for(AvailableTimesDto ava : request.getAvailableTimes()) {
+            switch (ava.getWeekDay()) {
+                case "Mon": {
+                    ava.setWeekDay("monday");
+                    break;
+                }
+                case "Tue": {
+                    ava.setWeekDay("tuesday");
+                    break;
+                }
+                case "Wed": {
+                    ava.setWeekDay("wednesday");
+                    break;
+                }
+                case "Thu": {
+                    ava.setWeekDay("thursday");
+                    break;
+                }
+                case "Fri": {
+                    ava.setWeekDay("friday");
+                    break;
+                }
+                case "Sat": {
+                    ava.setWeekDay("saturday");
+                    break;
+                }
+                case "Sun": {
+                    ava.setWeekDay("sunday");
+                    break;
+                }
+
+            }
+        }
+        return request;
     }
 
     private org.springframework.security.core.userdetails.User getCurrentUser() {
@@ -207,22 +263,30 @@ public class UserService {
         return repository.findFirstByAgencyCode(referalCode).map(User::getAgencyName).orElse(null);
     }
 
-    public List<AvailableTimesStringDto> getAvailableTimesForTeacher(Long teacherId) {
+//    public List<AvailableTimesStringDto> getAvailableTimesForTeacher(Long teacherId) {
+//        User teacher = findById(teacherId);
+//        User currentStudent = getCurrentUserDetails();
+//        List<AvailableTimes> times = availableTimesService.findByUser(teacher);
+//
+//        List<AvailableTimesStringDto> strings = DateUtils.map(times, currentStudent.getTimeZone());
+//        strings.forEach(availableTimesStringDto -> {
+//            availableTimesStringDto.setAvailableHourMinute(
+//                    availableTimesStringDto.getAvailableHourMinute().stream().filter(specificDate -> {
+//                        return specificDate.getDateTime().getDayOfWeek().toString().equals(availableTimesStringDto.getWeekDay().toUpperCase(Locale.ROOT));
+//                    }).collect(Collectors.toList())
+//            );
+//
+//        });
+//
+//        return strings;
+//    }
+
+    public List<AvailableTimesDto> getAvailableTimesForTeacher(Long teacherId) {
         User teacher = findById(teacherId);
         User currentStudent = getCurrentUserDetails();
         List<AvailableTimes> times = availableTimesService.findByUser(teacher);
 
-        List<AvailableTimesStringDto> strings = DateUtils.map(times, currentStudent.getTimeZone());
-        strings.forEach(availableTimesStringDto -> {
-            availableTimesStringDto.setAvailableHourMinute(
-                    availableTimesStringDto.getAvailableHourMinute().stream().filter(specificDate -> {
-                        return specificDate.getDateTime().getDayOfWeek().toString().equals(availableTimesStringDto.getWeekDay().toUpperCase(Locale.ROOT));
-                    }).collect(Collectors.toList())
-            );
-
-        });
-
-        return strings;
+        return AvailableTimesMapper.mapThem(times);
     }
 
     public List<AvailableTimesStringDto> getAvailableTimesForTeacherForDate(Long teacherId, LocalDate date) {

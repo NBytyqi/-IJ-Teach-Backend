@@ -95,7 +95,7 @@ public class User {
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "teacher")
     private List<AvailableTimes> availableTimes;
 
     @OneToMany(mappedBy = "user")

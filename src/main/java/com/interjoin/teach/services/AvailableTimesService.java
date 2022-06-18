@@ -9,6 +9,7 @@ import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -16,6 +17,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,8 @@ public class AvailableTimesService {
 
     private final AvailableTimesRepository repository;
 
-    public List<AvailableTimes> save(List<AvailableTimesDto> availableTimes, String timeZone, Long teacherId) {
+    @Transactional
+    public List<AvailableTimes> save(List<AvailableTimesDto> availableTimes, String timeZone, User teacher) {
         List<AvailableTimes> results = new ArrayList<>();
         DayOfWeek weekDay = DayOfWeek.MONDAY;
         for(AvailableTimesDto dto: availableTimes) {
@@ -61,13 +64,17 @@ public class AvailableTimesService {
                 results.add(AvailableTimes.builder()
                         .weekDay(dto.getWeekDay())
                         .dateTime(dateTime.with(TemporalAdjusters.nextOrSame(weekDay)))
-                                .teacherId(teacherId)
+                                .teacher(teacher)
                         .build());
             }
         }
         results = repository.saveAll(results);
 
         return results;
+    }
+
+    public void deleteAllByUser(User user) {
+        repository.deleteAllByIdInBatch(user.getAvailableTimes().stream().map(AvailableTimes::getId).collect(Collectors.toList()));
     }
 
     public List<AvailableTimes> findByUser(User user) {
