@@ -27,4 +27,6 @@ public class AvailableTimes {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", referencedColumnName = "id")
     public User teacher;
+
+    private Long index;
 }

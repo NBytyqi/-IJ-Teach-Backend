@@ -46,7 +46,7 @@ public class UserSignupRequest {
     @NotNull
     private String password;
 
-    List<AvailableTimesDto> availableTimes;
+    AvailableTimesSlots availableTimes;
 
     private List<String> experiences;
 

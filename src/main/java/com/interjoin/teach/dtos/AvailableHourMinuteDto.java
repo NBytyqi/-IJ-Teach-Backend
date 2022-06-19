@@ -13,4 +13,5 @@ public class AvailableHourMinuteDto {
     private OffsetDateTime dateTime;
 
     private LocalDate dateOfSession;
+    private Long index;
 }

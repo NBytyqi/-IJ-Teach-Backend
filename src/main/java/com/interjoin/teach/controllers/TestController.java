@@ -77,7 +77,7 @@ public class TestController {
     @PostMapping("/available")
     public void test(@RequestBody UserSignupRequest request) {
 
-        OffsetDateTime time = request.getAvailableTimes().get(0).getAvailableTimes().get(0);
+//        OffsetDateTime time = request.getAvailableTimes().get(0).getAvailableTimes().get(0);
 //        map(time);
         map(OffsetDateTime.now());
 

@@ -6,6 +6,7 @@ import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
 import com.interjoin.teach.dtos.requests.UpdateProfileRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
+import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.AvailableTimes;
 import com.interjoin.teach.entities.SubjectCurriculum;
@@ -33,6 +34,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -163,7 +166,73 @@ public class UserService {
 
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
-            user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(), user.getTimeZone(), user));
+
+            AvailableTimesSignupDto av = new AvailableTimesSignupDto(request.getTimeZone());
+            List<AvailableTimesDto> avTimesDto = new ArrayList<>();
+            if(request.getAvailableTimes().getMon() != null) {
+                List<Long> values = request.getAvailableTimes().getMon();
+                avTimesDto.add(AvailableTimesDto.builder()
+                                .weekDay("monday")
+                                .availableTimes(av.getAvailableTimes().stream()
+                                        .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                        .build());
+            }
+
+            if(request.getAvailableTimes().getTue() != null) {
+                List<Long> values = request.getAvailableTimes().getTue();
+                avTimesDto.add(AvailableTimesDto.builder()
+                        .weekDay("tuesday")
+                        .availableTimes(av.getAvailableTimes().stream()
+                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                        .build());
+            }
+
+            if(request.getAvailableTimes().getThu() != null) {
+                List<Long> values = request.getAvailableTimes().getThu();
+                avTimesDto.add(AvailableTimesDto.builder()
+                        .weekDay("thursday")
+                        .availableTimes(av.getAvailableTimes().stream()
+                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                        .build());
+            }
+
+            if(request.getAvailableTimes().getWed() != null) {
+                List<Long> values = request.getAvailableTimes().getWed();
+                avTimesDto.add(AvailableTimesDto.builder()
+                        .weekDay("wednesday")
+                        .availableTimes(av.getAvailableTimes().stream()
+                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                        .build());
+            }
+
+            if(request.getAvailableTimes().getFri() != null) {
+                List<Long> values = request.getAvailableTimes().getFri();
+                avTimesDto.add(AvailableTimesDto.builder()
+                        .weekDay("friday")
+                        .availableTimes(av.getAvailableTimes().stream()
+                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                        .build());
+            }
+
+            if(request.getAvailableTimes().getSat() != null) {
+                List<Long> values = request.getAvailableTimes().getSat();
+                avTimesDto.add(AvailableTimesDto.builder()
+                        .weekDay("saturday")
+                        .availableTimes(av.getAvailableTimes().stream()
+                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                        .build());
+            }
+
+            if(request.getAvailableTimes().getSun() != null) {
+                List<Long> values = request.getAvailableTimes().getSun();
+                avTimesDto.add(AvailableTimesDto.builder()
+                        .weekDay("sunday")
+                        .availableTimes(av.getAvailableTimes().stream()
+                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                        .build());
+            }
+
+            user.setAvailableTimes(availableTimesService.save(avTimesDto, user.getTimeZone(), user));
             // SET THE AGENCY
             user.setAgency(false);
             user.setAgencyName(getAgencyNameByReferalCode(request.getAgencyReferalCode()));
@@ -181,39 +250,39 @@ public class UserService {
     }
 
     private UserSignupRequest transformDays(UserSignupRequest request) {
-        for(AvailableTimesDto ava : request.getAvailableTimes()) {
-            switch (ava.getWeekDay()) {
-                case "Mon": {
-                    ava.setWeekDay("monday");
-                    break;
-                }
-                case "Tue": {
-                    ava.setWeekDay("tuesday");
-                    break;
-                }
-                case "Wed": {
-                    ava.setWeekDay("wednesday");
-                    break;
-                }
-                case "Thu": {
-                    ava.setWeekDay("thursday");
-                    break;
-                }
-                case "Fri": {
-                    ava.setWeekDay("friday");
-                    break;
-                }
-                case "Sat": {
-                    ava.setWeekDay("saturday");
-                    break;
-                }
-                case "Sun": {
-                    ava.setWeekDay("sunday");
-                    break;
-                }
-
-            }
-        }
+//        for(AvailableTimesDto ava : request.getAvailableTimes()) {
+//            switch (ava.getWeekDay()) {
+//                case "Mon": {
+//                    ava.setWeekDay("monday");
+//                    break;
+//                }
+//                case "Tue": {
+//                    ava.setWeekDay("tuesday");
+//                    break;
+//                }
+//                case "Wed": {
+//                    ava.setWeekDay("wednesday");
+//                    break;
+//                }
+//                case "Thu": {
+//                    ava.setWeekDay("thursday");
+//                    break;
+//                }
+//                case "Fri": {
+//                    ava.setWeekDay("friday");
+//                    break;
+//                }
+//                case "Sat": {
+//                    ava.setWeekDay("saturday");
+//                    break;
+//                }
+//                case "Sun": {
+//                    ava.setWeekDay("sunday");
+//                    break;
+//                }
+//
+//            }
+//        }
         return request;
     }
 
@@ -281,12 +350,68 @@ public class UserService {
 //        return strings;
 //    }
 
-    public List<AvailableTimesDto> getAvailableTimesForTeacher(Long teacherId) {
+    public AvailableTimesSlots getAvailableTimesForTeacher(Long teacherId) {
         User teacher = findById(teacherId);
-        User currentStudent = getCurrentUserDetails();
+//        User currentStudent = getCurrentUserDetails();
+
+        AvailableTimesSlots returni = new AvailableTimesSlots();
+
         List<AvailableTimes> times = availableTimesService.findByUser(teacher);
 
-        return AvailableTimesMapper.mapThem(times);
+        AvailableTimesSignupDto dto = new AvailableTimesSignupDto(teacher.getTimeZone());
+
+
+        List<Long> mon = new ArrayList<>();
+        Map<String, List<AvailableTimes>> avTimesMap = times.stream().collect(Collectors.groupingBy(AvailableTimes::getWeekDay));
+
+        String teacherTimezone = teacher.getTimeZone();
+
+        if(avTimesMap.containsKey("monday")) {
+            returni.setMon(extractIndexes(avTimesMap.get("monday"), dto, teacherTimezone));
+        }
+
+        if(avTimesMap.containsKey("tuesday")) {
+            returni.setTue(extractIndexes(avTimesMap.get("tuesday"), dto, teacherTimezone));
+        }
+
+        if(avTimesMap.containsKey("thursday")) {
+            returni.setThu(extractIndexes(avTimesMap.get("thursday"), dto, teacherTimezone));
+        }
+
+        if(avTimesMap.containsKey("wednesday")) {
+            returni.setWed(extractIndexes(avTimesMap.get("wednesday"), dto, teacherTimezone));
+        }
+
+        if(avTimesMap.containsKey("friday")) {
+            returni.setFri(extractIndexes(avTimesMap.get("friday"), dto, teacherTimezone));
+        }
+
+        if(avTimesMap.containsKey("saturday")) {
+            returni.setSat(extractIndexes(avTimesMap.get("saturday"), dto, teacherTimezone));
+        }
+
+        if(avTimesMap.containsKey("sunday")) {
+            returni.setSun(extractIndexes(avTimesMap.get("sunday"), dto, teacherTimezone));
+        }
+
+        return returni;
+    }
+
+    public List<Long> extractIndexes(List<AvailableTimes> times, AvailableTimesSignupDto dto, String teacherTimezone) {
+        List<Long> returns = new ArrayList<>();
+        for(AvailableTimes time : times) {
+            System.out.println("Without convert " + time.getDateTime());
+            System.out.println("After map: " + DateUtils.map(time.getDateTime(), teacherTimezone, true));
+            Long index = dto.getAvailableTimes().stream().filter(ex -> {
+            OffsetDateTime date = DateUtils.map(time.getDateTime(), teacherTimezone, true);
+            OffsetDateTime exDate = ex.getDateTime();
+            return date.getHour() == exDate.getHour() && date.getMinute() == date.getMinute();
+                    })
+                    .findFirst().get().getIndex();
+            returns.add(index);
+        }
+
+        return returns;
     }
 
     public List<AvailableTimesStringDto> getAvailableTimesForTeacherForDate(Long teacherId, LocalDate date) {
