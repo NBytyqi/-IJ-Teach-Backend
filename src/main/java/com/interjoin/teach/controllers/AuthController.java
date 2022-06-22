@@ -80,9 +80,8 @@ public class AuthController {
     }
 
     @PostMapping("/update-profile")
-    public ResponseEntity<Void> updateProfile(@RequestBody UpdateProfileRequest request) {
-        service.updateProfile(request);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<UserDto> updateProfile(@RequestBody UpdateProfileRequest request) {
+        return ResponseEntity.ok(service.updateProfile(request));
     }
 
     @DeleteMapping

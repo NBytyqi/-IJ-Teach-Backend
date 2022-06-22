@@ -1,12 +1,10 @@
 package com.interjoin.teach.dtos.requests;
 
-import com.interjoin.teach.dtos.AvailableTimesDto;
 import com.interjoin.teach.dtos.SubjectCurriculumDto;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -21,7 +19,6 @@ public class UpdateProfileRequest {
     private String longBio;
 
     private Set<SubjectCurriculumDto> subCurrList;
-    List<AvailableTimesDto> availableTimes;
 
 
 }

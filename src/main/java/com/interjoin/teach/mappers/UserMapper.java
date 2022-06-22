@@ -52,6 +52,7 @@ public class UserMapper {
                 .subCurrList(SubjectCurriculumMapper.map(user.getSubjectCurriculums()))
                 .experiences(Optional.ofNullable(user.getExperiences()).map(ex -> ex.stream().map(Experience::getExperience).collect(Collectors.toList())).orElse(null))
                 .pricePerHour(user.getPricePerHour())
+                .listedPrice(user.getListedPrice())
                 .agencyName(user.getAgencyName())
                 .verifiedTeacher(user.isVerifiedTeacher())
                 .build();

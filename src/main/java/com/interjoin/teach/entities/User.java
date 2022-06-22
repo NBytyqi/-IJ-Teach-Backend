@@ -104,6 +104,7 @@ public class User {
     private String timeZone;
 
     private BigDecimal pricePerHour;
+    private BigDecimal listedPrice;
 
     private String qualifications;
     private String experience;
