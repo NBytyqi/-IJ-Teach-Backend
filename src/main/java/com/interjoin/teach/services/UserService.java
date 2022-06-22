@@ -168,7 +168,7 @@ public class UserService {
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
 
-            List<AvailableTimesDto> avTimesDto = getAvailableTimes(request.getAvailableTimes(), request.getTimeZone());
+            List<AvailableTimesDto>  avTimesDto = getAvailableTimes(request.getAvailableTimes(), request.getTimeZone());
 
             user.setAvailableTimes(availableTimesService.save(avTimesDto, user.getTimeZone(), user));
             // SET THE AGENCY
