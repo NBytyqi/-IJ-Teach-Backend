@@ -11,7 +11,6 @@ import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.AvailableTimes;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import com.interjoin.teach.entities.User;
-import com.interjoin.teach.mappers.AvailableTimesMapper;
 import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import com.interjoin.teach.repositories.UserRepository;
@@ -35,7 +34,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -78,7 +76,7 @@ public class UserService {
         return UserMapper.map(getCurrentUserDetails());
     }
 
-    public void updateProfile(UpdateProfileRequest request) {
+    public UserDto updateProfile(UpdateProfileRequest request) {
         User user = getCurrentUserDetails();
         if(StringUtils.isNotBlank(request.getPassword())) {
             System.out.println("Updating password");
@@ -105,6 +103,9 @@ public class UserService {
 
         if(Optional.ofNullable(request.getPricePerHour()).isPresent()) {
             user.setPricePerHour(request.getPricePerHour());
+
+            BigDecimal percentage = request.getPricePerHour().multiply(BigDecimal.valueOf(22.5)).divide(BigDecimal.valueOf(100));
+            user.setListedPrice(request.getPricePerHour().add(percentage));
         }
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
@@ -123,9 +124,9 @@ public class UserService {
             user.setSubCurrStr(subCurrStr.toString());
         }
         //delete old available times
-        availableTimesService.deleteAllByUser(user);
-        user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(),  user.getTimeZone(), user));
-        repository.save(user);
+//        availableTimesService.deleteAllByUser(user);
+//        user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(),  user.getTimeZone(), user));
+        return UserMapper.map(repository.save(user));
     }
 
     public SignupResponseDto createUser(UserSignupRequest request, String role) {
@@ -167,70 +168,7 @@ public class UserService {
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
 
-            AvailableTimesSignupDto av = new AvailableTimesSignupDto(request.getTimeZone());
-            List<AvailableTimesDto> avTimesDto = new ArrayList<>();
-            if(request.getAvailableTimes().getMon() != null) {
-                List<Long> values = request.getAvailableTimes().getMon();
-                avTimesDto.add(AvailableTimesDto.builder()
-                                .weekDay("monday")
-                                .availableTimes(av.getAvailableTimes().stream()
-                                        .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
-                        .build());
-            }
-
-            if(request.getAvailableTimes().getTue() != null) {
-                List<Long> values = request.getAvailableTimes().getTue();
-                avTimesDto.add(AvailableTimesDto.builder()
-                        .weekDay("tuesday")
-                        .availableTimes(av.getAvailableTimes().stream()
-                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
-                        .build());
-            }
-
-            if(request.getAvailableTimes().getThu() != null) {
-                List<Long> values = request.getAvailableTimes().getThu();
-                avTimesDto.add(AvailableTimesDto.builder()
-                        .weekDay("thursday")
-                        .availableTimes(av.getAvailableTimes().stream()
-                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
-                        .build());
-            }
-
-            if(request.getAvailableTimes().getWed() != null) {
-                List<Long> values = request.getAvailableTimes().getWed();
-                avTimesDto.add(AvailableTimesDto.builder()
-                        .weekDay("wednesday")
-                        .availableTimes(av.getAvailableTimes().stream()
-                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
-                        .build());
-            }
-
-            if(request.getAvailableTimes().getFri() != null) {
-                List<Long> values = request.getAvailableTimes().getFri();
-                avTimesDto.add(AvailableTimesDto.builder()
-                        .weekDay("friday")
-                        .availableTimes(av.getAvailableTimes().stream()
-                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
-                        .build());
-            }
-
-            if(request.getAvailableTimes().getSat() != null) {
-                List<Long> values = request.getAvailableTimes().getSat();
-                avTimesDto.add(AvailableTimesDto.builder()
-                        .weekDay("saturday")
-                        .availableTimes(av.getAvailableTimes().stream()
-                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
-                        .build());
-            }
-
-            if(request.getAvailableTimes().getSun() != null) {
-                List<Long> values = request.getAvailableTimes().getSun();
-                avTimesDto.add(AvailableTimesDto.builder()
-                        .weekDay("sunday")
-                        .availableTimes(av.getAvailableTimes().stream()
-                                .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
-                        .build());
-            }
+            List<AvailableTimesDto> avTimesDto = getAvailableTimes(request.getAvailableTimes(), request.getTimeZone());
 
             user.setAvailableTimes(availableTimesService.save(avTimesDto, user.getTimeZone(), user));
             // SET THE AGENCY
@@ -238,6 +176,8 @@ public class UserService {
             user.setAgencyName(getAgencyNameByReferalCode(request.getAgencyReferalCode()));
             user.setQualifications(request.getQualifications());
             user.setPricePerHour(request.getPricePerHour());
+            BigDecimal percentage = request.getPricePerHour().multiply(BigDecimal.valueOf(22.5)).divide(BigDecimal.valueOf(100));
+            user.setListedPrice(request.getPricePerHour().add(percentage));
         }
         repository.save(user);
 
@@ -247,6 +187,83 @@ public class UserService {
                 .cognitoUsername(user.getCognitoUsername())
                 .subCurrList(request.getSubCurrList())
                 .build();
+    }
+
+    public UserDto updateAvailableSlotsForCurrentTeacher(AvailableTimesSlots slots) {
+        User currentTeacher = getCurrentUserDetails();
+        availableTimesService.deleteAllByUser(currentTeacher);
+        currentTeacher.setAvailableTimes(
+                availableTimesService.save(getAvailableTimes(slots, currentTeacher.getTimeZone()), currentTeacher.getTimeZone(), currentTeacher)
+        );
+        return UserMapper.map(repository.save(currentTeacher));
+    }
+
+    private List<AvailableTimesDto> getAvailableTimes(AvailableTimesSlots availableTimes, String timezone) {
+        AvailableTimesSignupDto av = new AvailableTimesSignupDto(timezone);
+        List<AvailableTimesDto> avTimesDto = new ArrayList<>();
+        if(availableTimes.getMon() != null) {
+            List<Long> values = availableTimes.getMon();
+            avTimesDto.add(AvailableTimesDto.builder()
+                    .weekDay("monday")
+                    .availableTimes(av.getAvailableTimes().stream()
+                            .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                    .build());
+        }
+
+        if(availableTimes.getTue() != null) {
+            List<Long> values = availableTimes.getTue();
+            avTimesDto.add(AvailableTimesDto.builder()
+                    .weekDay("tuesday")
+                    .availableTimes(av.getAvailableTimes().stream()
+                            .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                    .build());
+        }
+
+        if(availableTimes.getThu() != null) {
+            List<Long> values = availableTimes.getThu();
+            avTimesDto.add(AvailableTimesDto.builder()
+                    .weekDay("thursday")
+                    .availableTimes(av.getAvailableTimes().stream()
+                            .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                    .build());
+        }
+
+        if(availableTimes.getWed() != null) {
+            List<Long> values = availableTimes.getWed();
+            avTimesDto.add(AvailableTimesDto.builder()
+                    .weekDay("wednesday")
+                    .availableTimes(av.getAvailableTimes().stream()
+                            .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                    .build());
+        }
+
+        if(availableTimes.getFri() != null) {
+            List<Long> values = availableTimes.getFri();
+            avTimesDto.add(AvailableTimesDto.builder()
+                    .weekDay("friday")
+                    .availableTimes(av.getAvailableTimes().stream()
+                            .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                    .build());
+        }
+
+        if(availableTimes.getSat() != null) {
+            List<Long> values = availableTimes.getSat();
+            avTimesDto.add(AvailableTimesDto.builder()
+                    .weekDay("saturday")
+                    .availableTimes(av.getAvailableTimes().stream()
+                            .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                    .build());
+        }
+
+        if(availableTimes.getSun() != null) {
+            List<Long> values = availableTimes.getSun();
+            avTimesDto.add(AvailableTimesDto.builder()
+                    .weekDay("sunday")
+                    .availableTimes(av.getAvailableTimes().stream()
+                            .filter(avail -> values.contains(avail.getIndex())).map(AvailableHourMinuteDto::getDateTime).collect(Collectors.toList()))
+                    .build());
+        }
+        return avTimesDto;
     }
 
     private UserSignupRequest transformDays(UserSignupRequest request) {

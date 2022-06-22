@@ -37,4 +37,5 @@ public class UserDto {
     private BigDecimal pricePerHour;
     private String agencyName;
     private boolean verifiedTeacher;
+    private BigDecimal listedPrice;
 }

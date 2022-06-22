@@ -1,9 +1,6 @@
 package com.interjoin.teach.controllers;
 
-import com.interjoin.teach.dtos.AvailableHourMinuteDto;
-import com.interjoin.teach.dtos.AvailableTimesDto;
-import com.interjoin.teach.dtos.AvailableTimesSlots;
-import com.interjoin.teach.dtos.AvailableTimesStringDto;
+import com.interjoin.teach.dtos.*;
 import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.services.AvailableTimesService;
 import com.interjoin.teach.services.SessionService;
@@ -33,6 +30,11 @@ public class TimesController {
     @GetMapping("/teacher/{teacherId}")
     public ResponseEntity<AvailableTimesSlots> getTeacherAvailableTimes(@PathVariable Long teacherId) {
         return ResponseEntity.ok(userService.getAvailableTimesForTeacher(teacherId));
+    }
+
+    @PutMapping()
+    public ResponseEntity<UserDto> updateTeacherAvailability(@RequestBody AvailableTimesSlots slots) {
+        return ResponseEntity.ok(userService.updateAvailableSlotsForCurrentTeacher(slots));
     }
 
 //    @GetMapping("/teacher/{teacherId}")

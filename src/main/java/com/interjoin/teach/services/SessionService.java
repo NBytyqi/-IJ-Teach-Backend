@@ -74,7 +74,7 @@ public class SessionService {
        Map<String, String> metadata = new HashMap<>();
        metadata.put("sessionId", String.valueOf(session.getId()));
 
-       return paymentService.openPaymentPage(teacher.getPricePerHour(), subject, metadata, userService.getCurrentUserDetails());
+       return paymentService.openPaymentPage(teacher.getListedPrice(), subject, metadata, userService.getCurrentUserDetails());
     }
 
     public Session findByUuid(String uuid) {
