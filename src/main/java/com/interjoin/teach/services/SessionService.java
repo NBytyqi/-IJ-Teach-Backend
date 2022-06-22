@@ -139,6 +139,20 @@ public class SessionService {
                                 .collect(Collectors.toList());
     }
 
+    public List<SessionDto> getTeacherSessionHistory(Pageable pageable) {
+        User currentTeacher = userService.getCurrentUserDetails();
+        return sessionRepository.findByTeacherAndDateSlotBefore(currentTeacher, OffsetDateTime.now(), pageable)
+                .stream().map(session -> SessionMapper.map(session, currentTeacher.getTimeZone()))
+                .collect(Collectors.toList());
+    }
+
+    public List<SessionDto> getTeacherSessionRequests(Pageable pageable) {
+        User currentTeacher = userService.getCurrentUserDetails();
+        return sessionRepository.findByTeacherAndDateSlotAfterAndSessionStatus(currentTeacher, OffsetDateTime.now(), SessionStatus.PENDING_APPROVAL, pageable)
+                .stream().map(session -> SessionMapper.map(session, currentTeacher.getTimeZone()))
+                .collect(Collectors.toList());
+    }
+
     public void approveSession(String sessionUuid, boolean approve) throws SessionNotValidException {
         User teacher = userService.getCurrentUserDetails();
         Session session = sessionRepository.findByUuidAndTeacher(sessionUuid, teacher).orElseThrow(() -> new SessionNotValidException("Session is not found"));

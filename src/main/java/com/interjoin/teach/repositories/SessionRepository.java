@@ -2,6 +2,7 @@ package com.interjoin.teach.repositories;
 
 import com.interjoin.teach.entities.Session;
 import com.interjoin.teach.entities.User;
+import com.interjoin.teach.enums.SessionStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -29,6 +30,8 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     List<Session> findByTeacherAndSpecificDate(@Param("teacherId") Long teacherId, @Param("date") LocalDate date);
 
     List<Session> findByStudentAndDateSlotBefore(User currentStudent, OffsetDateTime today, Pageable pageable);
+    List<Session> findByTeacherAndDateSlotBefore(User currentTeacher, OffsetDateTime today, Pageable pageable);
+    List<Session> findByTeacherAndDateSlotAfterAndSessionStatus(User currentTeacher, OffsetDateTime today, SessionStatus status, Pageable pageable);
 
     @Query(value = "SELECT s from Session s where (s.student = :currentUser or s.teacher = :currentUser) AND s.dateSlot >= :today ")
     List<Session> findByStudentOrTeacherAndDateSlotAfter(@Param("currentUser") User currentUser, @Param("today") OffsetDateTime today);
