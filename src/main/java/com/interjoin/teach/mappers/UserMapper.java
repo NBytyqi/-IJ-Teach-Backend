@@ -24,7 +24,7 @@ public class UserMapper {
                 .shortBio(request.getShortBio())
 //                .subjectCurriculums(request.getSubCurrList())
                 .qualifications(request.getQualifications())
-                .experience(request.getExperience())
+//                .experience(request.getExperience())
                 .timeZone(request.getTimeZone())
                 .build();
     }
@@ -39,7 +39,6 @@ public class UserMapper {
                 .location(user.getLocation())
                 .phoneNumber(user.getPhoneNumber())
                 .dateOfBirth(user.getDateOfBirth())
-                .profilePicture(user.getProfilePicture())
                 .parentEmail(user.getParentEmail())
                 .shortBio(user.getShortBio())
                 .previousSuccessfulSessions(user.getPreviousSuccessfulSessions())
@@ -50,7 +49,7 @@ public class UserMapper {
                         Arrays.copyOf( user.getProfilePicture(), user.getProfilePicture().length ))
                                 .orElse(null))
                 .subCurrList(SubjectCurriculumMapper.map(user.getSubjectCurriculums()))
-                .experiences(Optional.ofNullable(user.getExperiences()).map(ex -> ex.stream().map(Experience::getExperience).collect(Collectors.toList())).orElse(null))
+                .experiences(Optional.ofNullable(user.getExperiences()).map(ExperienceMapper::mapList).orElse(null))
                 .pricePerHour(user.getPricePerHour())
                 .listedPrice(user.getListedPrice())
                 .agencyName(user.getAgencyName())

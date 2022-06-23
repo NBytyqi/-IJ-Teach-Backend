@@ -162,7 +162,6 @@ public class UserService {
             experienceService.save(request.getExperiences(), user);
         }
 
-
         request = transformDays(request);
 
         // CHECK FOR AVAILABLE TIMES
@@ -179,9 +178,10 @@ public class UserService {
             BigDecimal percentage = request.getPricePerHour().multiply(BigDecimal.valueOf(22.5)).divide(BigDecimal.valueOf(100));
             user.setListedPrice(request.getPricePerHour().add(percentage));
         }
-        repository.save(user);
+        user = repository.save(user);
 
         return SignupResponseDto.builder().firstName(user.getFirstName())
+                .user(UserMapper.map(user))
                 .lastName(user.getLastName())
                 .uuid(user.getUuid())
                 .cognitoUsername(user.getCognitoUsername())

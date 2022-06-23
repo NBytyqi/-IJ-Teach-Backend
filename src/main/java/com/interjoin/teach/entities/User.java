@@ -107,7 +107,6 @@ public class User {
     private BigDecimal listedPrice;
 
     private String qualifications;
-    private String experience;
 
     // IF AGENCY
     @Column(nullable = true)

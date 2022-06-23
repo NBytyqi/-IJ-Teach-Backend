@@ -48,10 +48,9 @@ public class UserSignupRequest {
 
     AvailableTimesSlots availableTimes;
 
-    private List<String> experiences;
+    private List<ExperienceDto> experiences;
 
     private String qualifications;
-    private String experience;
 
     // IN CASE IT IS A TEACHER
     private String agencyReferalCode;

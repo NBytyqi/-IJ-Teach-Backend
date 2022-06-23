@@ -33,7 +33,7 @@ public class UserDto {
     private boolean favorite;
     private Long previousSuccessfulSessions;
     private Double rating;
-    private List<String> experiences;
+    private List<ExperienceDto> experiences;
     private BigDecimal pricePerHour;
     private String agencyName;
     private boolean verifiedTeacher;
