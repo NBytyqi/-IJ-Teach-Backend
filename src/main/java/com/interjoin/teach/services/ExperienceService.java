@@ -27,8 +27,8 @@ public class ExperienceService {
     }
 
     public void updateExperienceLogo(Long experienceId, MultipartFile file) throws IOException {
-        Experience experience = repository.findById(experienceId).orElseThrow(EntityNotFoundException::new);
-        experience.setLogo(IOUtils.toByteArray(file.getInputStream()));
-        repository.save(experience);
+//        Experience experience = repository.findById(experienceId).orElseThrow(EntityNotFoundException::new);
+//        experience.setLogo(IOUtils.toByteArray(file.getInputStream()));
+//        repository.save(experience);
     }
 }

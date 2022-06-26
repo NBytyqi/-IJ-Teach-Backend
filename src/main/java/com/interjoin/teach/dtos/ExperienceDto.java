@@ -17,6 +17,7 @@ public class ExperienceDto {
     private String title;
     private String description;
     private String companyName;
+    private String base64Logo;
     private byte[] logo;
     private LocalDate from;
     private LocalDate to;

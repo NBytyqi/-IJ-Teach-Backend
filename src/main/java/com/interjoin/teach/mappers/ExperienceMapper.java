@@ -18,12 +18,13 @@ public class ExperienceMapper {
                 .title(experience.getTitle())
                 .from(experience.getFrom())
                 .to(experience.getTo())
+                .base64Logo(experience.getBase64Logo())
                 .description(experience.getDescription())
-                .logo(
-                        Optional.ofNullable(experience.getLogo()).map(prf ->
-                                        Arrays.copyOf( experience.getLogo(), experience.getLogo().length ))
-                                .orElse(null)
-                )
+//                .logo(
+//                        Optional.ofNullable(experience.getLogo()).map(prf ->
+//                                        Arrays.copyOf( experience.getLogo(), experience.getLogo().length ))
+//                                .orElse(null)
+//                )
                 .build();
     }
 
@@ -34,13 +35,14 @@ public class ExperienceMapper {
                 .title(experience.getTitle())
                 .from(experience.getFrom())
                 .to(experience.getTo())
+                .base64Logo(experience.getBase64Logo())
                 .user(forUser)
                 .description(experience.getDescription())
-                .logo(
-                        Optional.ofNullable(experience.getLogo()).map(prf ->
-                                        Arrays.copyOf( experience.getLogo(), experience.getLogo().length ))
-                                .orElse(null)
-                )
+//                .logo(
+//                        Optional.ofNullable(experience.getLogo()).map(prf ->
+//                                        Arrays.copyOf( experience.getLogo(), experience.getLogo().length ))
+//                                .orElse(null)
+//                )
                 .build();
     }
 

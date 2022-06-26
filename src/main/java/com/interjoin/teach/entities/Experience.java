@@ -28,10 +28,13 @@ public class Experience {
     private String title;
     private String companyName;
 
-    @Lob
-    @Type(type="org.hibernate.type.BinaryType")
-    @Column(name = "logo")
-    private byte[] logo;
+//    @Lob
+//    @Type(type="org.hibernate.type.BinaryType")
+//    @Column(name = "logo")
+//    private byte[] logo;
+
+    @Column(name = "base_logo", length = 1000000000)
+    private String base64Logo;
 
     @Column(name = "from_date")
     private LocalDate from;
