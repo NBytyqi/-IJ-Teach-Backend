@@ -38,4 +38,6 @@ public class Experience {
     @Column(name = "to_date")
     private LocalDate to;
 
+    @Column(name = "description")
+    private String description;
 }

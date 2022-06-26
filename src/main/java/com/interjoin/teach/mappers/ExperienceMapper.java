@@ -18,6 +18,7 @@ public class ExperienceMapper {
                 .title(experience.getTitle())
                 .from(experience.getFrom())
                 .to(experience.getTo())
+                .description(experience.getDescription())
                 .logo(
                         Optional.ofNullable(experience.getLogo()).map(prf ->
                                         Arrays.copyOf( experience.getLogo(), experience.getLogo().length ))
@@ -34,6 +35,7 @@ public class ExperienceMapper {
                 .from(experience.getFrom())
                 .to(experience.getTo())
                 .user(forUser)
+                .description(experience.getDescription())
                 .logo(
                         Optional.ofNullable(experience.getLogo()).map(prf ->
                                         Arrays.copyOf( experience.getLogo(), experience.getLogo().length ))

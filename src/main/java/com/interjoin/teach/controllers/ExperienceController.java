@@ -16,7 +16,7 @@ public class ExperienceController {
     private final ExperienceService experienceService;
 
     @PutMapping("/{exId}")
-    public ResponseEntity<Void> uploadExperienceImage(@RequestParam("file")MultipartFile file, @PathVariable("exId") Long exId) throws IOException {
+    public ResponseEntity<Void> uploadExperienceImage(@RequestParam("file") MultipartFile file, @PathVariable("exId") Long exId) throws IOException {
         experienceService.updateExperienceLogo(exId, file);
         return ResponseEntity.ok().build();
     }
