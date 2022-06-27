@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 
@@ -24,6 +25,11 @@ public class ExperienceService {
         experiences.stream().forEach(experience -> {
             repository.saveAll(ExperienceMapper.map(experiences, forUser));
         });
+    }
+
+    @Transactional
+    public void deleteForUser( User forUser) {
+        repository.deleteAllInBatch(repository.findByUser(forUser));
     }
 
     public void updateExperienceLogo(Long experienceId, MultipartFile file) throws IOException {

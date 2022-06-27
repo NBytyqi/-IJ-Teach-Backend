@@ -123,6 +123,13 @@ public class UserService {
             user.setSubjectCurriculums(subCurrs);
             user.setSubCurrStr(subCurrStr.toString());
         }
+
+        if(Optional.ofNullable(request.getExperiences()).isPresent()) {
+            //delete old experiences
+            //add new ones
+            experienceService.deleteForUser(user);
+            experienceService.save(request.getExperiences(), user);
+        }
         //delete old available times
 //        availableTimesService.deleteAllByUser(user);
 //        user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(),  user.getTimeZone(), user));
