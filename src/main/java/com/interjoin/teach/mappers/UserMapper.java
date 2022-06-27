@@ -48,7 +48,7 @@ public class UserMapper {
                         Optional.ofNullable(user.getProfilePicture()).map(prf ->
                         Arrays.copyOf( user.getProfilePicture(), user.getProfilePicture().length ))
                                 .orElse(null))
-                .subCurrList(SubjectCurriculumMapper.map(user.getSubjectCurriculums()))
+                .subCurrList(Optional.ofNullable(user.getSubjectCurriculums()).map(SubjectCurriculumMapper::map).orElse(null))
                 .experiences(Optional.ofNullable(user.getExperiences()).map(ExperienceMapper::mapList).orElse(null))
                 .pricePerHour(user.getPricePerHour())
                 .listedPrice(user.getListedPrice())
