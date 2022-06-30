@@ -37,9 +37,9 @@ public class Experience {
     private String base64Logo;
 
     @Column(name = "from_date")
-    private LocalDate from;
+    private String from;
     @Column(name = "to_date")
-    private LocalDate to;
+    private String to;
 
     @Column(name = "description")
     private String description;
