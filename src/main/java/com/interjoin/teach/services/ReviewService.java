@@ -1,5 +1,6 @@
 package com.interjoin.teach.services;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.config.exceptions.ReviewSessionException;
 import com.interjoin.teach.dtos.requests.ReviewRequest;
 import com.interjoin.teach.entities.Review;
@@ -7,6 +8,7 @@ import com.interjoin.teach.entities.Session;
 import com.interjoin.teach.entities.User;
 import com.interjoin.teach.repositories.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -19,14 +21,14 @@ public class ReviewService {
     private final SessionService sessionService;
     private final UserService userService;
 
-    public void save(ReviewRequest request) throws ReviewSessionException {
+    public void save(ReviewRequest request) throws ReviewSessionException, InterjoinException {
         User currentStudent = userService.getCurrentUserDetails();
 
         Session session = sessionService.findByUuid(request.getSessionUuid());
 
         if(Optional.ofNullable(session.getStudent()).isPresent()) {
             if(currentStudent.getId() != session.getStudent().getId()) {
-                throw new ReviewSessionException();
+                throw new InterjoinException("You cannot review other people session", HttpStatus.FORBIDDEN);
             }
         }
 

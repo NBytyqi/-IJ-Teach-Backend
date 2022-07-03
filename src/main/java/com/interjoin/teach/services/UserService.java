@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -53,7 +52,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     private final UserRepository repository;
-    private final AwsService awsService;
     private final AvailableTimesService availableTimesService;
     private final ExperienceService experienceService;
     private final PaymentService paymentService;
@@ -179,6 +177,7 @@ public class UserService {
             user.setSubjectCurriculums(subCurrs);
             user.setSubCurrStr(subCurrStr.toString());
         }
+
         user.setUuid(UUID.randomUUID().toString());
         user.setRole(Optional.ofNullable(role.toUpperCase()).orElse("STUDENT"));
         user.setCreatedDate(LocalDateTime.now());
@@ -333,11 +332,11 @@ public class UserService {
         return request;
     }
 
-    private org.springframework.security.core.userdetails.User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-        return principal;
-    }
+//    private org.springframework.security.core.userdetails.User getCurrentUser() {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+//        return principal;
+//    }
 
     public UserDto getCurrentUserDetailsAsDto() {
         return UserMapper.map(getCurrentUserDetails());
@@ -405,14 +404,20 @@ public class UserService {
     }
 
     public User getCurrentUserDetails() {
-        org.springframework.security.core.userdetails.User principal = getCurrentUser();
+        MyUserDetails principal = getCurrentUser();
         User currentUser = null;
         if(principal != null) {
-//            Optional<User> optionalUser = repository.findByCognitoUsername(principal.getUsername());
-//            if(optionalUser.isPresent())
-//                currentUser = optionalUser.get();
+            Optional<User> optionalUser = repository.findByEmail(principal.getUsername());
+            if(optionalUser.isPresent())
+                currentUser = optionalUser.get();
         }
         return currentUser;
+    }
+
+    private MyUserDetails getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        MyUserDetails principal = (MyUserDetails) authentication.getPrincipal();
+        return principal;
     }
 
     public String getAgencyNameByReferalCode(String referalCode) {
@@ -439,7 +444,7 @@ public class UserService {
 
     public AvailableTimesSlots getAvailableTimesForTeacher(Long teacherId) {
         User teacher = findById(teacherId);
-//        User currentStudent = getCurrentUserDetails();
+        User currentStudent = getCurrentUserDetails();
 
         AvailableTimesSlots returni = new AvailableTimesSlots();
 
@@ -534,11 +539,11 @@ public class UserService {
     }
 
     public void verifyUser(OtpVerifyRequest request) {
-        this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
+//        this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
     }
 
     public void resendVerificationEmail(String cognitoUsername) {
-        this.awsService.resendVerificationEmail(cognitoUsername);
+//        this.awsService.resendVerificationEmail(cognitoUsername);
     }
 
     public String purchaseVerification(String process) {
@@ -577,7 +582,7 @@ public class UserService {
 
     public void uploadCV(MultipartFile file, String userUuid) throws IOException {
 //        User user = findByUuid(userUuid);
-        this.awsService.uploadFile(file.getOriginalFilename(), file, User.builder().email("bytyqinderim87@gmail.com").build());
+//        this.awsService.uploadFile(file.getOriginalFilename(), file, User.builder().email("bytyqinderim87@gmail.com").build());
     }
 
 

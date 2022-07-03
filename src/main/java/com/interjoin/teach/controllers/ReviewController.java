@@ -1,5 +1,6 @@
 package com.interjoin.teach.controllers;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.config.exceptions.ReviewSessionException;
 import com.interjoin.teach.dtos.requests.ReviewRequest;
 import com.interjoin.teach.services.ReviewService;
@@ -18,7 +19,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
-    public ResponseEntity<Void> addReview(@RequestBody ReviewRequest request) throws ReviewSessionException {
+    public ResponseEntity<Void> addReview(@RequestBody ReviewRequest request) throws ReviewSessionException, InterjoinException {
         reviewService.save(request);
         return ResponseEntity.ok().build();
     }

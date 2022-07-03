@@ -1,5 +1,6 @@
 package com.interjoin.teach.services;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.config.exceptions.SessionExistsException;
 import com.interjoin.teach.config.exceptions.SessionNotValidException;
 import com.interjoin.teach.dtos.AvailableHourMinuteDto;
@@ -15,6 +16,7 @@ import com.interjoin.teach.repositories.SessionRepository;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -77,8 +79,8 @@ public class SessionService {
        return paymentService.openPaymentPage(teacher.getListedPrice(), subject, metadata, userService.getCurrentUserDetails());
     }
 
-    public Session findByUuid(String uuid) {
-        return sessionRepository.findByUuid(uuid).orElseThrow(EntityNotFoundException::new);
+    public Session findByUuid(String uuid) throws InterjoinException {
+        return sessionRepository.findByUuid(uuid).orElseThrow(() -> new InterjoinException("Session not found", HttpStatus.NOT_FOUND));
     }
 
 
