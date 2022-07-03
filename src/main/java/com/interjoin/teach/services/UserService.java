@@ -1,6 +1,7 @@
 package com.interjoin.teach.services;
 
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.*;
 import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
@@ -11,6 +12,7 @@ import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.AvailableTimes;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import com.interjoin.teach.entities.User;
+import com.interjoin.teach.jwt.JwtUtil;
 import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import com.interjoin.teach.repositories.UserRepository;
@@ -22,8 +24,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -42,27 +50,36 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final PasswordEncoder passwordEncoder;
+
     private final UserRepository repository;
     private final AwsService awsService;
     private final AvailableTimesService availableTimesService;
     private final ExperienceService experienceService;
     private final PaymentService paymentService;
 
+    private final AuthenticationManager authenticationManager;
+
     @Value("${verification.process.subject}")
     private String VERIFICATION_PROCESS_SUBJECT;
 
     private final SubjectCurriculumRepository subCurrRepository;
 
+    private final JwtUtil jwtTokenUtil;
+
+    private final MyUserDetailsService userDetailsService;
+
     public void createAgency(AgencySignupRequest request) {
-        String usernameCreated = awsService.signUpAgency(request);
+//        String usernameCreated = awsService.signUpAgency(request);
         User newAgency = User.builder()
                 .agency(true)
                 .email(request.getContactEmail())
+                .password(passwordEncoder.encode("DefaultPass1!"))
                 .additionalComments(request.getAdditionalComments())
                 .agencyName(request.getAgencyName())
                 .numberOfTeachers(request.getNumberOfTeachers())
                 .location(request.getLocation())
-                .cognitoUsername(usernameCreated)
+//                .cognitoUsername(usernameCreated)
                 .role("AGENCY")
                 .uuid(UUID.randomUUID().toString())
                 .firstName(request.getAgencyName())
@@ -80,7 +97,7 @@ public class UserService {
         User user = getCurrentUserDetails();
         if(StringUtils.isNotBlank(request.getPassword())) {
             System.out.println("Updating password");
-            this.awsService.updateUserPassword(request.getPassword(), user.getCognitoUsername());
+//            this.awsService.updateUserPassword(request.getPassword(), user.getCognitoUsername());
         }
 
         if(StringUtils.isNotBlank(request.getLocation())) {
@@ -136,11 +153,16 @@ public class UserService {
         return UserMapper.map(repository.save(user));
     }
 
-    public SignupResponseDto createUser(UserSignupRequest request, String role) {
+    public SignupResponseDto createUser(UserSignupRequest request, String role) throws InterjoinException {
+
+        if(repository.findByEmail(request.getEmail()).isPresent()) {
+            throw new InterjoinException("User already exists.", HttpStatus.BAD_REQUEST);
+        }
+
         User user = UserMapper.mapUserRequest(request);
 
-        String usernameCreated = awsService.signUpUser(request, role);
-        user.setCognitoUsername(usernameCreated);
+//        String usernameCreated = awsService.signUpUser(request, role);
+//        user.setCognitoUsername(usernameCreated);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
@@ -162,6 +184,7 @@ public class UserService {
         user.setCreatedDate(LocalDateTime.now());
         user.setUuid(UUID.randomUUID().toString());
         user.setAgency(false);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user = repository.save(user);
 
         // CHECK IF EXPERIENCE IS NULL
@@ -191,7 +214,7 @@ public class UserService {
                 .user(UserMapper.map(user))
                 .lastName(user.getLastName())
                 .uuid(user.getUuid())
-                .cognitoUsername(user.getCognitoUsername())
+//                .cognitoUsername(user.getCognitoUsername())
                 .subCurrList(request.getSubCurrList())
                 .build();
     }
@@ -328,26 +351,66 @@ public class UserService {
         return repository.findById(id).get();
     }
 
-    public AuthResponse signIn(UserSignInRequest request) {
-        AuthResponse response = null;
+    public AuthResponse signIn(UserSignInRequest request) throws InterjoinException {
 
-        if(Optional.ofNullable(request).isPresent()) {
-            response = awsService.signInUser(request);
-            User user = getUserByEmail(request.getEmail()).orElseThrow(EntityNotFoundException::new);
-
-            response.setUserDetails(UserMapper.map(user));
-            response.setRole(Optional.ofNullable(user.getRole()).orElse(null));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (BadCredentialsException e) {
+            throw new InterjoinException("Email or password not valid", HttpStatus.UNAUTHORIZED);
         }
-        return response;
+
+
+        final UserDetails userDetails = userDetailsService
+                .loadUserByUsername(request.getEmail());
+
+        User user = repository.findByEmail(request.getEmail()).get();
+
+        List<String> roles = userDetails.getAuthorities().stream().map(auth -> auth.getAuthority()).collect(Collectors.toList());
+
+        final String JWT = jwtTokenUtil.generateToken(userDetails);
+
+        return AuthResponse.builder()
+                .token(JWT)
+                .userDetails(UserMapper.map(user))
+                .role(roles.get(0))
+                .build();
+//        AuthResponse response = null;
+//
+//        if(Optional.ofNullable(request).isPresent() ) {
+//
+//            User user = getUserByEmail(request.getEmail()).orElseThrow(() -> new InterjoinException("Email or password not valid", HttpStatus.UNAUTHORIZED));
+//
+//            if(!checkIfPasswordMatch(user.getPassword(), request.getPassword())) {
+//               throw new InterjoinException("Email or password not valid", HttpStatus.UNAUTHORIZED);
+//            }
+//
+//            final UserDetails userDetails = userDetailsService
+//                    .loadUserByUsername(user.getEmail());
+//
+//            final String JWT = jwtTokenUtil.generateToken(userDetails);
+//
+//            response.setRole(user.getRole());
+//            response.setToken(JWT);
+//
+//            response.setUserDetails(UserMapper.map(user));
+//            response.setRole(Optional.ofNullable(user.getRole()).orElse(null));
+//        }
+//        return response;
+    }
+
+    private boolean checkIfPasswordMatch(String currentPasswordEncoded, String signInRequestPassword) {
+        return passwordEncoder.encode(signInRequestPassword).equals(currentPasswordEncoded);
     }
 
     public User getCurrentUserDetails() {
         org.springframework.security.core.userdetails.User principal = getCurrentUser();
         User currentUser = null;
         if(principal != null) {
-            Optional<User> optionalUser = repository.findByCognitoUsername(principal.getUsername());
-            if(optionalUser.isPresent())
-                currentUser = optionalUser.get();
+//            Optional<User> optionalUser = repository.findByCognitoUsername(principal.getUsername());
+//            if(optionalUser.isPresent())
+//                currentUser = optionalUser.get();
         }
         return currentUser;
     }
@@ -503,11 +566,13 @@ public class UserService {
     }
 
     public void forgotPassword(String username) {
-        this.awsService.forgotForUser(username);
+
+        // TODO CHANGE PASSWORD IN LOCAL DB
+//        this.awsService.forgotForUser(username);
     }
 
     public void resetPassword(ResetPasswordDTO request) throws IOException {
-        this.awsService.resetUserPassword(request);
+//        this.awsService.resetUserPassword(request);
     }
 
     public void uploadCV(MultipartFile file, String userUuid) throws IOException {

@@ -36,8 +36,8 @@ public class User {
     @Column(name = "uuid", updatable = false)
     private String uuid;
 
-    @JsonIgnore
-    private String cognitoUsername;
+//    @JsonIgnore
+//    private String cognitoUsername;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
@@ -47,6 +47,10 @@ public class User {
     @Email
     @Column(name = "email", nullable = false)
     private String email;
+
+    @Column(name = "password", nullable = true)
+    @JsonIgnore
+    private String password;
 
     @Column(name = "location")
     private String location;
@@ -126,6 +130,8 @@ public class User {
     private Double rating;
     @Column(nullable = true)
     private boolean verifiedTeacher;
+
+
 
 
 

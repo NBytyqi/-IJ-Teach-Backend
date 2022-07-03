@@ -1,6 +1,7 @@
 package com.interjoin.teach.controllers;
 
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignInRequest;
@@ -29,7 +30,7 @@ public class AuthController {
     private final SessionService sessionService;
 
     @PostMapping("/signup/teacher")
-    public ResponseEntity<SignupResponseDto> signupTeacher(@Valid @RequestBody UserSignupRequest request) {
+    public ResponseEntity<SignupResponseDto> signupTeacher(@Valid @RequestBody UserSignupRequest request) throws InterjoinException {
         return ResponseEntity.ok(service.createUser(request, "TEACHER"));
     }
 
@@ -54,12 +55,12 @@ public class AuthController {
     }
 
     @PostMapping("/signup/student")
-    public ResponseEntity<SignupResponseDto> signupStudent(@Valid @RequestBody UserSignupRequest request) {
+    public ResponseEntity<SignupResponseDto> signupStudent(@Valid @RequestBody UserSignupRequest request) throws InterjoinException {
         return ResponseEntity.ok(service.createUser(request, "STUDENT"));
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<AuthResponse> signInUser(@Valid @RequestBody UserSignInRequest request) {
+    public ResponseEntity<AuthResponse> signInUser(@Valid @RequestBody UserSignInRequest request) throws InterjoinException {
         return ResponseEntity.ok(service.signIn(request));
     }
 

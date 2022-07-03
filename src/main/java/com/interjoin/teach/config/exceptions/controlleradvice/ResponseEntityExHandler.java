@@ -4,6 +4,7 @@ import com.amazonaws.services.cognitoidp.model.AWSCognitoIdentityProviderExcepti
 import com.amazonaws.services.cognitoidp.model.CodeMismatchException;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.ExceptionMessage;
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.config.exceptions.ReviewSessionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,14 @@ public class ResponseEntityExHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleConflict(AWSCognitoIdentityProviderException ex, WebRequest request) {
         String bodyOfException = ex.getErrorCode();
         ExceptionMessage exceptionMessage = new ExceptionMessage(HttpStatus.BAD_REQUEST, bodyOfException, ex.getLocalizedMessage());
+        return new ResponseEntity<Object>(exceptionMessage, exceptionMessage.getHttpStatus());
+    }
+
+    @ExceptionHandler(value =
+            InterjoinException.class)
+    protected ResponseEntity<Object> handleConflict(InterjoinException ex, WebRequest request) {
+        String bodyOfException = ex.getMessage();
+        ExceptionMessage exceptionMessage = new ExceptionMessage(ex.getStatus(), bodyOfException, ex.getLocalizedMessage());
         return new ResponseEntity<Object>(exceptionMessage, exceptionMessage.getHttpStatus());
     }
 

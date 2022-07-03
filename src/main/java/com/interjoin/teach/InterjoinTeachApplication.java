@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,6 +42,11 @@ public class InterjoinTeachApplication {
         JWSKeySelector keySelector= new JWSVerificationKeySelector(RS256, keySource);
         jwtProcessor.setJWSKeySelector(keySelector);
         return jwtProcessor;
+    }
+
+    @Bean
+    public PasswordEncoder encoder() {
+        return new BCryptPasswordEncoder();
     }
 
 //    @Override
