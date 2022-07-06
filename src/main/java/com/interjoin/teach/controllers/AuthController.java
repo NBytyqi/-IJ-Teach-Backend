@@ -93,7 +93,7 @@ public class AuthController {
 
     // Used to verify email on cognito
     @PostMapping("/checkotp")
-    public ResponseEntity<Void> checkOtpCode(@RequestBody OtpVerifyRequest request) {
+    public ResponseEntity<Void> checkOtpCode(@RequestBody OtpVerifyRequest request) throws InterjoinException {
         service.verifyUser(request);
         return ResponseEntity.ok().build();
     }
