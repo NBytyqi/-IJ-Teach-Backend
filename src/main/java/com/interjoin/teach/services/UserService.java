@@ -158,6 +158,8 @@ public class UserService {
         }
 
         User user = UserMapper.mapUserRequest(request);
+        user.setOtpVerificationCode(generateOtpCode());
+        user.setVerifiedEmail(false);
 
 //        String usernameCreated = awsService.signUpUser(request, role);
 //        user.setCognitoUsername(usernameCreated);
@@ -538,8 +540,19 @@ public class UserService {
         return repository.findByUuid(uuid).orElseThrow(EntityNotFoundException::new);
     }
 
-    public void verifyUser(OtpVerifyRequest request) {
+    public void verifyUser(OtpVerifyRequest request) throws InterjoinException {
+        User user = repository.findByUuid(request.getUuid()).orElseThrow(() -> new InterjoinException(String.format("User with uuid: [%s] doesn't exist", request.getUuid()), HttpStatus.BAD_REQUEST));
+        if(user.isVerifiedEmail()) {
+            throw new InterjoinException("User is already verified", HttpStatus.BAD_REQUEST);
+        }
+
+        if(!user.getOtpVerificationCode().equals(request.getOtpCode())) {
+            throw new InterjoinException("OTP code not valid", HttpStatus.BAD_REQUEST);
 //        this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
+        }
+
+        user.setVerifiedEmail(true);
+        repository.save(user);
     }
 
     public void resendVerificationEmail(String cognitoUsername) {
@@ -608,6 +621,12 @@ public class UserService {
 
         teacher.setAgencyName(null);
         repository.save(teacher);
+    }
+
+    private String generateOtpCode() {
+        Random rnd = new Random();
+        int number = rnd.nextInt(999999);
+        return String.format("%06d", number);
     }
 }
 

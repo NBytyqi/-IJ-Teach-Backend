@@ -38,4 +38,6 @@ public class UserDto {
     private String agencyName;
     private boolean verifiedTeacher;
     private BigDecimal listedPrice;
+    private String timezone;
+    private boolean verifiedEmail;
 }

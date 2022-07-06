@@ -131,6 +131,9 @@ public class User {
     @Column(nullable = true)
     private boolean verifiedTeacher;
 
+    private String otpVerificationCode;
+    private boolean verifiedEmail;
+
 
 
 
