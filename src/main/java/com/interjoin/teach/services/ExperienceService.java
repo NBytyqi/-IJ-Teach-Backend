@@ -22,9 +22,9 @@ public class ExperienceService {
     private final ExperienceRepository repository;
 
     public void save(List<ExperienceDto> experiences, User forUser) {
-        experiences.stream().forEach(experience -> {
+//        experiences.stream().forEach(experience -> {
             repository.saveAll(ExperienceMapper.map(experiences, forUser));
-        });
+//        });
     }
 
     @Transactional

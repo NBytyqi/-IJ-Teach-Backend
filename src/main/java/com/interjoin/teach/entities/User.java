@@ -132,6 +132,7 @@ public class User {
     private boolean verifiedTeacher;
 
     private String otpVerificationCode;
+    @Column(nullable = true)
     private boolean verifiedEmail;
 
 
