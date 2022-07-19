@@ -31,7 +31,28 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
 //                .anyRequest()
 //                .permitAll()
-            .antMatchers("/api/auth/cv", "/api/auth/resend-otp/**", "/api/suggest","/api/auth/profile-pic", "/api/auth/checkotp","/api/auth/reset", "/api/times/signup", "/api/api-docs", "/api-docs", "/api/auth/email", "/api/auth/signup/teacher", "/api/auth/forgot", "/api/auth/signup/student", "/api/auth/signup/agency", "/api/auth/signin", "/api/datat/**", "/api/stripe/success-webhook")
+            .antMatchers(
+                    "/api/auth/cv",
+                    "/api/auth/resend-otp/**",
+                    "/api/suggest",
+                    "/api/auth/profile-pic",
+                    "/api/auth/checkotp",
+                    "/api/auth/reset",
+                    "/api/times/signup",
+                    "/api/api-docs",
+                    "/api/api-docs",
+                    "/api/swagger-ui.html",
+                    "/api/swagger-ui/**",
+                    "/api/v3/api-docs",
+                    "/api/v3/api-docs/swagger-config",
+                    "/api/auth/email",
+                    "/api/auth/signup/teacher",
+                    "/api/auth/forgot",
+                    "/api/auth/signup/student",
+                    "/api/auth/signup/agency",
+                    "/api/auth/signin",
+                    "/api/datat/**",
+                    "/api/stripe/success-webhook")
             .permitAll()
                 .anyRequest().authenticated().and().
                 exceptionHandling().and().sessionManagement()

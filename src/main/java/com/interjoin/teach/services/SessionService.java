@@ -134,6 +134,13 @@ public class SessionService {
         return avTimesInStudentTimezone.get(0).getAvailableHourMinute().stream().filter(avTime -> !bookedSessions.contains(avTime.getDateTime())).collect(Collectors.toList());
     }
 
+    public List<SessionDto> getStudentSessionClasses(Pageable pageable) {
+        User currentStudent = userService.getCurrentUserDetails();
+        return sessionRepository.findByStudentAndDateSlotAfterAndSessionStatus(currentStudent, OffsetDateTime.now(), SessionStatus.APPROVED, pageable)
+                .stream().map(session -> SessionMapper.map(session, currentStudent.getTimeZone()))
+                .collect(Collectors.toList());
+    }
+
     public List<SessionDto> getStudentSessionHistory(Pageable pageable) {
         User currentStudent = userService.getCurrentUserDetails();
         return sessionRepository.findByStudentAndDateSlotBefore(currentStudent, OffsetDateTime.now(), pageable)

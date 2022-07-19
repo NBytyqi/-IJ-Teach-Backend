@@ -40,7 +40,7 @@ public class AuthController {
     }
 
     @PutMapping("/forgot")
-    public void forgotPassword(@RequestParam("email") String email) {
+    public void forgotPassword(@RequestParam("email") String email) throws InterjoinException {
         this.service.forgotPassword(email);
     }
 

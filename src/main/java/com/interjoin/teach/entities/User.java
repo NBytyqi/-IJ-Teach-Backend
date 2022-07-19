@@ -135,6 +135,10 @@ public class User {
     @Column(nullable = true)
     private boolean verifiedEmail;
 
+    @Column(nullable = true)
+    private String resetPasswordCode;
+
+
 
 
 

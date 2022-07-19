@@ -49,12 +49,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
+    @Value("${spring.sendgrid.template.forget-password}")
+    private String FORGOT_PASSWORD_TEMPLATE;
+
     private final PasswordEncoder passwordEncoder;
 
     private final UserRepository repository;
     private final AvailableTimesService availableTimesService;
     private final ExperienceService experienceService;
     private final PaymentService paymentService;
+    private final EmailService emailService;
 
     private final AuthenticationManager authenticationManager;
 
@@ -158,7 +162,7 @@ public class UserService {
         }
 
         User user = UserMapper.mapUserRequest(request);
-        user.setOtpVerificationCode(generateOtpCode());
+        user.setOtpVerificationCode(getRandomNumberString());
         user.setVerifiedEmail(false);
 
 //        String usernameCreated = awsService.signUpUser(request, role);
@@ -583,10 +587,17 @@ public class UserService {
         }
     }
 
-    public void forgotPassword(String username) {
+    public void forgotPassword(String email) throws InterjoinException {
+        User user = repository.findByEmail(email).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
+        user.setResetPasswordCode(getRandomNumberString());
+        repository.save(user);
+        //send an email to notify them
+        EmailDTO emailDTO = EmailDTO.builder()
+                .templateId(FORGOT_PASSWORD_TEMPLATE)
+                .toEmail(email)
+                .build();
 
-        // TODO CHANGE PASSWORD IN LOCAL DB
-//        this.awsService.forgotForUser(username);
+        emailService.sendEmail(emailDTO);
     }
 
     public void resetPassword(ResetPasswordDTO request) throws IOException {
@@ -623,7 +634,8 @@ public class UserService {
         repository.save(teacher);
     }
 
-    private String generateOtpCode() {
+
+    public static String getRandomNumberString() {
         Random rnd = new Random();
         int number = rnd.nextInt(999999);
         return String.format("%06d", number);
