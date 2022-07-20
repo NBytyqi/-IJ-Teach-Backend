@@ -601,7 +601,13 @@ public class UserService {
         emailService.sendEmail(emailDTO);
     }
 
-    public void resetPassword(ResetPasswordDTO request) throws IOException {
+    public void resetPassword(ResetPasswordDTO request) throws InterjoinException {
+        User user = repository.findByEmail(request.getEmail()).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
+        if(user.getResetPasswordCode().equals(request.getCode())) {
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        } else {
+            throw new InterjoinException("Reset code is not valid");
+        }
 //        this.awsService.resetUserPassword(request);
     }
 

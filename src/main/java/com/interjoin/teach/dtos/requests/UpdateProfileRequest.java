@@ -1,5 +1,6 @@
 package com.interjoin.teach.dtos.requests;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.interjoin.teach.dtos.ExperienceDto;
 import com.interjoin.teach.dtos.SubjectCurriculumDto;
 import lombok.Data;
@@ -11,6 +12,7 @@ import java.util.Set;
 
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties
 public class UpdateProfileRequest {
     private String password;
     private String location;

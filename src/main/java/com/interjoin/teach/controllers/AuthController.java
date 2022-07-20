@@ -45,7 +45,7 @@ public class AuthController {
     }
 
     @PutMapping("/reset")
-    public void resetPassword(@Valid @RequestBody  ResetPasswordDTO request) throws IOException {
+    public void resetPassword(@Valid @RequestBody  ResetPasswordDTO request) throws InterjoinException {
         this.service.resetPassword(request);
     }
 
