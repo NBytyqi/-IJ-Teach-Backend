@@ -592,7 +592,9 @@ public class UserService {
         User user = repository.findByEmail(email).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
         user.setResetPasswordCode(getRandomNumberString());
         repository.save(user);
-        //send an email to notify them
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put("verificationCode", user.getResetPasswordCode());
+        //send an email to  notify them
         EmailDTO emailDTO = EmailDTO.builder()
                 .templateId(FORGOT_PASSWORD_TEMPLATE)
                 .toEmail(email)
