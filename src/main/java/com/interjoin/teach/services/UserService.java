@@ -99,6 +99,7 @@ public class UserService {
         User user = getCurrentUserDetails();
         if(StringUtils.isNotBlank(request.getPassword())) {
             System.out.println("Updating password");
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
 //            this.awsService.updateUserPassword(request.getPassword(), user.getCognitoUsername());
         }
 
