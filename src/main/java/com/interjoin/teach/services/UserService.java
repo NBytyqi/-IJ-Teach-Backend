@@ -380,30 +380,8 @@ public class UserService {
         return AuthResponse.builder()
                 .token(JWT)
                 .userDetails(UserMapper.map(user))
-                .role(roles.get(0))
                 .build();
-//        AuthResponse response = null;
-//
-//        if(Optional.ofNullable(request).isPresent() ) {
-//
-//            User user = getUserByEmail(request.getEmail()).orElseThrow(() -> new InterjoinException("Email or password not valid", HttpStatus.UNAUTHORIZED));
-//
-//            if(!checkIfPasswordMatch(user.getPassword(), request.getPassword())) {
-//               throw new InterjoinException("Email or password not valid", HttpStatus.UNAUTHORIZED);
-//            }
-//
-//            final UserDetails userDetails = userDetailsService
-//                    .loadUserByUsername(user.getEmail());
-//
-//            final String JWT = jwtTokenUtil.generateToken(userDetails);
-//
-//            response.setRole(user.getRole());
-//            response.setToken(JWT);
-//
-//            response.setUserDetails(UserMapper.map(user));
-//            response.setRole(Optional.ofNullable(user.getRole()).orElse(null));
-//        }
-//        return response;
+
     }
 
     private boolean checkIfPasswordMatch(String currentPasswordEncoded, String signInRequestPassword) {

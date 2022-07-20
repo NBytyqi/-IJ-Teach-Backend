@@ -40,4 +40,5 @@ public class UserDto {
     private BigDecimal listedPrice;
     private String timezone;
     private boolean verifiedEmail;
+    private String role;
 }

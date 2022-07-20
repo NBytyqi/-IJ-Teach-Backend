@@ -56,6 +56,7 @@ public class UserMapper {
                 .verifiedTeacher(user.isVerifiedTeacher())
                 .verifiedEmail(user.isVerifiedEmail())
                 .timezone(user.getTimeZone())
+                .role(user.getRole())
                 .build();
     }
 }
