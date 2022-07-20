@@ -18,7 +18,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/book")
+@RequestMapping("/sessions")
 @RequiredArgsConstructor
 public class SessionController {
 
