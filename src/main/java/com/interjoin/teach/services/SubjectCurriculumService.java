@@ -6,6 +6,7 @@ import com.interjoin.teach.repositories.SubjectCurriculumRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -17,5 +18,9 @@ public class SubjectCurriculumService {
 
     public Set<SubjectCurriculumResponse> getAll() {
         return SubjectCurriculumMapper.map(curriculumService.getAll());
+    }
+
+    public List<Long> getTeachersForSubjects(List<Long> subjectIds) {
+        return repository.getTeachersForSubjects(subjectIds);
     }
 }

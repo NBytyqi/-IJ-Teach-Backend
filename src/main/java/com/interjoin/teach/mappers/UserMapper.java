@@ -1,13 +1,15 @@
 package com.interjoin.teach.mappers;
 
+import com.interjoin.teach.dtos.TeacherDto;
 import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignupRequest;
-import com.interjoin.teach.entities.Experience;
+import com.interjoin.teach.dtos.interfaces.UserInterface;
 import com.interjoin.teach.entities.User;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class UserMapper {
 
@@ -57,6 +59,32 @@ public class UserMapper {
                 .verifiedEmail(user.isVerifiedEmail())
                 .timezone(user.getTimeZone())
                 .role(user.getRole())
+                .subjects(user.getSubjects())
                 .build();
     }
+
+    public static TeacherDto mapTeacher(User user) {
+        return TeacherDto.builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+//                .profilePicture()
+                .build();
+    }
+
+    public static TeacherDto mapTeacher(UserInterface user) {
+        return TeacherDto.builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+//                .profilePicture()
+                .build();
+    }
+
+    public static List<TeacherDto> mapTeachers(List<UserInterface> users) {
+        List<TeacherDto> teachers = new ArrayList<>();
+        for(UserInterface user : users) {
+            teachers.add(mapTeacher(user));
+        }
+        return teachers;
+    }
+
 }

@@ -78,6 +78,10 @@ public class User {
     )
     private Set<SubjectCurriculum> subjectCurriculums;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_subject", joinColumns = @JoinColumn(name = "user_id", nullable = true))
+    private List<String> subjects;
+
     // This will be used for faster search of teachers for sub curriculum
     @Column(name = "sub_curr_str")
     private String subCurrStr;
@@ -137,10 +141,5 @@ public class User {
 
     @Column(nullable = true)
     private String resetPasswordCode;
-
-
-
-
-
 
 }

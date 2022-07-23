@@ -3,6 +3,7 @@ package com.interjoin.teach.services;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.*;
+import com.interjoin.teach.dtos.interfaces.UserInterface;
 import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
 import com.interjoin.teach.dtos.requests.UpdateProfileRequest;
@@ -10,6 +11,7 @@ import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.AvailableTimes;
+import com.interjoin.teach.entities.Subject;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import com.interjoin.teach.entities.User;
 import com.interjoin.teach.jwt.JwtUtil;
@@ -56,6 +58,7 @@ public class UserService {
 
     private final UserRepository repository;
     private final AvailableTimesService availableTimesService;
+    private final SubjectCurriculumService subCurrService;
     private final ExperienceService experienceService;
     private final PaymentService paymentService;
     private final EmailService emailService;
@@ -132,16 +135,19 @@ public class UserService {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
             StringBuilder subCurrStr = new StringBuilder();
 
+            List<String> subjects = new ArrayList<>();
             for(SubjectCurriculumDto data : request.getSubCurrList()) {
                 for(String subject : data.getSubjectNames()) {
                     SubjectCurriculum subjectCurriculum = subCurrRepository.findFirstByCurriculumCurriculumNameAndSubjectSubjectName(data.getCurriculumName(), subject);
                     subCurrs.add(subjectCurriculum);
                     subCurrStr.append(String.format("%s,%s", subject, data.getCurriculumName()));
+                    subjects.add(subject);
                 }
 
             }
             user.setSubjectCurriculums(subCurrs);
             user.setSubCurrStr(subCurrStr.toString());
+            user.setSubjects(subjects);
         }
 
         if(Optional.ofNullable(request.getExperiences()).isPresent()) {
@@ -173,8 +179,10 @@ public class UserService {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
             StringBuilder subCurrStr = new StringBuilder();
 
+            List<String> subjects = new ArrayList<>();
             for(SubjectCurriculumDto data : request.getSubCurrList()) {
                 for(String subject : data.getSubjectNames()) {
+                    subjects.add(subject);
                     SubjectCurriculum subjectCurriculum = subCurrRepository.findFirstByCurriculumCurriculumNameAndSubjectSubjectName(data.getCurriculumName(), subject);
                     subCurrs.add(subjectCurriculum);
                     subCurrStr.append(String.format("%s,%s", subject, data.getCurriculumName()));
@@ -183,6 +191,7 @@ public class UserService {
             }
             user.setSubjectCurriculums(subCurrs);
             user.setSubCurrStr(subCurrStr.toString());
+            user.setSubjects(subjects);
         }
 
         user.setUuid(UUID.randomUUID().toString());
@@ -626,6 +635,29 @@ public class UserService {
         Random rnd = new Random();
         int number = rnd.nextInt(999999);
         return String.format("%06d", number);
+    }
+
+    public List<TeacherInfo> getFilteredTeachers() {
+        List<TeacherInfo> teacherInfos = new ArrayList<>();
+        User currentStudent = getCurrentUserDetails();
+
+        List<Subject> subjects = currentStudent.getSubjectCurriculums()
+                                              .stream().map(SubjectCurriculum::getSubject)
+//                                              .map(Subject::getId).distinct()
+                                              .collect(Collectors.toList());
+
+
+//        List<Long> teachers = subCurrService.getTeachersForSubjects(subjectIds);
+        for(Subject subject : subjects) {
+            teacherInfos.add(
+                    TeacherInfo.builder()
+                            .subjectName(subject.getSubjectName())
+                            .teachers(UserMapper.mapTeachers(repository.getTeachersPerSubject(subject.getId())))
+                            .build()
+            );
+        }
+
+        return teacherInfos;
     }
 }
 

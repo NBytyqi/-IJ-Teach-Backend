@@ -41,4 +41,5 @@ public class UserDto {
     private String timezone;
     private boolean verifiedEmail;
     private String role;
+    private List<String> subjects;
 }
