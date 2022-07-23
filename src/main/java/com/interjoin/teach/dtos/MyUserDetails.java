@@ -20,7 +20,7 @@ public class MyUserDetails implements UserDetails {
     public MyUserDetails(User user) {
         this.email = user.getEmail();
         this.password = user.getPassword();
-        this.active = true;
+        this.active = user.isVerifiedEmail();
         this.authorities = Arrays.stream(user.getRole().split(","))
                     .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                     .collect(Collectors.toList());

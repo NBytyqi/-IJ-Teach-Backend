@@ -382,8 +382,6 @@ public class UserService {
 
         User user = repository.findByEmail(request.getEmail()).get();
 
-        List<String> roles = userDetails.getAuthorities().stream().map(auth -> auth.getAuthority()).collect(Collectors.toList());
-
         final String JWT = jwtTokenUtil.generateToken(userDetails);
 
         return AuthResponse.builder()
