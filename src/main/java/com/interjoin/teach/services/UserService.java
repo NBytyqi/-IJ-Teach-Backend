@@ -111,9 +111,9 @@ public class UserService {
             user.setLocation(request.getLocation());
         }
 
-        if(StringUtils.isNotBlank(request.getPhone())) {
+        if(StringUtils.isNotBlank(request.getPhoneNumber())) {
             System.out.println("Updating phone");
-            user.setPhoneNumber(request.getPhone());
+            user.setPhoneNumber(request.getPhoneNumber());
         }
 
         if(StringUtils.isNotBlank(request.getShortBio())) {

@@ -16,7 +16,7 @@ import java.util.Set;
 public class UpdateProfileRequest {
     private String password;
     private String location;
-    private String phone;
+    private String phoneNumber;
 
     private BigDecimal pricePerHour;
     private String shortBio;
