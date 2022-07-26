@@ -156,6 +156,10 @@ public class UserService {
             experienceService.deleteForUser(user);
             experienceService.save(request.getExperiences(), user);
         }
+
+        if(Optional.ofNullable(request.getTimezone()).isPresent()) {
+            user.setTimeZone(request.getTimezone());
+        }
         //delete old available times
 //        availableTimesService.deleteAllByUser(user);
 //        user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(),  user.getTimeZone(), user));
