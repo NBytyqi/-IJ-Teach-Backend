@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 @Builder
 public class TeacherDto {
 
+    private Long id;
     private String firstName;
     private String lastName;
     private String profilePicture;

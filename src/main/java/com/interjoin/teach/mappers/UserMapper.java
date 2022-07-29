@@ -74,6 +74,7 @@ public class UserMapper {
 
     public static TeacherDto mapTeacher(UserInterface user) {
         return TeacherDto.builder()
+                .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .agencyName(user.getAgencyName())
