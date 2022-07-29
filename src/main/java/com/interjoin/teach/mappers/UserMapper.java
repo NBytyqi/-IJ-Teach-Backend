@@ -76,6 +76,13 @@ public class UserMapper {
         return TeacherDto.builder()
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .agencyName(user.getAgencyName())
+                .qualifications(user.getQualifications())
+                .listedPrice(user.getListedPrice())
+                .longBio(user.getLongBio())
+                .shortBio(user.getShortBio())
+                .location(user.getLocation())
+                .rating(user.getRating())
 //                .profilePicture()
                 .build();
     }

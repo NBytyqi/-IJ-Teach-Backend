@@ -10,5 +10,9 @@ public interface UserInterface {
     String getShortBio();
     BigDecimal getListedPrice();
     Double getRating();
+    String getAgencyName();
+    String getQualifications();
+    String getLongBio();
+    String getLocation();
 
 }
