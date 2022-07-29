@@ -25,6 +25,7 @@ public class UpdateProfileRequest {
     private Set<SubjectCurriculumDto> subCurrList;
     private List<ExperienceDto> experiences;
     private String timezone;
+    private List<Long> favoriteTeacherIds;
 
 
 }

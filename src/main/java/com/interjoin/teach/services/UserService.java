@@ -160,6 +160,10 @@ public class UserService {
         if(Optional.ofNullable(request.getTimezone()).isPresent()) {
             user.setTimeZone(request.getTimezone());
         }
+
+        if(Optional.ofNullable(request.getFavoriteTeacherIds()).isPresent()) {
+            user.setFavoriteTeacherIds(request.getFavoriteTeacherIds());
+        }
         //delete old available times
 //        availableTimesService.deleteAllByUser(user);
 //        user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(),  user.getTimeZone(), user));
