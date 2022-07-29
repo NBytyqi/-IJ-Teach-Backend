@@ -60,6 +60,7 @@ public class UserMapper {
                 .timezone(user.getTimeZone())
                 .role(user.getRole())
                 .subjects(user.getSubjects())
+                .favoriteTeacherIds(user.getFavoriteTeacherIds())
                 .build();
     }
 

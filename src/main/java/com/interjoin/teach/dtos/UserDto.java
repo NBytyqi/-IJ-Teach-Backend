@@ -42,4 +42,5 @@ public class UserDto {
     private boolean verifiedEmail;
     private String role;
     private List<String> subjects;
+    private List<Long> favoriteTeacherIds;
 }

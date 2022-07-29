@@ -31,5 +31,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getFilteredTeachers());
     }
 
+    @PutMapping(path = "/favorite/{teacherId}")
+    public ResponseEntity<Void> favoriteTeacherById(@PathVariable("teacherId") Long teacherId, @RequestParam boolean favorite) {
+        userService.favoriteTeacher(teacherId, favorite);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

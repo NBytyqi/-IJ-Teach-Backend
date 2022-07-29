@@ -661,5 +661,19 @@ public class UserService {
 
         return teacherInfos;
     }
+
+    public void favoriteTeacher(Long teacherId, boolean favorite) {
+        User student = getCurrentUserDetails();
+        if(student.getFavoriteTeacherIds() == null) {
+            student.setFavoriteTeacherIds(new ArrayList<>());
+        }
+        List<Long> favoriteTeachers = student.getFavoriteTeacherIds();
+        if(favorite) {
+            favoriteTeachers.add(teacherId);
+        } else {
+            favoriteTeachers.remove(teacherId);
+        }
+        repository.save(student);
+    }
 }
 

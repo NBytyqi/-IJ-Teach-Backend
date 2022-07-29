@@ -82,6 +82,10 @@ public class User {
     @CollectionTable(name = "user_subject", joinColumns = @JoinColumn(name = "user_id", nullable = true))
     private List<String> subjects;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "student_favorite_teacher", joinColumns = @JoinColumn(name = "student_id", nullable = true))
+    private List<Long> favoriteTeacherIds;
+
     // This will be used for faster search of teachers for sub curriculum
     @Column(name = "sub_curr_str")
     private String subCurrStr;
