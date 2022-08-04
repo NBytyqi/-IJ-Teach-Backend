@@ -230,7 +230,7 @@ public class UserService {
             user.setQualifications(request.getQualifications());
             user.setPricePerHour(request.getPricePerHour());
             BigDecimal percentage = request.getPricePerHour().multiply(BigDecimal.valueOf(22.5)).divide(BigDecimal.valueOf(100));
-            user.setListedPrice(request.getPricePerHour().add(percentage));
+            user.setListedPrice(request.getPricePerHour().add(percentage).setScale(0, BigDecimal.ROUND_CEILING ));
         }
         user = repository.save(user);
 
