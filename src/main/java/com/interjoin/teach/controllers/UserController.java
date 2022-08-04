@@ -2,6 +2,7 @@ package com.interjoin.teach.controllers;
 
 import com.interjoin.teach.dtos.TeacherInfo;
 import com.interjoin.teach.dtos.UserDto;
+import com.interjoin.teach.dtos.requests.TeacherFilterRequest;
 import com.interjoin.teach.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +28,8 @@ public class UserController {
     }
 
     @PostMapping(path = "/teachers")
-    public ResponseEntity<List<TeacherInfo>> getFilteredTeachers() {
-        return ResponseEntity.ok(userService.getFilteredTeachers());
+    public ResponseEntity<List<TeacherInfo>> getFilteredTeachers(@RequestBody TeacherFilterRequest filterRequest) {
+        return ResponseEntity.ok(userService.getFilteredTeachers(filterRequest));
     }
 
     @PutMapping(path = "/favorite/{teacherId}")

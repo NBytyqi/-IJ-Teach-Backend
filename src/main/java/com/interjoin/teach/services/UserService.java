@@ -3,20 +3,19 @@ package com.interjoin.teach.services;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.*;
-import com.interjoin.teach.dtos.interfaces.UserInterface;
 import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
+import com.interjoin.teach.dtos.requests.TeacherFilterRequest;
 import com.interjoin.teach.dtos.requests.UpdateProfileRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
-import com.interjoin.teach.entities.AvailableTimes;
-import com.interjoin.teach.entities.Subject;
-import com.interjoin.teach.entities.SubjectCurriculum;
-import com.interjoin.teach.entities.User;
+import com.interjoin.teach.entities.*;
 import com.interjoin.teach.jwt.JwtUtil;
 import com.interjoin.teach.mappers.UserMapper;
+import com.interjoin.teach.repositories.CurriculumRepository;
 import com.interjoin.teach.repositories.SubjectCurriculumRepository;
+import com.interjoin.teach.repositories.SubjectRepository;
 import com.interjoin.teach.repositories.UserRepository;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +68,8 @@ public class UserService {
     private String VERIFICATION_PROCESS_SUBJECT;
 
     private final SubjectCurriculumRepository subCurrRepository;
+    private final CurriculumRepository curriculumRepository;
+    private final SubjectRepository subjectRepository;
 
     private final JwtUtil jwtTokenUtil;
 
@@ -620,6 +621,7 @@ public class UserService {
 
     public Page<UserDto> getAgencyUsers(Pageable pageable) {
         User agencyUser = getCurrentUserDetails();
+//        List
         return repository.findByAgencyAndAgencyName(false, agencyUser.getAgencyName(), pageable).map(UserMapper::map);
     }
 
@@ -643,14 +645,43 @@ public class UserService {
         return String.format("%06d", number);
     }
 
-    public List<TeacherInfo> getFilteredTeachers() {
+    public List<TeacherInfo> getFilteredTeachers(TeacherFilterRequest filterRequest) {
+        List<TeacherInfo> teacherInfos = new ArrayList<>();
+
+        if(Optional.ofNullable(filterRequest.getCurriculum()).isEmpty()) {
+            teacherInfos = getCurrentStudentFilteredTeachersOnPreferences();
+        } else {
+            Curriculum curriculum = curriculumRepository.findFirstByCurriculumName(filterRequest.getCurriculum());
+            List<Subject> subjects = new ArrayList<>();
+
+            if(Optional.ofNullable(filterRequest.getSubjects()).isEmpty()) {
+                subjects = curriculum.getSubjects();
+            } else {
+                subjects = subjectRepository.findBySubjectNameIn(filterRequest.getSubjects());
+            }
+
+            for(Subject subject : subjects) {
+                teacherInfos.add(
+                        TeacherInfo.builder()
+                                .subjectName(subject.getSubjectName())
+                                .teachers(UserMapper.mapTeachers(repository.getTeachersPerSubjectAndCurriculum(subject.getId(), curriculum.getId())))
+                                .build()
+                );
+            }
+        }
+
+
+        return teacherInfos;
+    }
+
+    public List<TeacherInfo> getCurrentStudentFilteredTeachersOnPreferences() {
         List<TeacherInfo> teacherInfos = new ArrayList<>();
         User currentStudent = getCurrentUserDetails();
 
         List<Subject> subjects = currentStudent.getSubjectCurriculums()
-                                              .stream().map(SubjectCurriculum::getSubject)
+                .stream().map(SubjectCurriculum::getSubject)
 //                                              .map(Subject::getId).distinct()
-                                              .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
 
 //        List<Long> teachers = subCurrService.getTeachersForSubjects(subjectIds);

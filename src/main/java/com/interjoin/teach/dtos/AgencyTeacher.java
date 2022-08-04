@@ -5,16 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.Set;
-
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class CurriculumDto {
-
-    private Long id;
-    private String curriculumName;
-    private List<SubjectDto> subjects;
+public class AgencyTeacher {
 }

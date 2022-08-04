@@ -1,5 +1,6 @@
 package com.interjoin.teach.repositories;
 
+import com.interjoin.teach.entities.Curriculum;
 import com.interjoin.teach.entities.SubjectCurriculum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,6 @@ public interface SubjectCurriculumRepository extends JpaRepository<SubjectCurric
     @Query(value = "SELECT ucs.user_id from user_curriculum_subject ucs where ucs.subject_id in (:subjects)",
     nativeQuery = true)
     List<Long> getTeachersForSubjects(@Param("subjects") List<Long> subjects);
+
+    List<SubjectCurriculum> findByCurriculum(Curriculum curriculum);
 }
