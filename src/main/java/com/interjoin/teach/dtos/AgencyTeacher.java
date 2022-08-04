@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder(toBuilder = true)
-@NoArgsConstructor
 @AllArgsConstructor
 public class AgencyTeacher {
 }
