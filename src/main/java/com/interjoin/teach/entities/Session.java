@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -34,6 +35,8 @@ public class Session {
 
     @OneToOne(fetch = FetchType.LAZY)
     private User teacher;
+
+    private BigDecimal price;
 
     private OffsetDateTime dateSlot;
 

@@ -11,6 +11,7 @@ import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.*;
+import com.interjoin.teach.enums.JoinAgencyStatus;
 import com.interjoin.teach.jwt.JwtUtil;
 import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.CurriculumRepository;
@@ -232,6 +233,7 @@ public class UserService {
             BigDecimal percentage = request.getPricePerHour().multiply(BigDecimal.valueOf(22.5)).divide(BigDecimal.valueOf(100));
             user.setListedPrice(request.getPricePerHour().add(percentage).setScale(0, BigDecimal.ROUND_CEILING ));
         }
+        user.setJoinAgencyStatus(JoinAgencyStatus.NOT_JOINED);
         user = repository.save(user);
 
         return SignupResponseDto.builder().firstName(user.getFirstName())
@@ -620,9 +622,10 @@ public class UserService {
     }
 
     public Page<UserDto> getAgencyUsers(Pageable pageable) {
-        User agencyUser = getCurrentUserDetails();
-//        List
-        return repository.findByAgencyAndAgencyName(false, agencyUser.getAgencyName(), pageable).map(UserMapper::map);
+//        User agencyUser = getCurrentUserDetails();
+//        List<User> users = repository.findByAgencyAndAgencyName(false, agencyUser.getAgencyName(), pageable);
+//        return repository.findByAgencyAndAgencyName(false, agencyUser.getAgencyName(), pageable).map(UserMapper::map);
+        return null;
     }
 
     public void removeAgencyTeacher(Long teacherId) {
@@ -709,6 +712,25 @@ public class UserService {
             favoriteTeachers.remove(teacherId);
         }
         repository.save(student);
+    }
+
+    public List<String> getCurriculumsOfSubjectAndTeacher(Long teacherId, String subjectName) throws InterjoinException {
+        User user = getUserById(teacherId);
+//        Set<SubjectCurriculum> subjectCurriculumSet =
+        List<Curriculum> curriculumList = user.getSubjectCurriculums().stream()
+                                          .filter(sc -> sc.getSubject().getSubjectName().equals(subjectName))
+                                          .map(SubjectCurriculum::getCurriculum)
+                                          .collect(Collectors.toList());
+
+        List<String> curriculums = new ArrayList<>();
+        if(curriculumList != null && !curriculumList.isEmpty()) {
+            curriculums = curriculumList.stream().map(Curriculum::getCurriculumName).collect(Collectors.toList());
+        }
+        return curriculums;
+    }
+
+    private User getUserById(Long userId) throws InterjoinException {
+        return repository.findById(userId).orElseThrow(() -> new InterjoinException("User doesn't exists"));
     }
 }
 

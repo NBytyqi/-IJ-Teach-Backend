@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     // GET AGENCY USERS
-    Page<User> findByAgencyAndAgencyName(boolean isAgency, String agencyName, Pageable pageable);
+    List<User> findByAgencyAndAgencyName(boolean isAgency, String agencyName, Pageable pageable);
 
     Optional<User> findFirstByAgencyCode(String agencyCode);
 

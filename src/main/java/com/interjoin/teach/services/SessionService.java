@@ -68,6 +68,7 @@ public class SessionService {
                                  .student(student)
                                  .dateSlot(request.getDate().getDateTime())
                                  .sessionStatus(SessionStatus.PAYMENT_PENDING)
+                                 .price(teacher.getListedPrice())
                                  .build();
         session = sessionRepository.save(session);
 

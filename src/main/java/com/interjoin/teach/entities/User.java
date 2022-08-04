@@ -1,5 +1,6 @@
 package com.interjoin.teach.entities;
 
+import com.interjoin.teach.enums.JoinAgencyStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -145,5 +146,10 @@ public class User {
 
     @Column(nullable = true)
     private String resetPasswordCode;
+
+    private BigDecimal totalEarned;
+
+    @Enumerated(EnumType.STRING)
+    private JoinAgencyStatus joinAgencyStatus;
 
 }

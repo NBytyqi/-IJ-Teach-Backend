@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -17,6 +18,7 @@ public class TeacherDto {
     private String firstName;
     private String lastName;
     private String profilePicture;
+
 
     private String agencyName;
     private String qualifications;

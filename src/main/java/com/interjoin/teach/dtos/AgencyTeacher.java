@@ -3,10 +3,29 @@ package com.interjoin.teach.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @Builder(toBuilder = true)
 @AllArgsConstructor
 public class AgencyTeacher {
+
+    private String firstName;
+    private String lastName;
+    private Double rating;
+    private String location;
+    private String shortBio;
+    private String longBio;
+    private Set<SubjectCurriculumResponse> subCurrList;
+    private BigDecimal listedPrice;
+
+    private Long totalHours;
+    private Double totalEarnings;
+    private LocalDate dateOfJoiningAgency;
+
+
+
 }

@@ -1,10 +1,12 @@
 package com.interjoin.teach.controllers;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.TeacherInfo;
 import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.requests.TeacherFilterRequest;
 import com.interjoin.teach.services.UserService;
 import lombok.RequiredArgsConstructor;
+import org.bouncycastle.jcajce.provider.symmetric.TEA;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +38,11 @@ public class UserController {
     public ResponseEntity<Void> favoriteTeacherById(@PathVariable("teacherId") Long teacherId, @RequestParam boolean favorite) {
         userService.favoriteTeacher(teacherId, favorite);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/subjects")
+    public ResponseEntity<List<String>> getCurriculumsOfSubjectAndTeacher(@RequestParam Long teacherId, @RequestParam String subject) throws InterjoinException {
+        return ResponseEntity.ok(userService.getCurriculumsOfSubjectAndTeacher(teacherId, subject));
     }
 
 
