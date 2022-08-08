@@ -101,7 +101,7 @@ public class UserService {
     public UserDto getTeacherById(Long teacherId) {
         UserDto teacher = getTeacherById(teacherId);
 
-        teacher.setReviews(ReviewMapper.map(reviewRepository.findByTeacherId(teacherId)));
+        teacher.setReviews(ReviewMapper.map(Optional.ofNullable(reviewRepository.findByTeacherId(teacherId)).orElse(new ArrayList<>())));
         return teacher;
     }
 
