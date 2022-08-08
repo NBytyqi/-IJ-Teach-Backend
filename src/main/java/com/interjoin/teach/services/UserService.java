@@ -99,6 +99,10 @@ public class UserService {
         return UserMapper.map(getCurrentUserDetails());
     }
 
+    public UserDto getTeacherById(Long teacherId) {
+        return getTeacherById(teacherId);
+    }
+
     public UserDto updateProfile(UpdateProfileRequest request) {
         User user = getCurrentUserDetails();
         if(StringUtils.isNotBlank(request.getPassword())) {

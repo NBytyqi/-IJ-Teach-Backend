@@ -24,6 +24,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getCurrentUserAsDto());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getTeacherById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getTeacherById(id));
+    }
+
     @PostMapping(path = "/interjoin-verification")
     public ResponseEntity<?> purschaseVerification(@RequestParam(name = "process") String process) {
         return ResponseEntity.ok(userService.purchaseVerification(process));
