@@ -13,11 +13,9 @@ import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.*;
 import com.interjoin.teach.enums.JoinAgencyStatus;
 import com.interjoin.teach.jwt.JwtUtil;
+import com.interjoin.teach.mappers.ReviewMapper;
 import com.interjoin.teach.mappers.UserMapper;
-import com.interjoin.teach.repositories.CurriculumRepository;
-import com.interjoin.teach.repositories.SubjectCurriculumRepository;
-import com.interjoin.teach.repositories.SubjectRepository;
-import com.interjoin.teach.repositories.UserRepository;
+import com.interjoin.teach.repositories.*;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +59,7 @@ public class UserService {
     private final ExperienceService experienceService;
     private final PaymentService paymentService;
     private final EmailService emailService;
+    private final ReviewRepository reviewRepository;
 
     private final AuthenticationManager authenticationManager;
 
@@ -100,7 +99,10 @@ public class UserService {
     }
 
     public UserDto getTeacherById(Long teacherId) {
-        return getTeacherById(teacherId);
+        UserDto teacher = getTeacherById(teacherId);
+
+        teacher.setReviews(ReviewMapper.map(reviewRepository.findByTeacherId(teacherId)));
+        return teacher;
     }
 
     public UserDto updateProfile(UpdateProfileRequest request) {

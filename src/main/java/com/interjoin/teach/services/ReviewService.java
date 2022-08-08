@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -37,6 +38,8 @@ public class ReviewService {
                 .session(session)
                 .studentId(Optional.ofNullable(session.getStudent()).map(User::getId).orElse(null))
                 .teacherId(Optional.ofNullable(session.getStudent()).map(User::getId).orElse(null))
+                .stars(request.getStars())
+                .date(LocalDate.now())
                 .build();
 
         reviewRepository.save(review);

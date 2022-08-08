@@ -9,4 +9,5 @@ public class ReviewRequest {
 
     private String review;
     private String sessionUuid;
+    private Double stars;
 }

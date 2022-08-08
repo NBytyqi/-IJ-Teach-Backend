@@ -43,4 +43,5 @@ public class UserDto {
     private String role;
     private List<String> subjects;
     private List<Long> favoriteTeacherIds;
+    private List<ReviewDto> reviews;
 }

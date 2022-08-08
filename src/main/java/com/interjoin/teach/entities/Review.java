@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Data
@@ -28,4 +29,8 @@ public class Review {
     @Lob
     @Column(name = "review", length = 1000)
     private String review;
+
+    private Double stars;
+
+    private LocalDate date;
 }
