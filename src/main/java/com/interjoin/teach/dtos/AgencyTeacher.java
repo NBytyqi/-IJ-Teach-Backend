@@ -23,7 +23,7 @@ public class AgencyTeacher {
     private BigDecimal listedPrice;
 
     private Long totalHours;
-    private Double totalEarnings;
+    private BigDecimal totalEarnings;
     private LocalDate dateOfJoiningAgency;
 
 

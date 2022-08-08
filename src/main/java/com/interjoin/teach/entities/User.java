@@ -59,6 +59,8 @@ public class User {
     private String phoneNumber;
     private LocalDate dateOfBirth;
 
+    private LocalDate dateOfJoiningAgency;
+
     @Lob
     @Type(type="org.hibernate.type.BinaryType")
     @Column(name = "profile_picture")
@@ -148,6 +150,7 @@ public class User {
     private String resetPasswordCode;
 
     private BigDecimal totalEarned;
+    private Long totalHours;
 
     @Enumerated(EnumType.STRING)
     private JoinAgencyStatus joinAgencyStatus;

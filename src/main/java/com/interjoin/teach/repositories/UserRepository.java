@@ -1,9 +1,8 @@
 package com.interjoin.teach.repositories;
 
-import com.interjoin.teach.dtos.TeacherInfo;
 import com.interjoin.teach.dtos.interfaces.UserInterface;
 import com.interjoin.teach.entities.User;
-import org.springframework.data.domain.Page;
+import com.interjoin.teach.enums.JoinAgencyStatus;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
     // GET AGENCY USERS
-    List<User> findByAgencyAndAgencyName(boolean isAgency, String agencyName, Pageable pageable);
+    List<User> findByAgencyAndAgencyNameAndJoinAgencyStatus(boolean isAgency, String agencyName, JoinAgencyStatus status);
 
     Optional<User> findFirstByAgencyCode(String agencyCode);
 

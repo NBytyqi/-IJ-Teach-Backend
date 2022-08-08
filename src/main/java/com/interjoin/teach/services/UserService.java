@@ -23,8 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -44,6 +42,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
@@ -621,14 +620,14 @@ public class UserService {
 //        subCurrRepository.d
     }
 
-    public Page<UserDto> getAgencyUsers(Pageable pageable) {
-//        User agencyUser = getCurrentUserDetails();
-//        List<User> users = repository.findByAgencyAndAgencyName(false, agencyUser.getAgencyName(), pageable);
-//        return repository.findByAgencyAndAgencyName(false, agencyUser.getAgencyName(), pageable).map(UserMapper::map);
-        return null;
+    public List<AgencyTeacher> getAgencyUsers(String status) {
+        User agencyUser = getCurrentUserDetails();
+        JoinAgencyStatus joinStatus = status.equals("active") ? JoinAgencyStatus.APPROVED : JoinAgencyStatus.REQUEST;
+        List<User> users = repository.findByAgencyAndAgencyNameAndJoinAgencyStatus(false, agencyUser.getAgencyName(), joinStatus);
+        return UserMapper.mapAgencyTeachers(users);
     }
 
-    public void removeAgencyTeacher(Long teacherId) {
+    public void approveOrDeclineAgencyTeacher(Long teacherId, boolean approve) {
         User currentAgency = getCurrentUserDetails();
         User teacher = repository.findById(teacherId).orElseThrow(EntityNotFoundException::new);
 
@@ -637,7 +636,16 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        teacher.setAgencyName(null);
+        if(approve) {
+            teacher.setAgencyName(currentAgency.getAgencyName());
+            teacher.setJoinAgencyStatus(JoinAgencyStatus.APPROVED);
+            teacher.setDateOfJoiningAgency(LocalDate.now());
+        } else {
+            teacher.setAgencyName(null);
+            teacher.setJoinAgencyStatus(JoinAgencyStatus.DECLINED);
+            teacher.setDateOfJoiningAgency(null);
+        }
+
         repository.save(teacher);
     }
 
@@ -731,6 +739,30 @@ public class UserService {
 
     private User getUserById(Long userId) throws InterjoinException {
         return repository.findById(userId).orElseThrow(() -> new InterjoinException("User doesn't exists"));
+    }
+
+    public AgencyDashboardDataDto getAgencyDashboardData() {
+        User agency = getCurrentUserDetails();
+
+        List<User> agencyUsers = repository.findByAgencyAndAgencyNameAndJoinAgencyStatus(false, agency.getAgencyName(), JoinAgencyStatus.APPROVED);
+
+
+        AtomicReference<Long> totalHours = new AtomicReference<>(0L);
+        AtomicReference<BigDecimal> totalEarnings = new AtomicReference<>(BigDecimal.ZERO);
+
+        agencyUsers.stream().forEach(user -> {
+            totalHours.updateAndGet(v -> v + Optional.ofNullable(user.getTotalHours()).orElse(0L));
+            totalEarnings.updateAndGet(v -> v.add(Optional.ofNullable(user.getTotalEarned()).orElse(BigDecimal.ZERO)));
+        });
+        // TODO WE NEED TO UPDATE THE AVAILABLE BALANCE AND THE LAST PAYMENT
+        AgencyDashboardDataDto dashboardData = AgencyDashboardDataDto.builder()
+                .totalHours(totalHours.get())
+                .totalAgencyEarnings(totalEarnings.get())
+                .availableBalance(BigDecimal.ZERO)
+                .lastPayment(BigDecimal.ZERO)
+                .build();
+
+        return dashboardData;
     }
 }
 

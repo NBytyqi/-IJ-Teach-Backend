@@ -1,15 +1,13 @@
 package com.interjoin.teach.mappers;
 
+import com.interjoin.teach.dtos.AgencyTeacher;
 import com.interjoin.teach.dtos.TeacherDto;
 import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.dtos.interfaces.UserInterface;
 import com.interjoin.teach.entities.User;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class UserMapper {
 
@@ -96,4 +94,28 @@ public class UserMapper {
         return teachers;
     }
 
+    public static List<AgencyTeacher> mapAgencyTeachers(List<User> users) {
+        List<AgencyTeacher> agencyTeachers = new ArrayList<>();
+
+        for(User user : users) {
+            agencyTeachers.add(mapAgencyTeacher(user));
+        }
+        return agencyTeachers;
+    }
+
+    private static AgencyTeacher mapAgencyTeacher(User user) {
+        return AgencyTeacher.builder()
+                .dateOfJoiningAgency(user.getDateOfJoiningAgency())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .listedPrice(user.getListedPrice())
+                .location(user.getLocation())
+                .longBio(user.getLongBio())
+                .rating(user.getRating())
+                .shortBio(user.getShortBio())
+                .subCurrList(Optional.ofNullable(user.getSubjectCurriculums()).map(SubjectCurriculumMapper::map).orElse(new HashSet<>()))
+                .totalEarnings(user.getTotalEarned())
+                .totalHours(user.getTotalHours())
+                .build();
+    }
 }
