@@ -14,5 +14,6 @@ public interface UserInterface {
     String getQualifications();
     String getLongBio();
     String getLocation();
+    byte[] getProfilePicture();
 
 }

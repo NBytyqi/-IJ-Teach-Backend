@@ -15,4 +15,5 @@ public class TeacherInfo {
 
     private String subjectName;
     private List<TeacherDto> teachers;
+    private byte[] profilePicture;
 }

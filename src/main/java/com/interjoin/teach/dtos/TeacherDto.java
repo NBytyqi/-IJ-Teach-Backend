@@ -17,7 +17,7 @@ public class TeacherDto {
     private Long id;
     private String firstName;
     private String lastName;
-    private String profilePicture;
+    private byte[] profilePicture;
 
 
     private String agencyName;

@@ -57,4 +57,6 @@ public class UserSignupRequest {
 
     private BigDecimal pricePerHour;
 
+    private String profilePicture;
+
 }

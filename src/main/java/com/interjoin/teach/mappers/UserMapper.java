@@ -82,7 +82,7 @@ public class UserMapper {
                 .shortBio(user.getShortBio())
                 .location(user.getLocation())
                 .rating(user.getRating())
-//                .profilePicture()
+                .profilePicture(user.getProfilePicture())
                 .build();
     }
 
