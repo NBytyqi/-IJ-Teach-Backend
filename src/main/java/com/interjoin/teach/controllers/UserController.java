@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getTeacherById(@PathVariable Long id) {
+    public ResponseEntity<UserDto> getTeacherById(@PathVariable Long id) throws InterjoinException {
         return ResponseEntity.ok(userService.getTeacherById(id));
     }
 

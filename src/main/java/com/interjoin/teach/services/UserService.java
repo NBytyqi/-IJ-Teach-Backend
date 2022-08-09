@@ -16,6 +16,7 @@ import com.interjoin.teach.jwt.JwtUtil;
 import com.interjoin.teach.mappers.ReviewMapper;
 import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.*;
+import com.interjoin.teach.roles.Roles;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -98,9 +99,9 @@ public class UserService {
         return UserMapper.map(getCurrentUserDetails());
     }
 
-    public UserDto getTeacherById(Long teacherId) {
-        UserDto teacher = getTeacherById(teacherId);
-
+    public UserDto getTeacherById(Long teacherId) throws InterjoinException {
+        UserDto teacher = repository.findByRoleAndId(Roles.TEACHER, teacherId).map(UserMapper::map)
+                .orElseThrow(() -> new InterjoinException("Teacher with id " + teacherId + " doesn't exist"));
         teacher.setReviews(ReviewMapper.map(Optional.ofNullable(reviewRepository.findByTeacherId(teacherId)).orElse(new ArrayList<>())));
         return teacher;
     }

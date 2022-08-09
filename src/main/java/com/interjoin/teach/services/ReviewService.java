@@ -2,16 +2,20 @@ package com.interjoin.teach.services;
 
 import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.config.exceptions.ReviewSessionException;
+import com.interjoin.teach.dtos.ReviewDto;
 import com.interjoin.teach.dtos.requests.ReviewRequest;
 import com.interjoin.teach.entities.Review;
 import com.interjoin.teach.entities.Session;
 import com.interjoin.teach.entities.User;
+import com.interjoin.teach.mappers.ReviewMapper;
 import com.interjoin.teach.repositories.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,5 +47,10 @@ public class ReviewService {
                 .build();
 
         reviewRepository.save(review);
+    }
+
+    public List<ReviewDto> getCurrentTeacherReviews() {
+        User teacher = userService.getCurrentUserDetails();
+        return Optional.ofNullable(ReviewMapper.map(reviewRepository.findByTeacherId(teacher.getId()))).orElse(new ArrayList<>());
     }
 }
