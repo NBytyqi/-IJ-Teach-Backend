@@ -66,7 +66,7 @@ public class UserMapper {
         return TeacherDto.builder()
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-//                .profilePicture()
+                .profilePicture(user.getProfilePicture())
                 .build();
     }
 
