@@ -690,7 +690,7 @@ public class UserService {
         List<TeacherInfo> teacherInfos = new ArrayList<>();
 
         if(Optional.ofNullable(filterRequest.getCurriculum()).isEmpty()) {
-            teacherInfos = getCurrentStudentFilteredTeachersOnPreferences();
+            teacherInfos = getCurrentStudentFilteredTeachersOnPreferences(filterRequest.getIsVerified());
         } else {
             Curriculum curriculum = curriculumRepository.findFirstByCurriculumName(filterRequest.getCurriculum());
             List<Subject> subjects = new ArrayList<>();
@@ -702,10 +702,14 @@ public class UserService {
             }
 
             for(Subject subject : subjects) {
+                List<TeacherDto> teachers = UserMapper.mapTeachers(repository.getTeachersPerSubjectAndCurriculum(subject.getId(), curriculum.getId()));
+                if(Optional.ofNullable(filterRequest.getIsVerified()).isPresent()) {
+                    teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(filterRequest.getIsVerified())).collect(Collectors.toList());
+                }
                 teacherInfos.add(
                         TeacherInfo.builder()
                                 .subjectName(subject.getSubjectName())
-                                .teachers(UserMapper.mapTeachers(repository.getTeachersPerSubjectAndCurriculum(subject.getId(), curriculum.getId())))
+                                .teachers(teachers)
                                 .build()
                 );
             }
@@ -715,7 +719,7 @@ public class UserService {
         return teacherInfos;
     }
 
-    public List<TeacherInfo> getCurrentStudentFilteredTeachersOnPreferences() {
+    public List<TeacherInfo> getCurrentStudentFilteredTeachersOnPreferences(Boolean isVerified) {
         List<TeacherInfo> teacherInfos = new ArrayList<>();
         User currentStudent = getCurrentUserDetails();
 
@@ -727,10 +731,14 @@ public class UserService {
 
 //        List<Long> teachers = subCurrService.getTeachersForSubjects(subjectIds);
         for(Subject subject : subjects) {
+            List<TeacherDto> teachers = UserMapper.mapTeachers(repository.getTeachersPerSubject(subject.getId()));
+            if(Optional.ofNullable(isVerified).isPresent()) {
+                teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(isVerified)).collect(Collectors.toList());
+            }
             teacherInfos.add(
                     TeacherInfo.builder()
                             .subjectName(subject.getSubjectName())
-                            .teachers(UserMapper.mapTeachers(repository.getTeachersPerSubject(subject.getId())))
+                            .teachers(teachers)
                             .build()
             );
         }
