@@ -31,7 +31,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     nativeQuery = true)
     List<UserInterface> getTeachersPerSubject(@Param("subjectId") Long subjectId);
 
-    @Query(value = "SELECT u.id, u.first_name as firstName, u.last_name as lastName, u.short_bio as shortBio, u.listed_price as listedPrice, u.rating, u.agency_name as agencyName, u.qualifications, u.long_bio as longBio, u.location as location from users u " +
+    @Query(value = "SELECT u.id, u.first_name as firstName, u.last_name as lastName, u.short_bio as shortBio, u.listed_price as listedPrice, u.rating, u.agency_name as agencyName, u.qualifications, u.long_bio as longBio, u.location as location, u.verified_teacher as verifiedTeacher from users u " +
             " inner join user_curriculum_subject ucs ON u.id = ucs.user_id WHERE ucs.subject_id = :subjectId AND ucs.curriculum_Id = :curriculumId AND u.role='TEACHER'",
             nativeQuery = true)
     List<UserInterface> getTeachersPerSubjectAndCurriculum(@Param("subjectId") Long subjectId, @Param("curriculumId") Long curriculumId);

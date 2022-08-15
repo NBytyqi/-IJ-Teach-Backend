@@ -75,8 +75,8 @@ public class AuthController {
         return ResponseEntity.ok(service.getCurrentUserDetailsAsDto());
     }
 
-    @GetMapping("/email")
-    public ResponseEntity<Boolean> checkIfUserEmailExists(@RequestParam String email) throws EmailAlreadyExistsException {
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Boolean> checkIfUserEmailExists(@PathVariable String email) throws EmailAlreadyExistsException {
         return ResponseEntity.ok(service.emailAlreadyExists(email));
     }
 

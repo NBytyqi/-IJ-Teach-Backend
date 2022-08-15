@@ -83,6 +83,7 @@ public class UserMapper {
                 .location(user.getLocation())
                 .rating(user.getRating())
                 .profilePicture(user.getProfilePicture())
+                .verifiedTeacher(user.getVerifiedTeacher())
                 .build();
     }
 

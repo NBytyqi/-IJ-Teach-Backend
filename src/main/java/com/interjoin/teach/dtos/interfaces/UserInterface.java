@@ -15,5 +15,6 @@ public interface UserInterface {
     String getLongBio();
     String getLocation();
     byte[] getProfilePicture();
+    Boolean getVerifiedTeacher();
 
 }

@@ -187,6 +187,7 @@ public class UserService {
         User user = UserMapper.mapUserRequest(request);
         user.setOtpVerificationCode(getRandomNumberString());
         user.setVerifiedEmail(false);
+        user.setVerifiedTeacher(false);
 
 //        String usernameCreated = awsService.signUpUser(request, role);
 //        user.setCognitoUsername(usernameCreated);

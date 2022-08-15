@@ -27,4 +27,5 @@ public class TeacherDto {
     private String shortBio;
     private String location;
     private Double rating;
+    private Boolean verifiedTeacher;
 }
