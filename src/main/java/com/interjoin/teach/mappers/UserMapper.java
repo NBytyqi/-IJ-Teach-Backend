@@ -117,6 +117,7 @@ public class UserMapper {
                 .subCurrList(Optional.ofNullable(user.getSubjectCurriculums()).map(SubjectCurriculumMapper::map).orElse(new HashSet<>()))
                 .totalEarnings(user.getTotalEarned())
                 .totalHours(user.getTotalHours())
+                .profilePicture(user.getProfilePicture())
                 .build();
     }
 }

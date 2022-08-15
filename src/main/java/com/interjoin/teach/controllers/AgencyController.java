@@ -2,14 +2,10 @@ package com.interjoin.teach.controllers;
 
 import com.interjoin.teach.dtos.AgencyDashboardDataDto;
 import com.interjoin.teach.dtos.AgencyTeacher;
-import com.interjoin.teach.dtos.UserDto;
+import com.interjoin.teach.dtos.AgencyTeachersList;
 import com.interjoin.teach.roles.Roles;
 import com.interjoin.teach.services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +23,11 @@ public class AgencyController {
     @GetMapping("/users")
     public ResponseEntity<List<AgencyTeacher>> getActiveAgencyUsers(@RequestParam String status) {
         return ResponseEntity.ok(userService.getAgencyUsers(status));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<AgencyTeachersList>> getAllAgenciesData() {
+        return ResponseEntity.ok(userService.getAgenciesTeachersList());
     }
 
     @PutMapping("/teacher/{teacherId}")

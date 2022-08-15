@@ -21,8 +21,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByRoleAndId(String role, Long id);
 
-    // GET AGENCY USERS
+    // GET AGENCY TEACHER
     List<User> findByAgencyAndAgencyNameAndJoinAgencyStatus(boolean isAgency, String agencyName, JoinAgencyStatus status);
+
+    List<User> findByAgency(boolean isAgency);
 
     Optional<User> findFirstByAgencyCode(String agencyCode);
 

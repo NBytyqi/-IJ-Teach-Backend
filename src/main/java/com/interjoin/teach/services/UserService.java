@@ -630,8 +630,30 @@ public class UserService {
 
     public List<AgencyTeacher> getAgencyUsers(String status) {
         User agencyUser = getCurrentUserDetails();
+        return getAgencyUserss(agencyUser, status);
+    }
+
+    public List<AgencyTeachersList> getAgenciesTeachersList() {
+        List<User> agencies = repository.findByAgency(true);
+        List<AgencyTeachersList> agencyTeachers = new ArrayList<>();
+
+        for(User agency : agencies) {
+            agencyTeachers.add(
+                    AgencyTeachersList.builder()
+                            .agencyName(agency.getAgencyName())
+                            .location(agency.getLocation())
+                            .shortBio(agency.getShortBio())
+                            .teachers(getAgencyUserss(agency, "active"))
+
+                            .build()
+            );
+        }
+        return agencyTeachers;
+    }
+
+    private List<AgencyTeacher> getAgencyUserss(User agency, String status) {
         JoinAgencyStatus joinStatus = status.equals("active") ? JoinAgencyStatus.APPROVED : JoinAgencyStatus.REQUEST;
-        List<User> users = repository.findByAgencyAndAgencyNameAndJoinAgencyStatus(false, agencyUser.getAgencyName(), joinStatus);
+        List<User> users = repository.findByAgencyAndAgencyNameAndJoinAgencyStatus(false, agency.getAgencyName(), joinStatus);
         return UserMapper.mapAgencyTeachers(users);
     }
 

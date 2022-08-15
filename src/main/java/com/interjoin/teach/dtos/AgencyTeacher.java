@@ -25,6 +25,7 @@ public class AgencyTeacher {
     private Long totalHours;
     private BigDecimal totalEarnings;
     private LocalDate dateOfJoiningAgency;
+    private byte[] profilePicture;
 
 
 
