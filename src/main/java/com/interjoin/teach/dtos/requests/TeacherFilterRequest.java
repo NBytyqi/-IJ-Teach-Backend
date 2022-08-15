@@ -13,5 +13,5 @@ public class TeacherFilterRequest {
 
     private String curriculum;
     private List<String> subjects;
-    private Boolean isVerified;
+    private Boolean verifiedTeacher;
 }
