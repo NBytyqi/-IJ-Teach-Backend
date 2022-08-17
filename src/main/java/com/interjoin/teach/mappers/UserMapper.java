@@ -106,6 +106,7 @@ public class UserMapper {
 
     private static AgencyTeacher mapAgencyTeacher(User user) {
         return AgencyTeacher.builder()
+                .id(user.getId())
                 .dateOfJoiningAgency(user.getDateOfJoiningAgency())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
