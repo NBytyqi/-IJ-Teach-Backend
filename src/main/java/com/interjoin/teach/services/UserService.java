@@ -644,7 +644,7 @@ public class UserService {
                             .location(agency.getLocation())
                             .shortBio(agency.getShortBio())
                             .teachers(getAgencyUserss(agency, "active"))
-
+                            .profilePicture(agency.getProfilePicture())
                             .build()
             );
         }
@@ -732,7 +732,7 @@ public class UserService {
 //        List<Long> teachers = subCurrService.getTeachersForSubjects(subjectIds);
         for(Subject subject : subjects) {
             List<TeacherDto> teachers = UserMapper.mapTeachers(repository.getTeachersPerSubject(subject.getId()));
-            if(Optional.ofNullable(isVerified).isPresent()) {
+            if(Optional.ofNullable(isVerified).isPresent() && teachers.size() > 0) {
                 teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(isVerified)).collect(Collectors.toList());
             }
             teacherInfos.add(
