@@ -23,7 +23,7 @@ public class UserDto {
     private String location;
     private String phoneNumber;
     private LocalDate dateOfBirth;
-    private byte[] profilePicture;
+    private String profilePicture;
     private String parentEmail;
     private String shortBio;
     private String longBio;

@@ -44,10 +44,7 @@ public class UserMapper {
                 .previousSuccessfulSessions(user.getPreviousSuccessfulSessions())
                 .longBio(user.getLongBio())
                 .qualifications(user.getQualifications())
-                .profilePicture(
-                        Optional.ofNullable(user.getProfilePicture()).map(prf ->
-                        Arrays.copyOf( user.getProfilePicture(), user.getProfilePicture().length ))
-                                .orElse(null))
+                .profilePicture(user.getProfilePicture())
                 .subCurrList(Optional.ofNullable(user.getSubjectCurriculums()).map(SubjectCurriculumMapper::map).orElse(null))
                 .experiences(Optional.ofNullable(user.getExperiences()).map(ExperienceMapper::mapList).orElse(null))
                 .pricePerHour(user.getPricePerHour())

@@ -27,5 +27,7 @@ public class UpdateProfileRequest {
     private String timezone;
     private List<Long> favoriteTeacherIds;
 
+    private String profilePicture;
+
 
 }

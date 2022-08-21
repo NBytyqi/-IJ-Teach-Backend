@@ -16,6 +16,6 @@ public class AgencyTeachersList {
     private String agencyName;
     private String shortBio;
     private String location;
-    private byte[] profilePicture;
+    private String profilePicture;
     private List<AgencyTeacher> teachers;
 }

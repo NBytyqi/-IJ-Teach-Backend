@@ -61,10 +61,10 @@ public class User {
 
     private LocalDate dateOfJoiningAgency;
 
-    @Lob
-    @Type(type="org.hibernate.type.BinaryType")
+//    @Lob
+//    @Type(type="org.hibernate.type.BinaryType")
     @Column(name = "profile_picture")
-    private byte[] profilePicture;
+    private String profilePicture;
 
     @Column(name = "parent_email")
     @Email
@@ -112,6 +112,9 @@ public class User {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "teacher")
     private List<AvailableTimes> availableTimes;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "agency")
+    private List<ActivityLogs> activityLogs;
 
     @OneToMany(mappedBy = "user")
     private List<Experience> experiences = new java.util.ArrayList<>();

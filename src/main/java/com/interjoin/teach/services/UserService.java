@@ -20,7 +20,6 @@ import com.interjoin.teach.roles.Roles;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.util.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -74,6 +73,8 @@ public class UserService {
     private final JwtUtil jwtTokenUtil;
 
     private final MyUserDetailsService userDetailsService;
+
+    private final ActivityLogsRepository activityLogsRepository;
 
     public void createAgency(AgencySignupRequest request) {
 //        String usernameCreated = awsService.signUpAgency(request);
@@ -172,6 +173,10 @@ public class UserService {
         if(Optional.ofNullable(request.getFavoriteTeacherIds()).isPresent()) {
             user.setFavoriteTeacherIds(request.getFavoriteTeacherIds());
         }
+
+        if(Optional.ofNullable(request.getProfilePicture()).isPresent()) {
+            user.setProfilePicture(request.getProfilePicture());
+        }
         //delete old available times
 //        availableTimesService.deleteAllByUser(user);
 //        user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(),  user.getTimeZone(), user));
@@ -188,6 +193,7 @@ public class UserService {
         user.setOtpVerificationCode(getRandomNumberString());
         user.setVerifiedEmail(false);
         user.setVerifiedTeacher(false);
+        user.setProfilePicture(request.getProfilePicture());
 
 //        String usernameCreated = awsService.signUpUser(request, role);
 //        user.setCognitoUsername(usernameCreated);
@@ -582,13 +588,13 @@ public class UserService {
     }
 
     public void addProfilePictureToCurrentUser(MultipartFile picture, String userUuid) {
-        User user = findByUuid(userUuid);
-        try {
-            user.setProfilePicture(IOUtils.toByteArray(picture.getInputStream()));
-            repository.save(user);
-        } catch (IOException e) {
-
-        }
+//        User user = findByUuid(userUuid);
+//        try {
+//            user.setProfilePicture(IOUtils.toByteArray(picture.getInputStream()));
+//            repository.save(user);
+//        } catch (IOException e) {
+//
+//        }
     }
 
     public void forgotPassword(String email) throws InterjoinException {
@@ -677,6 +683,16 @@ public class UserService {
         }
 
         repository.save(teacher);
+
+        final String APPROVE_MESSAGE = String.format("Dear %s, %s has accepted your request to join. Congratulations!", teacher.getFirstName(), currentAgency.getAgencyName());
+        final String DECLINE_MESSAGE = String.format("Dear %s, %s has declined your request to join", teacher.getFirstName(), currentAgency.getAgencyName());
+
+        final String LOG = approve ? APPROVE_MESSAGE : DECLINE_MESSAGE;
+
+        activityLogsRepository.save(ActivityLogs.builder()
+                        .agency(currentAgency)
+                        .log(LOG)
+                .build());
     }
 
 
