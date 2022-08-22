@@ -14,7 +14,7 @@ public class ActivityLogsService {
 
     private final ActivityLogsRepository repository;
 
-    private List<ActivityLogs> findByAgency(User agency) {
+    public List<ActivityLogs> findByAgency(User agency) {
         return repository.findByAgency(agency);
     }
 }
