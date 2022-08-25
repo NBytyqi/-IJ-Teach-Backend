@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -20,11 +22,21 @@ public class Session {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(
+            name = "UUID",
+            strategy = "org.hibernate.id.UUIDGenerator"
+    )
+    @Column(name = "uuid", updatable = false)
+    private String uuid;
+
     @OneToOne(fetch = FetchType.LAZY)
     private User student;
 
     @OneToOne(fetch = FetchType.LAZY)
     private User teacher;
+
+    private BigDecimal price;
 
     private OffsetDateTime dateSlot;
 

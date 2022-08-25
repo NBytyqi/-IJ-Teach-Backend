@@ -3,7 +3,9 @@ package com.interjoin.teach.mappers;
 import com.interjoin.teach.dtos.SubjectDto;
 import com.interjoin.teach.entities.Subject;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class SubjectMapper {
@@ -22,8 +24,8 @@ public class SubjectMapper {
                 .build();
     }
 
-    public static Set<SubjectDto> map(Set<Subject> subjects) {
-        Set<SubjectDto> subs = new HashSet<>();
+    public static List<SubjectDto> map(List<Subject> subjects) {
+        List<SubjectDto> subs = new ArrayList<>();
         for(Subject s : subjects) {
             subs.add(map(s));
         }

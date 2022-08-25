@@ -1,11 +1,13 @@
 package com.interjoin.teach.entities;
 
+import com.interjoin.teach.enums.JoinAgencyStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -35,8 +37,8 @@ public class User {
     @Column(name = "uuid", updatable = false)
     private String uuid;
 
-    @JsonIgnore
-    private String cognitoUsername;
+//    @JsonIgnore
+//    private String cognitoUsername;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
@@ -47,14 +49,22 @@ public class User {
     @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "password", nullable = true)
+    @JsonIgnore
+    private String password;
+
     @Column(name = "location")
     private String location;
 
     private String phoneNumber;
     private LocalDate dateOfBirth;
 
-    @Lob
-    private byte[] profilePicture;
+    private LocalDate dateOfJoiningAgency;
+
+//    @Lob
+//    @Type(type="org.hibernate.type.BinaryType")
+    @Column(name = "profile_picture")
+    private String profilePicture;
 
     @Column(name = "parent_email")
     @Email
@@ -62,7 +72,7 @@ public class User {
 
     // TODO - ADD SUBJECTS AND CURRICULUMS
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_curriculum_subject",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = { @JoinColumn(name = "subject_id", referencedColumnName = "subject_id"),
@@ -70,6 +80,14 @@ public class User {
 
     )
     private Set<SubjectCurriculum> subjectCurriculums;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "user_subject", joinColumns = @JoinColumn(name = "user_id", nullable = true))
+    private List<String> subjects;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "student_favorite_teacher", joinColumns = @JoinColumn(name = "student_id", nullable = true))
+    private List<Long> favoriteTeacherIds;
 
     // This will be used for faster search of teachers for sub curriculum
     @Column(name = "sub_curr_str")
@@ -92,8 +110,11 @@ public class User {
     @Column(name = "created_date")
     private LocalDateTime createdDate;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "teacher")
     private List<AvailableTimes> availableTimes;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "agency")
+    private List<ActivityLogs> activityLogs;
 
     @OneToMany(mappedBy = "user")
     private List<Experience> experiences = new java.util.ArrayList<>();
@@ -101,9 +122,9 @@ public class User {
     private String timeZone;
 
     private BigDecimal pricePerHour;
+    private BigDecimal listedPrice;
 
     private String qualifications;
-    private String experience;
 
     // IF AGENCY
     @Column(nullable = true)
@@ -118,6 +139,23 @@ public class User {
     @Column(nullable = true)
     private Integer numberOfTeachers;
 
+    private Long previousSuccessfulSessions;
 
+    private Double rating;
+    @Column(nullable = true)
+    private boolean verifiedTeacher;
+
+    private String otpVerificationCode;
+    @Column(nullable = true)
+    private boolean verifiedEmail;
+
+    @Column(nullable = true)
+    private String resetPasswordCode;
+
+    private BigDecimal totalEarned;
+    private Long totalHours;
+
+    @Enumerated(EnumType.STRING)
+    private JoinAgencyStatus joinAgencyStatus;
 
 }

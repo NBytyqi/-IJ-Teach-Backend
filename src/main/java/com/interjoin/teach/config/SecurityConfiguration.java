@@ -1,12 +1,13 @@
 package com.interjoin.teach.config;
 
-import com.interjoin.teach.filters.AwsCognitoJwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -17,7 +18,9 @@ import org.springframework.web.filter.CorsFilter;
 @RequiredArgsConstructor
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final AwsCognitoJwtAuthFilter awsCognitoJwtAuthenticationFilter;
+//    private final AwsCognitoJwtAuthFilter awsCognitoJwtAuthenticationFilter;
+
+    private final JwtRequestFilter jwtRequestFilter;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -28,12 +31,35 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
 //                .anyRequest()
 //                .permitAll()
-            .antMatchers("/api/auth/cv", "/api/auth/resend-otp/**", "/api/suggest","/api/auth/profile-pic", "/api/auth/checkotp","/api/auth/reset", "/api/times/signup", "/api/api-docs", "/api-docs", "/api/auth/email", "/api/auth/signup/teacher", "/api/auth/forgot", "/api/auth/signup/student", "/api/auth/signup/agency", "/api/auth/signin", "/api/datat/**")
+            .antMatchers(
+                    "/api/auth/cv",
+                    "/api/auth/resend-otp/**",
+                    "/api/suggest",
+                    "/api/auth/profile-pic",
+                    "/api/auth/checkotp",
+                    "/api/auth/reset",
+                    "/api/times/signup",
+                    "/api/api-docs",
+                    "/api/api-docs",
+                    "/api/swagger-ui.html",
+                    "/api/swagger-ui/**",
+                    "/api/v3/api-docs",
+                    "/api/v3/api-docs/swagger-config",
+                    "/api/auth/email/**",
+                    "/api/auth/signup/teacher",
+                    "/api/auth/forgot",
+                    "/api/auth/signup/student",
+                    "/api/auth/signup/agency",
+                    "/api/auth/signin",
+                    "/api/datat/**",
+                    "/api/stripe/success-webhook")
             .permitAll()
-            .anyRequest()
-            .authenticated()
-            .and()
-            .addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .anyRequest().authenticated().and().
+                exceptionHandling().and().sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
@@ -53,5 +79,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         config.addAllowedMethod("PATCH");
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
+    }
+
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 }

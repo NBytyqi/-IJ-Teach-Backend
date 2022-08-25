@@ -4,10 +4,12 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Set;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,5 +36,5 @@ public class Curriculum {
     @JoinTable(name = "subject_curriculum",
     joinColumns = @JoinColumn(name = "curriculum_id"),
     inverseJoinColumns = @JoinColumn(name = "subject_id"))
-    private Set<Subject> subjects;
+    private List<Subject> subjects;
 }

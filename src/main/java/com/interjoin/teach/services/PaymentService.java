@@ -1,6 +1,5 @@
 package com.interjoin.teach.services;
 
-import com.interjoin.teach.dtos.requests.BookSessionRequest;
 import com.interjoin.teach.entities.User;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
@@ -20,31 +19,24 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private final UserService userService;
     private final String paymentSuccessUrl = "http://localhost:3000";
     private final String paymentCancelUrl = "http://localhost:3000";
 
-    public String openPaymentPage(BookSessionRequest sessionRequest, Long sessionId, BigDecimal price, String studentName, String teacherName) {
+
+    public String openPaymentPage(BigDecimal price, String subject, Map<String, String> metadata, User currentUser) {
 
         Stripe.apiKey = "sk_test_51KdsJaHiAI1FpLGq7shhYXjXrm3nsK5bM9ALw6Rk8YWSa6qLR40WS6NqFnwgwby5VyGD4hZITPIYe8gFoEQSUEJD00UIyHsMpM";
 
-        User currentUser = userService.getCurrentUserDetails();
-
         Customer customer = getStripeUserByEmail(currentUser);
-
-        Map<String, String> datasetMetadata= new HashMap<>();
-        datasetMetadata.put("sessionId", String.valueOf(sessionId));
-
-        final String subject = String.format("Session between %s and %s on subject: \"%s\" and Curriculum: \"%s\"", studentName, teacherName, sessionRequest.getSubject(), sessionRequest.getCurriculum());
 
         SessionCreateParams params =
                 SessionCreateParams.builder()
 
                         .setPaymentIntentData(new SessionCreateParams.PaymentIntentData.Builder()
-                                .putAllMetadata(datasetMetadata)
+                                .putAllMetadata(metadata)
                                 .build())
 
-                        .putAllMetadata(datasetMetadata)
+                        .putAllMetadata(metadata)
                         .setMode(SessionCreateParams.Mode.PAYMENT)
                         .setSuccessUrl(paymentSuccessUrl)
 //                        .setCancelUrl(paymentCancelUrl + "/" + paymentRequestDto.getDatasetUuid() + "/edit")
@@ -78,6 +70,8 @@ public class PaymentService {
         return session.getUrl();
 
     }
+
+
 
     @SneakyThrows
     public Customer getStripeUserByEmail(User user){

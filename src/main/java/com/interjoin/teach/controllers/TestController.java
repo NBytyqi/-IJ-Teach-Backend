@@ -3,6 +3,7 @@ package com.interjoin.teach.controllers;
 import com.interjoin.teach.dtos.AvailableTimesStringDto;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.entities.AvailableTimes;
+import com.interjoin.teach.entities.Curriculum;
 import com.interjoin.teach.entities.Subject;
 import com.interjoin.teach.entities.User;
 import com.interjoin.teach.repositories.CurriculumRepository;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.*;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -31,18 +33,25 @@ public class TestController {
     private final CurriculumRepository curriculumRepository;
 
     @PostMapping("/addsubjects")
-    public void add(@RequestParam List<String> subjektet) {
-        for(String s : subjektet) {
-            try {
-                System.out.println(s);
-                subjectRepository.save(Subject.builder().subjectName(s).build());
-            } catch (Exception e) {
-                System.out.println("exception " + e);
-                continue;
+    public void add(@RequestParam String curriculum, @RequestBody List<String> subjects) {
+
+        for(String sub : subjects) {
+            Optional<Subject> optional = subjectRepository.findBySubjectName(sub);
+            Subject subject = null;
+            if(optional.isPresent()) {
+                subject = optional.get();
+            } else {
+                subject = subjectRepository.save(Subject.builder().subjectName(sub).build());
             }
 
+            Curriculum curr = curriculumRepository.findFirstByCurriculumName(curriculum);
+            curr.getSubjects().add(subject);
+            curriculumRepository.save(curr);
         }
+
     }
+
+
 
 
 
@@ -68,7 +77,7 @@ public class TestController {
     @PostMapping("/available")
     public void test(@RequestBody UserSignupRequest request) {
 
-        OffsetDateTime time = request.getAvailableTimes().get(0).getAvailableTimes().get(0);
+//        OffsetDateTime time = request.getAvailableTimes().get(0).getAvailableTimes().get(0);
 //        map(time);
         map(OffsetDateTime.now());
 

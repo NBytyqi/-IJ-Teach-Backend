@@ -1,6 +1,8 @@
 package com.interjoin.teach.services;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.config.exceptions.SessionExistsException;
+import com.interjoin.teach.config.exceptions.SessionNotValidException;
 import com.interjoin.teach.dtos.AvailableHourMinuteDto;
 import com.interjoin.teach.dtos.AvailableTimesStringDto;
 import com.interjoin.teach.dtos.SessionDto;
@@ -14,8 +16,10 @@ import com.interjoin.teach.repositories.SessionRepository;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -64,16 +68,41 @@ public class SessionService {
                                  .student(student)
                                  .dateSlot(request.getDate().getDateTime())
                                  .sessionStatus(SessionStatus.PAYMENT_PENDING)
+                                 .price(teacher.getListedPrice())
                                  .build();
         session = sessionRepository.save(session);
 
-        return paymentService.openPaymentPage(request, session.getId(), teacher.getPricePerHour(), student.getFirstName(), teacher.getFirstName());
+       final String subject = String.format("Session between %s and %s on subject: \"%s\" and Curriculum: \"%s\"", student.getFirstName(), teacher.getFirstName(), request.getSubject(), request.getCurriculum());
+
+       Map<String, String> metadata = new HashMap<>();
+       metadata.put("sessionId", String.valueOf(session.getId()));
+
+       return paymentService.openPaymentPage(teacher.getListedPrice(), subject, metadata, userService.getCurrentUserDetails());
+    }
+
+    public Session findByUuid(String uuid) throws InterjoinException {
+        return sessionRepository.findByUuid(uuid).orElseThrow(() -> new InterjoinException("Session not found", HttpStatus.NOT_FOUND));
     }
 
 
     public List<SessionDto> getCurrentTeacherSessions() {
         User teacher = userService.getCurrentUserDetails();
         return SessionMapper.map(sessionRepository.findByTeacherOrderByDateSlotDesc(teacher), teacher.getTimeZone());
+    }
+
+
+    // GET TEACHER/STUDENT SESSIONS FROM CURRENT DATE TIME AND ON
+    // TODO - Refactor method to user service
+    public void deleteCurrentUser() throws Exception {
+        User user = userService.getCurrentUserDetails();
+        List<Session> slots = sessionRepository.findByStudentOrTeacherAndDateSlotAfter(user, OffsetDateTime.now().minusDays(1));
+        if(!slots.isEmpty()) {
+            throw new Exception("User cannot be deleted since it has active session or future sessions");
+        }
+        sessionRepository.deleteUserSessions(user);
+        userService.deleteAccount();
+
+
     }
 
     private List<AvailableTimes> filterAvailableTimes(List<AvailableTimes> availableTimes, String weekDay) {
@@ -106,10 +135,45 @@ public class SessionService {
         return avTimesInStudentTimezone.get(0).getAvailableHourMinute().stream().filter(avTime -> !bookedSessions.contains(avTime.getDateTime())).collect(Collectors.toList());
     }
 
+    public List<SessionDto> getStudentSessionClasses(Pageable pageable) {
+        User currentStudent = userService.getCurrentUserDetails();
+        return sessionRepository.findByStudentAndDateSlotAfterAndSessionStatus(currentStudent, OffsetDateTime.now(), SessionStatus.APPROVED, pageable)
+                .stream().map(session -> SessionMapper.map(session, currentStudent.getTimeZone()))
+                .collect(Collectors.toList());
+    }
+
     public List<SessionDto> getStudentSessionHistory(Pageable pageable) {
         User currentStudent = userService.getCurrentUserDetails();
         return sessionRepository.findByStudentAndDateSlotBefore(currentStudent, OffsetDateTime.now(), pageable)
                                 .stream().map(session -> SessionMapper.map(session, currentStudent.getTimeZone()))
                                 .collect(Collectors.toList());
+    }
+
+    public List<SessionDto> getTeacherSessionHistory(Pageable pageable) {
+        User currentTeacher = userService.getCurrentUserDetails();
+        return sessionRepository.findByTeacherAndDateSlotBefore(currentTeacher, OffsetDateTime.now(), pageable)
+                .stream().map(session -> SessionMapper.map(session, currentTeacher.getTimeZone()))
+                .collect(Collectors.toList());
+    }
+
+    public List<SessionDto> getTeacherSessionRequests(Pageable pageable) {
+        User currentTeacher = userService.getCurrentUserDetails();
+        return sessionRepository.findByTeacherAndDateSlotAfterAndSessionStatus(currentTeacher, OffsetDateTime.now(), SessionStatus.PENDING_APPROVAL, pageable)
+                .stream().map(session -> SessionMapper.map(session, currentTeacher.getTimeZone()))
+                .collect(Collectors.toList());
+    }
+
+    public void approveSession(String sessionUuid, boolean approve) throws SessionNotValidException {
+        User teacher = userService.getCurrentUserDetails();
+        Session session = sessionRepository.findByUuidAndTeacher(sessionUuid, teacher).orElseThrow(() -> new SessionNotValidException("Session is not found"));
+
+        if(session.getDateSlot().isBefore(OffsetDateTime.now())) {
+            throw new SessionNotValidException("Session is expired");
+        }
+
+        SessionStatus status = approve ? SessionStatus.APPROVED : SessionStatus.DECLINED;
+
+        session.setSessionStatus(status);
+        sessionRepository.save(session);
     }
 }

@@ -22,5 +22,11 @@ public class AvailableTimes {
     private String weekDay;
     private OffsetDateTime dateTime;
 
-    private Long teacherId;
+//    private Long teacherId;
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id", referencedColumnName = "id")
+    public User teacher;
+
+    private Long index;
 }

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -45,11 +46,17 @@ public class UserSignupRequest {
     @NotNull
     private String password;
 
-    List<AvailableTimesDto> availableTimes;
+    AvailableTimesSlots availableTimes;
 
-    private List<String> experiences;
+    private List<ExperienceDto> experiences;
 
     private String qualifications;
-    private String experience;
+
+    // IN CASE IT IS A TEACHER
+    private String agencyReferalCode;
+
+    private BigDecimal pricePerHour;
+
+    private String profilePicture;
 
 }

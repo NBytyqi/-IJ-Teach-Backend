@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "experience")
@@ -23,5 +25,22 @@ public class Experience {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private String experience;
+    private String title;
+    private String companyName;
+
+//    @Lob
+//    @Type(type="org.hibernate.type.BinaryType")
+//    @Column(name = "logo")
+//    private byte[] logo;
+
+    @Column(name = "base_logo", length = 1000000000)
+    private String base64Logo;
+
+    @Column(name = "from_date")
+    private String from;
+    @Column(name = "to_date")
+    private String to;
+
+    @Column(name = "description")
+    private String description;
 }

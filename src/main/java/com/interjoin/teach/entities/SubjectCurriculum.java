@@ -1,13 +1,18 @@
 package com.interjoin.teach.entities;
 
 import com.interjoin.teach.embeddable.SubjectCurriculumKey;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 
 
 @Entity(name = "subject_curriculum")
 @Getter
+@Setter
+@NoArgsConstructor
 public class SubjectCurriculum {
 
     @EmbeddedId

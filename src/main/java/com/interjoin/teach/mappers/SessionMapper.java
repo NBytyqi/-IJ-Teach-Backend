@@ -17,6 +17,7 @@ public class SessionMapper {
                 .date(DateUtils.map(session.getDateSlot(), userTimezone))
                 .review(session.getReview())
                 .reviewScore(session.getReviewScore())
+                .uuid(session.getUuid())
                 .build();
     }
 

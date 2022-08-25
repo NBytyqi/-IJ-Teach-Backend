@@ -16,4 +16,5 @@ public class AvailableTimesDto {
 
     private String weekDay;
     private List<OffsetDateTime> availableTimes;
+    private Long index;
 }
