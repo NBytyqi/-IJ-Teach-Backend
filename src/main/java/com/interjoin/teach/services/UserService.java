@@ -525,7 +525,7 @@ public class UserService {
     public List<AvailableTimesStringDto> getAvailableTimesForTeacherForDate(Long teacherId, LocalDate date) {
         User teacher = findById(teacherId);
         User currentStudent = getCurrentUserDetails();
-        List<AvailableTimes> times = availableTimesService.findByUser(teacher);
+//        List<AvailableTimes> times = availableTimesService.findByUser(teacher);
 
         // we need to remove the booked ones
 

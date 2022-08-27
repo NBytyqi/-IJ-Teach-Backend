@@ -34,9 +34,11 @@ public class DateUtils {
         List<AvailableHourMinuteDto> available = new ArrayList<>();
 
         for(OffsetDateTime offsetDateTime : fromTimes) {
-
+            LocalDateTime now = LocalDateTime.now();
+            ZoneId zone = ZoneId.of(timeZone);
+            ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
             // converted at student timezone
-            OffsetDateTime converted = OffsetDateTime.from(offsetDateTime.atZoneSameInstant(ZoneId.of(timeZone)));
+            OffsetDateTime converted = OffsetDateTime.from(offsetDateTime.atZoneSameInstant(zoneOffSet));
 
             available.add(AvailableHourMinuteDto.builder()
                             .dateTime(converted)
