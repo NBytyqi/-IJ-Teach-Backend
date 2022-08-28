@@ -77,7 +77,7 @@ public class SessionService {
        Map<String, String> metadata = new HashMap<>();
        metadata.put("sessionId", String.valueOf(session.getId()));
 
-       String urlParams = String.format("?subject=%s&curriculum=%s&time=%s&date=%s", request.getSubject(), request.getCurriculum(), request.getDate().getHourMinuteString(), request.getDate().getDateOfSession().toString());
+       String urlParams = String.format("?subject=%s&curriculum=%s&time=%s&date=%s&status=IN_REVIEW", request.getSubject(), request.getCurriculum(), request.getDate().getHourMinuteString(), request.getDate().getDateOfSession().toString());
 
        return paymentService.openPaymentPage(teacher.getListedPrice(), subject, metadata, userService.getCurrentUserDetails(), urlParams);
     }
