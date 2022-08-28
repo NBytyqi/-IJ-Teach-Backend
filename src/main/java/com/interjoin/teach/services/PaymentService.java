@@ -21,7 +21,7 @@ import java.util.Optional;
 public class PaymentService {
 
     private String paymentSuccessUrl = "http://localhost:3000";
-    private String paymentCancelUrl = "http://localhost:3000";
+    private String paymentCancelUrl = "http://localhost:3000?status=PAYMENT_DECLINED";
 
 
     public String openPaymentPage(BigDecimal price, String subject, Map<String, String> metadata, User currentUser, String urlParams) {
