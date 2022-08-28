@@ -51,7 +51,10 @@ public class DateUtils {
     }
 
     public static OffsetDateTime map(OffsetDateTime time, String timeZone) {
-        return OffsetDateTime.from(time.atZoneSameInstant(ZoneId.of(timeZone)));
+        LocalDateTime now = LocalDateTime.now();
+        ZoneId zone = ZoneId.of(timeZone);
+        ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
+        return OffsetDateTime.from(time.atZoneSameInstant(zoneOffSet));
     }
 
     public static OffsetDateTime map(OffsetDateTime time, String timeZone, boolean test) {

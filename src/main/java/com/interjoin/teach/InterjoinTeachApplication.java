@@ -17,8 +17,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import javax.annotation.PostConstruct;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.ZoneId;
+import java.util.TimeZone;
 
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
 
@@ -51,10 +54,11 @@ public class InterjoinTeachApplication {
         return new BCryptPasswordEncoder();
     }
 
-//    @Override
-//    public void run(String... args) throws Exception {
-//        Set<String> timezones = ZoneId.getAvailableZoneIds();
-//        System.out.println(timezones);
-//        AvailableTimesSignupDto signup = new AvailableTimesSignupDto("Africa/Djibouti");
-//    }
+    @PostConstruct
+    public void init(){
+        // Setting Spring Boot SetTimeZone
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Europe/London")));
+    }
+
+
 }

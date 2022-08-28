@@ -1,5 +1,6 @@
 package com.interjoin.teach.controllers;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.config.exceptions.SessionExistsException;
 import com.interjoin.teach.config.exceptions.SessionNotValidException;
 import com.interjoin.teach.dtos.SessionDto;
@@ -26,7 +27,7 @@ public class SessionController {
 
     @PostMapping("/new")
     @RolesAllowed(value = { Roles.STUDENT })
-    public ResponseEntity<String> bookNewSession(@Valid @RequestBody BookSessionRequest request) throws SessionExistsException {
+    public ResponseEntity<String> bookNewSession(@Valid @RequestBody BookSessionRequest request) throws InterjoinException {
         return ResponseEntity.ok(sessionService.bookSession(request));
     }
 

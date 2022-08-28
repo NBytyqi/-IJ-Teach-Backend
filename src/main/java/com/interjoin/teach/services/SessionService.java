@@ -1,7 +1,6 @@
 package com.interjoin.teach.services;
 
 import com.interjoin.teach.config.exceptions.InterjoinException;
-import com.interjoin.teach.config.exceptions.SessionExistsException;
 import com.interjoin.teach.config.exceptions.SessionNotValidException;
 import com.interjoin.teach.dtos.AvailableHourMinuteDto;
 import com.interjoin.teach.dtos.AvailableTimesStringDto;
@@ -19,10 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,9 +32,13 @@ public class SessionService {
     private final SessionRepository sessionRepository;
     private final PaymentService paymentService;
 
-    public String bookSession(BookSessionRequest request) throws SessionExistsException {
+    public String bookSession(BookSessionRequest request) throws InterjoinException {
+
+        LocalDateTime now = LocalDateTime.now();
+        ZoneId zone = ZoneId.of(userService.getCurrentUserDetails().getTimeZone());
+        ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
         OffsetDateTime requestedBookTime = request.getDate().getDateTime();
-            request.getDate().setDateTime(OffsetDateTime.from(requestedBookTime.atZoneSameInstant(ZoneId.systemDefault())));
+            request.getDate().setDateTime(OffsetDateTime.from(requestedBookTime.atZoneSameInstant(zoneOffSet)));
 
         // DATE OF SESSION
         LocalDate dateOfSession = request.getDate().getDateOfSession();
@@ -60,7 +60,7 @@ public class SessionService {
 
         Optional<Session> optionalSession = sessionRepository.findByTeacherAndStudentAndDateSlot(teacher, student, request.getDate().getDateTime());
         if(optionalSession.isPresent() || !isTeacherAvailable(teacherAvailableTimes, request.getDate().getDateTime())) {
-            throw new SessionExistsException("This slot is busy");
+            throw new InterjoinException("This slot is busy");
         }
 
         Session session = Session.builder()
@@ -113,6 +113,11 @@ public class SessionService {
 
     private boolean isTeacherAvailable(List<AvailableTimes> avTimes, OffsetDateTime dateTime) {
         for(AvailableTimes av : avTimes) {
+            LocalDateTime now = LocalDateTime.now();
+            ZoneId zone = ZoneId.systemDefault();
+            ZoneOffset zoneOffSet = zone.getRules().getOffset(now);
+            dateTime = OffsetDateTime.from(dateTime.withOffsetSameInstant(zoneOffSet));
+            av.setDateTime(dateTime);
             if(av.getWeekDay().equals(dateTime.getDayOfWeek().toString().toLowerCase(Locale.ROOT)) &&
                     av.getDateTime().getHour() == dateTime.getHour() &&
                     av.getDateTime().getMinute() == dateTime.getMinute()) {
