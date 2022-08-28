@@ -14,18 +14,23 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private final String paymentSuccessUrl = "http://localhost:3000";
-    private final String paymentCancelUrl = "http://localhost:3000";
+    private String paymentSuccessUrl = "http://localhost:3000";
+    private String paymentCancelUrl = "http://localhost:3000";
 
 
-    public String openPaymentPage(BigDecimal price, String subject, Map<String, String> metadata, User currentUser) {
+    public String openPaymentPage(BigDecimal price, String subject, Map<String, String> metadata, User currentUser, String urlParams) {
 
         Stripe.apiKey = "sk_test_51KdsJaHiAI1FpLGq7shhYXjXrm3nsK5bM9ALw6Rk8YWSa6qLR40WS6NqFnwgwby5VyGD4hZITPIYe8gFoEQSUEJD00UIyHsMpM";
+
+        if(Optional.ofNullable(urlParams).isPresent()) {
+            paymentSuccessUrl = String.format("%s%s", paymentSuccessUrl, urlParams);
+        }
 
         Customer customer = getStripeUserByEmail(currentUser);
 

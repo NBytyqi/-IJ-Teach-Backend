@@ -21,6 +21,7 @@ import javax.annotation.PostConstruct;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.ZoneId;
+import java.util.Set;
 import java.util.TimeZone;
 
 import static com.nimbusds.jose.JWSAlgorithm.RS256;
@@ -38,6 +39,12 @@ public class InterjoinTeachApplication {
 
     @Bean
     public ConfigurableJWTProcessor configurableJWTProcessor() throws MalformedURLException {
+        Set<String> zoneIds= ZoneId.getAvailableZoneIds();
+
+        for (String zone : zoneIds) {
+            System.out.println(zone);
+        }
+
         ResourceRetriever resourceRetriever =
                 new DefaultResourceRetriever(jwtConfiguration.getConnectionTimeout(),
                         jwtConfiguration.getReadTimeout());

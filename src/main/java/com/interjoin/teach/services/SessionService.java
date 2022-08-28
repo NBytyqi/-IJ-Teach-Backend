@@ -77,7 +77,9 @@ public class SessionService {
        Map<String, String> metadata = new HashMap<>();
        metadata.put("sessionId", String.valueOf(session.getId()));
 
-       return paymentService.openPaymentPage(teacher.getListedPrice(), subject, metadata, userService.getCurrentUserDetails());
+       String urlParams = String.format("?subject=%s&curriculum=%s&time=%s&date=%s", request.getSubject(), request.getCurriculum(), request.getDate().getHourMinuteString(), request.getDate().getDateOfSession().toString());
+
+       return paymentService.openPaymentPage(teacher.getListedPrice(), subject, metadata, userService.getCurrentUserDetails(), urlParams);
     }
 
     public Session findByUuid(String uuid) throws InterjoinException {
