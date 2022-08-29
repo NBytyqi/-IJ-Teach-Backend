@@ -163,7 +163,7 @@ public class UserService {
             //delete old experiences
             //add new ones
             experienceService.deleteForUser(user);
-            experienceService.save(request.getExperiences(), user);
+            user.setExperiences(experienceService.save(request.getExperiences(), user));
         }
 
         if(Optional.ofNullable(request.getTimezone()).isPresent()) {
