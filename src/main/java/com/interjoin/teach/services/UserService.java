@@ -162,7 +162,7 @@ public class UserService {
         if(Optional.ofNullable(request.getExperiences()).isPresent()) {
             //delete old experiences
             //add new ones
-            experienceService.deleteForUser(user);
+//            experienceService.deleteForUser(user);
             user.setExperiences(experienceService.save(request.getExperiences(), user));
         }
 
