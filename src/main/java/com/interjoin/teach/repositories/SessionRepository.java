@@ -22,7 +22,7 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
 
     Optional<Session> findByUuidAndTeacher(String uuid, User teacher);
 
-    Optional<Session> findByTeacherAndStudentAndDateSlot(User teacher, User student, OffsetDateTime dateSlot);
+    Optional<Session> findByTeacherAndDateSlot(User teacher, OffsetDateTime dateSlot);
 
     List<Session> findByTeacherOrderByDateSlotDesc(User teacher);
 

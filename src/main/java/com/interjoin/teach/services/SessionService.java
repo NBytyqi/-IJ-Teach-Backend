@@ -58,7 +58,7 @@ public class SessionService {
                 timesService.findByUserAndWeekDay(request.getTeacherId(), weekDay), weekDay
         );
 
-        Optional<Session> optionalSession = sessionRepository.findByTeacherAndStudentAndDateSlot(teacher, student, request.getDate().getDateTime());
+        Optional<Session> optionalSession = sessionRepository.findByTeacherAndDateSlot(teacher, request.getDate().getDateTime());
         if(optionalSession.isPresent() || !isTeacherAvailable(teacherAvailableTimes, request.getDate().getDateTime())) {
             throw new InterjoinException("This slot is busy");
         }
