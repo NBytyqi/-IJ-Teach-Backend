@@ -168,7 +168,6 @@ public class UserService {
 
         if(Optional.ofNullable(request.getTimezone()).isPresent()) {
             user.setTimeZone(request.getTimezone());
-            // TODO - We need to update the availability
             updateAvailableSlotsForCurrentTeacher(getAvailableTimesForTeacher(user));
         }
 
@@ -263,6 +262,7 @@ public class UserService {
     public UserDto updateAvailableSlotsForCurrentTeacher(AvailableTimesSlots slots) {
         User currentTeacher = getCurrentUserDetails();
         availableTimesService.deleteAllByUser(currentTeacher);
+        currentTeacher.setAvailableTimes(new ArrayList<>());
         currentTeacher.setAvailableTimes(
                 availableTimesService.save(getAvailableTimes(slots, currentTeacher.getTimeZone()), currentTeacher.getTimeZone(), currentTeacher)
         );
