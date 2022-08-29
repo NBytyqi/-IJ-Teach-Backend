@@ -168,6 +168,8 @@ public class UserService {
 
         if(Optional.ofNullable(request.getTimezone()).isPresent()) {
             user.setTimeZone(request.getTimezone());
+            // TODO - We need to update the availability
+            updateAvailableSlotsForCurrentTeacher(getAvailableTimesForTeacher(user));
         }
 
         if(Optional.ofNullable(request.getFavoriteTeacherIds()).isPresent()) {
@@ -459,8 +461,12 @@ public class UserService {
 //    }
 
     public AvailableTimesSlots getAvailableTimesForTeacher(Long teacherId) {
-        User teacher = findById(teacherId);
-        User currentStudent = getCurrentUserDetails();
+        return getAvailableTimesForTeacher(findById(teacherId));
+    }
+
+    public AvailableTimesSlots getAvailableTimesForTeacher(User teacher) {
+//        User teacher = findById(teacherId);
+//        User currentStudent = getCurrentUserDetails();
 
         AvailableTimesSlots returni = new AvailableTimesSlots();
 
@@ -468,8 +474,6 @@ public class UserService {
 
         AvailableTimesSignupDto dto = new AvailableTimesSignupDto(teacher.getTimeZone());
 
-
-        List<Long> mon = new ArrayList<>();
         Map<String, List<AvailableTimes>> avTimesMap = times.stream().collect(Collectors.groupingBy(AvailableTimes::getWeekDay));
 
         String teacherTimezone = teacher.getTimeZone();
