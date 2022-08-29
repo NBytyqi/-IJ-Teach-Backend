@@ -133,13 +133,15 @@ public class SessionService {
 
         List<AvailableTimesStringDto> avTimesInStudentTimezone = userService.getAvailableTimesForTeacherForDate(teacherId, date);
 
-        List<OffsetDateTime> bookedSessions = DateUtils.mapMultipleTimes(sessionRepository.findByTeacherAndSpecificDate(teacherId, date).stream().map(session -> session.getDateSlot()).collect(Collectors.toList()), userService.getCurrentUserDetails().getTimeZone());
+        List<LocalTime> bookedSessions = DateUtils.mapMultipleTimes(sessionRepository.findByTeacherAndSpecificDate(teacherId, date).stream().map(session -> session.getDateSlot()).collect(Collectors.toList()), userService.getCurrentUserDetails().getTimeZone())
+                .stream().map(of -> of.toLocalDateTime().toLocalTime()).collect(Collectors.toList())
+                ;
 
         if(avTimesInStudentTimezone.isEmpty()) {
             return new ArrayList<>();
         }
 
-        return avTimesInStudentTimezone.get(0).getAvailableHourMinute().stream().filter(avTime -> !bookedSessions.contains(avTime.getDateTime())).collect(Collectors.toList());
+        return avTimesInStudentTimezone.get(0).getAvailableHourMinute().stream().filter(avTime -> !bookedSessions.contains(avTime.getDateTime().toLocalDateTime().toLocalTime())).collect(Collectors.toList());
     }
 
     public List<SessionDto> getStudentSessionClasses(Pageable pageable) {
