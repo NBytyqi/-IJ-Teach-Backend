@@ -7,6 +7,8 @@ public interface UserInterface {
     Long getId();
     String getFirstName();
     String getLastName();
+    String getSubjectsStr();
+    String getCurriculumsStr();
     String getShortBio();
     BigDecimal getListedPrice();
     Double getRating();

@@ -81,6 +81,8 @@ public class UserMapper {
                 .rating(user.getRating())
                 .profilePicture(user.getProfilePicture())
                 .verifiedTeacher(user.getVerifiedTeacher())
+                .subjectsStr(user.getSubjectsStr())
+                .curriculumsStr(user.getCurriculumsStr())
                 .build();
     }
 

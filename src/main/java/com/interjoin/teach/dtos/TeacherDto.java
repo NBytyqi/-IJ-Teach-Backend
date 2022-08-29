@@ -28,4 +28,7 @@ public class TeacherDto {
     private String location;
     private Double rating;
     private Boolean verifiedTeacher;
+
+    private String subjectsStr;
+    private String curriculumsStr;
 }

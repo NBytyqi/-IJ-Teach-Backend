@@ -143,6 +143,8 @@ public class UserService {
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
             StringBuilder subCurrStr = new StringBuilder();
+            StringBuilder subStrBuilder = new StringBuilder();
+            StringBuilder currStrBuilder = new StringBuilder();
 
             List<String> subjects = new ArrayList<>();
             for(SubjectCurriculumDto data : request.getSubCurrList()) {
@@ -150,13 +152,20 @@ public class UserService {
                     SubjectCurriculum subjectCurriculum = subCurrRepository.findFirstByCurriculumCurriculumNameAndSubjectSubjectName(data.getCurriculumName(), subject);
                     subCurrs.add(subjectCurriculum);
                     subCurrStr.append(String.format("%s,%s", subject, data.getCurriculumName()));
+                    subStrBuilder.append(subject + ", ");
                     subjects.add(subject);
                 }
+                currStrBuilder.append(data.getCurriculumName() + ", ");
 
             }
+            subStrBuilder.delete(subStrBuilder.length() -2, subStrBuilder.length()-1);
+            currStrBuilder.delete(currStrBuilder.length() -2, subStrBuilder.length()-1);
+
             user.setSubjectCurriculums(subCurrs);
             user.setSubCurrStr(subCurrStr.toString());
             user.setSubjects(subjects);
+            user.setSubjectsStr(subStrBuilder.toString());
+            user.setCurriculumsStr(currStrBuilder.toString());
         }
 
         if(Optional.ofNullable(request.getExperiences()).isPresent()) {

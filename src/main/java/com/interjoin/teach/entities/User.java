@@ -93,6 +93,9 @@ public class User {
     @Column(name = "sub_curr_str")
     private String subCurrStr;
 
+    private String subjectsStr;
+    private String curriculumsStr;
+
     // Teacher specific
     @Column(name = "short_bio")
     private String shortBio;
