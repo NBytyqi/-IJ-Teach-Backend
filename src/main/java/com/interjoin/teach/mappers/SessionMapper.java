@@ -12,7 +12,7 @@ public class SessionMapper {
 
     public static SessionDto map(Session session, String userTimezone) {
         return SessionDto.builder()
-                .teacher(Optional.ofNullable(session.getTeacher()).map(UserMapper::map).orElse(null))
+                .student(Optional.ofNullable(session.getStudent()).map(UserMapper::map).orElse(null))
                 .studentFullName(Optional.ofNullable(session.getStudent()).map(student -> String.format("%s %s", student.getFirstName(), student.getLastName())).orElse(null))
                 .date(DateUtils.map(session.getDateSlot(), userTimezone))
                 .review(session.getReview())

@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 @Builder
 public class SessionDto {
 
-    private UserDto teacher;
+    private UserDto student;
     private String uuid;
     private String studentFullName;
     private OffsetDateTime date;
