@@ -595,8 +595,9 @@ public class UserService {
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put("teacherId", String.valueOf(currentTeacher.getId()));
+        final String URL_PARAMS = String.format("?status=PENDING&teacher=%s", currentTeacher.getFirstName());
 
-        return paymentService.openPaymentPage(price, VERIFICATION_PROCESS_SUBJECT, metadata, currentTeacher, null);
+        return paymentService.openPaymentPage(price, VERIFICATION_PROCESS_SUBJECT, metadata, currentTeacher, URL_PARAMS);
     }
 
     public void addProfilePictureToCurrentUser(MultipartFile picture, String userUuid) {

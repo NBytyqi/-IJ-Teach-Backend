@@ -22,12 +22,12 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
 
     Optional<Session> findByUuidAndTeacher(String uuid, User teacher);
 
-    Optional<Session> findByTeacherAndDateSlot(User teacher, OffsetDateTime dateSlot);
+    Optional<Session> findByTeacherAndDateSlotAndSessionStatusNot(User teacher, OffsetDateTime dateSlot, SessionStatus status);
 
     List<Session> findByTeacherOrderByDateSlotDesc(User teacher);
 
-    @Query(value = "SELECT s from Session s WHERE DATE(s.dateSlot) = :date AND s.teacher.id = :teacherId")
-    List<Session> findByTeacherAndSpecificDate(@Param("teacherId") Long teacherId, @Param("date") LocalDate date);
+    @Query(value = "SELECT s from Session s WHERE DATE(s.dateSlot) = :date AND s.teacher.id = :teacherId AND s.sessionStatus != :status")
+    List<Session> findByTeacherAndSpecificDateAndStatusNot(@Param("teacherId") Long teacherId, @Param("date") LocalDate date, @Param("status") SessionStatus status);
 
     List<Session> findByStudentAndDateSlotBefore(User currentStudent, OffsetDateTime today, Pageable pageable);
     List<Session> findByStudentAndDateSlotAfterAndSessionStatus(User currentStudent, OffsetDateTime today, SessionStatus status, Pageable pageable);

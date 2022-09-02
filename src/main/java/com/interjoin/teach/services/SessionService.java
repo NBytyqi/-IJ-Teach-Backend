@@ -58,7 +58,7 @@ public class SessionService {
                 timesService.findByUserAndWeekDay(request.getTeacherId(), weekDay), weekDay
         );
 
-        Optional<Session> optionalSession = sessionRepository.findByTeacherAndDateSlot(teacher, request.getDate().getDateTime());
+        Optional<Session> optionalSession = sessionRepository.findByTeacherAndDateSlotAndSessionStatusNot(teacher, request.getDate().getDateTime(), SessionStatus.DECLINED);
         if(optionalSession.isPresent() || !isTeacherAvailable(teacherAvailableTimes, request.getDate().getDateTime())) {
             throw new InterjoinException("This slot is busy");
         }
@@ -134,9 +134,8 @@ public class SessionService {
 
         List<AvailableTimesStringDto> avTimesInStudentTimezone = userService.getAvailableTimesForTeacherForDate(teacherId, date);
 
-        List<LocalTime> bookedSessions = DateUtils.mapMultipleTimes(sessionRepository.findByTeacherAndSpecificDate(teacherId, date).stream().map(session -> session.getDateSlot()).collect(Collectors.toList()), userService.getCurrentUserDetails().getTimeZone())
-                .stream().map(of -> of.toLocalDateTime().toLocalTime()).collect(Collectors.toList())
-                ;
+        List<LocalTime> bookedSessions = DateUtils.mapMultipleTimes(sessionRepository.findByTeacherAndSpecificDateAndStatusNot(teacherId, date, SessionStatus.DECLINED).stream().map(session -> session.getDateSlot()).collect(Collectors.toList()), userService.getCurrentUserDetails().getTimeZone())
+                .stream().map(of -> of.toLocalDateTime().toLocalTime()).collect(Collectors.toList());
 
         if(avTimesInStudentTimezone.isEmpty()) {
             return new ArrayList<>();

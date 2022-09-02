@@ -40,9 +40,14 @@ public class DateUtils {
             // converted at student timezone
             OffsetDateTime converted = OffsetDateTime.from(offsetDateTime.atZoneSameInstant(zoneOffSet));
 
+            String hour = String.valueOf(converted.getHour()).length() == 1 ? "0" + converted.getHour() : String.valueOf(converted.getHour());
+            String minute = String.valueOf(converted.getMinute()).length() == 1 ? "0" + converted.getMinute() : String.valueOf(converted.getMinute());
+
+            String hourPlus1 = String.valueOf(converted.plusHours(1).getHour()).length() == 1 ? "0" + converted.plusHours(1).getHour() : String.valueOf(converted.plusHours(1).getHour());
+
             available.add(AvailableHourMinuteDto.builder()
                             .dateTime(converted)
-                            .hourMinuteString(String.format("%s:%s - %s:%s", converted.getHour(), converted.getMinute(), converted.plusHours(1).getHour(), converted.getMinute()))
+                            .hourMinuteString(String.format("%s:%s - %s:%s", hour, minute, hourPlus1, minute))
                     .build());
         }
         hourMinutes.setWeekDay(weekDay);
