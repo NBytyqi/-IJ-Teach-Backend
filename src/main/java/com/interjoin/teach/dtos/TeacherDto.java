@@ -15,6 +15,7 @@ import java.util.Set;
 public class TeacherDto {
 
     private Long id;
+    private String uuid;
     private String firstName;
     private String lastName;
     private String profilePicture;

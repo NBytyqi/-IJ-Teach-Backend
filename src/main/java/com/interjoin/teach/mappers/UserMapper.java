@@ -32,6 +32,7 @@ public class UserMapper {
     public static UserDto map(User user) {
         return UserDto.builder()
                 .id(user.getId())
+                .uuid(user.getUuid())
                 .rating(user.getRating())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
@@ -64,6 +65,7 @@ public class UserMapper {
         return TeacherDto.builder()
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .uuid(user.getUuid())
                 .awsProfilePictureUrl(user.getAwsProfilePictureUrl())
 //                .profilePicture(user.getProfilePicture())
                 .curriculumsStr(user.getAwsProfilePictureUrl())

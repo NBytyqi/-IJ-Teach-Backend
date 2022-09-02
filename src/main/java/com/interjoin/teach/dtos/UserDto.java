@@ -46,4 +46,6 @@ public class UserDto {
     private List<ReviewDto> reviews;
 
     private String awsProfilePictureUrl;
+
+    private String uuid;
 }
