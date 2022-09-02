@@ -18,7 +18,7 @@ public class ExperienceMapper {
                 .title(experience.getTitle())
                 .from(experience.getFrom())
                 .to(experience.getTo())
-                .base64Logo(experience.getBase64Logo())
+                .awsLogoUrl(experience.getAwsLogoUrl())
                 .description(experience.getDescription())
 //                .logo(
 //                        Optional.ofNullable(experience.getLogo()).map(prf ->
@@ -35,14 +35,10 @@ public class ExperienceMapper {
                 .title(experience.getTitle())
                 .from(experience.getFrom())
                 .to(experience.getTo())
-                .base64Logo(experience.getBase64Logo())
+                .awsLogoUrl(experience.getAwsLogoUrl())
                 .user(forUser)
                 .description(experience.getDescription())
-//                .logo(
-//                        Optional.ofNullable(experience.getLogo()).map(prf ->
-//                                        Arrays.copyOf( experience.getLogo(), experience.getLogo().length ))
-//                                .orElse(null)
-//                )
+
                 .build();
     }
 

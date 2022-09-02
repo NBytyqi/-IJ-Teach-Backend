@@ -63,8 +63,8 @@ public class User {
 
 //    @Lob
 //    @Type(type="org.hibernate.type.BinaryType")
-    @Column(name = "profile_picture")
-    private String profilePicture;
+//    @Column(name = "profile_picture")
+//    private String profilePicture;
 
     @Column(name = "parent_email")
     @Email
@@ -160,5 +160,9 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private JoinAgencyStatus joinAgencyStatus;
+
+    private String awsProfilePictureRef;
+    @Column(length = 5000)
+    private String awsProfilePictureUrl;
 
 }

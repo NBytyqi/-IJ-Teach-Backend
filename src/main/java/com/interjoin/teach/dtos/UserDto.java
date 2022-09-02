@@ -23,7 +23,7 @@ public class UserDto {
     private String location;
     private String phoneNumber;
     private LocalDate dateOfBirth;
-    private String profilePicture;
+//    private String profilePicture;
     private String parentEmail;
     private String shortBio;
     private String longBio;
@@ -44,4 +44,6 @@ public class UserDto {
     private List<String> subjects;
     private List<Long> favoriteTeacherIds;
     private List<ReviewDto> reviews;
+
+    private String awsProfilePictureUrl;
 }

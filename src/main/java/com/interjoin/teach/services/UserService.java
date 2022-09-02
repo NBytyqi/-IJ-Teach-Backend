@@ -58,6 +58,8 @@ public class UserService {
     private final SubjectCurriculumService subCurrService;
     private final ExperienceService experienceService;
     private final PaymentService paymentService;
+    private final AwsService awsService;
+
     private final EmailService emailService;
     private final ReviewRepository reviewRepository;
 
@@ -184,9 +186,9 @@ public class UserService {
             user.setFavoriteTeacherIds(request.getFavoriteTeacherIds());
         }
 
-        if(Optional.ofNullable(request.getProfilePicture()).isPresent()) {
-            user.setProfilePicture(request.getProfilePicture());
-        }
+//        if(Optional.ofNullable(request.getProfilePicture()).isPresent()) {
+//            user.setProfilePicture(request.getProfilePicture());
+//        }
         //delete old available times
 //        availableTimesService.deleteAllByUser(user);
 //        user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(),  user.getTimeZone(), user));
@@ -203,7 +205,8 @@ public class UserService {
         user.setOtpVerificationCode(getRandomNumberString());
         user.setVerifiedEmail(false);
         user.setVerifiedTeacher(false);
-        user.setProfilePicture(request.getProfilePicture());
+        // TODO update profile pic in another endpoint
+//        user.setProfilePicture(request.getProfilePicture());
 
 //        String usernameCreated = awsService.signUpUser(request, role);
 //        user.setCognitoUsername(usernameCreated);
@@ -597,13 +600,16 @@ public class UserService {
     }
 
     public void addProfilePictureToCurrentUser(MultipartFile picture, String userUuid) {
-//        User user = findByUuid(userUuid);
-//        try {
-//            user.setProfilePicture(IOUtils.toByteArray(picture.getInputStream()));
-//            repository.save(user);
-//        } catch (IOException e) {
-//
-//        }
+        User user = findByUuid(userUuid);
+        try {
+            final String FILE_REF = String.format("%s/%s/%s/%s", user.getRole(), user.getEmail(), "ProfilePicture", picture.getOriginalFilename());
+            awsService.uploadFile(FILE_REF, picture);
+            user.setAwsProfilePictureRef(FILE_REF);
+            user.setAwsProfilePictureUrl(awsService.generatePresignedUrl(FILE_REF));
+            repository.save(user);
+        } catch (IOException e) {
+
+        }
     }
 
     public void forgotPassword(String email) throws InterjoinException {
@@ -632,9 +638,18 @@ public class UserService {
     }
 
     public void uploadCV(MultipartFile file, String userUuid) throws IOException {
-//        User user = findByUuid(userUuid);
-//        this.awsService.uploadFile(file.getOriginalFilename(), file, User.builder().email("bytyqinderim87@gmail.com").build());
+        User user = findByUuid(userUuid);
+        final String FILE_REF = String.format("%s/%s/%s", user.getRole(), user.getEmail(), "CV");
+        this.awsService.uploadFile(FILE_REF, file);
     }
+
+    public void uploadProfilePicture(MultipartFile file, String userUuid) throws IOException {
+        User user = findByUuid(userUuid);
+        final String FILE_REF = String.format("%s/%s/%s/%s", user.getRole(), user.getEmail(), "ProfilePicture", file.getOriginalFilename());
+        this.awsService.uploadFile(FILE_REF, file);
+    }
+
+
 
 
     // TODO
@@ -659,7 +674,8 @@ public class UserService {
                             .location(agency.getLocation())
                             .shortBio(agency.getShortBio())
                             .teachers(getAgencyUserss(agency, "active"))
-                            .profilePicture(agency.getProfilePicture())
+                            .awsProfilePictureUrl(agency.getAwsProfilePictureUrl())
+//                            .profilePicture(agency.getProfilePicture())
                             .build()
             );
         }

@@ -31,4 +31,6 @@ public class TeacherDto {
 
     private String subjectsStr;
     private String curriculumsStr;
+
+    private String awsProfilePictureUrl;
 }

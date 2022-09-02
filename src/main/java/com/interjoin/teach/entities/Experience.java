@@ -33,8 +33,9 @@ public class Experience {
 //    @Column(name = "logo")
 //    private byte[] logo;
 
-    @Column(name = "base_logo", length = 1000000000)
-    private String base64Logo;
+    private String awsLogoRef;
+    @Column(length = 5000)
+    private String awsLogoUrl;
 
     @Column(name = "from_date")
     private String from;

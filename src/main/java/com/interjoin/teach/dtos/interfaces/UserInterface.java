@@ -16,7 +16,7 @@ public interface UserInterface {
     String getQualifications();
     String getLongBio();
     String getLocation();
-    String getProfilePicture();
+    String getAwsProfilePictureUrl();
     Boolean getVerifiedTeacher();
 
 }

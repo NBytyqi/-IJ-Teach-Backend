@@ -28,6 +28,6 @@ public class AgencyTeacher {
     private LocalDate dateOfJoiningAgency;
     private String profilePicture;
 
-
+    private String awsProfilePictureUrl;
 
 }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import java.time.LocalDate;
 
 @Data
@@ -17,8 +18,9 @@ public class ExperienceDto {
     private String title;
     private String description;
     private String companyName;
-    private String base64Logo;
-    private byte[] logo;
+    private String awsLogoRef;
+    @Column(length = 5000)
+    private String awsLogoUrl;
     private String from;
     private String to;
 }

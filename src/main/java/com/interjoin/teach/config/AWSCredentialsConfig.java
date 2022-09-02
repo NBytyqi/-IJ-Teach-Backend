@@ -17,6 +17,7 @@ public class AWSCredentialsConfig {
     private String awsSecretKey;
     private String defaultGroupName;
     private String cvBucketName;
+    private String defaultBucketName;
 
 
 }

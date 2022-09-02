@@ -44,7 +44,7 @@ public class UserMapper {
                 .previousSuccessfulSessions(user.getPreviousSuccessfulSessions())
                 .longBio(user.getLongBio())
                 .qualifications(user.getQualifications())
-                .profilePicture(user.getProfilePicture())
+//                .profilePicture(user.getProfilePicture())
                 .subCurrList(Optional.ofNullable(user.getSubjectCurriculums()).map(SubjectCurriculumMapper::map).orElse(null))
                 .experiences(Optional.ofNullable(user.getExperiences()).map(ExperienceMapper::mapList).orElse(null))
                 .pricePerHour(user.getPricePerHour())
@@ -56,6 +56,7 @@ public class UserMapper {
                 .role(user.getRole())
                 .subjects(user.getSubjects())
                 .favoriteTeacherIds(user.getFavoriteTeacherIds())
+                .awsProfilePictureUrl(user.getAwsProfilePictureUrl())
                 .build();
     }
 
@@ -63,7 +64,9 @@ public class UserMapper {
         return TeacherDto.builder()
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .profilePicture(user.getProfilePicture())
+                .awsProfilePictureUrl(user.getAwsProfilePictureUrl())
+//                .profilePicture(user.getProfilePicture())
+                .curriculumsStr(user.getAwsProfilePictureUrl())
                 .build();
     }
 
@@ -79,7 +82,8 @@ public class UserMapper {
                 .shortBio(user.getShortBio())
                 .location(user.getLocation())
                 .rating(user.getRating())
-                .profilePicture(user.getProfilePicture())
+//                .profilePicture(user.getProfilePicture())
+                .awsProfilePictureUrl(user.getAwsProfilePictureUrl())
                 .verifiedTeacher(user.getVerifiedTeacher())
                 .subjectsStr(user.getSubjectsStr())
                 .curriculumsStr(user.getCurriculumsStr())
@@ -117,7 +121,8 @@ public class UserMapper {
                 .subCurrList(Optional.ofNullable(user.getSubjectCurriculums()).map(SubjectCurriculumMapper::map).orElse(new HashSet<>()))
                 .totalEarnings(user.getTotalEarned())
                 .totalHours(user.getTotalHours())
-                .profilePicture(user.getProfilePicture())
+                .awsProfilePictureUrl(user.getAwsProfilePictureUrl())
+//                .profilePicture(user.getProfilePicture())
                 .build();
     }
 }
