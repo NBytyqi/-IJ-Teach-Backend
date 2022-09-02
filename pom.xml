@@ -40,11 +40,10 @@
 <!--            <version>1.11.960</version>-->
 <!--        </dependency>-->
 
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-bom</artifactId>
-            <version>1.12.294</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.amazonaws</groupId>-->
+<!--            <artifactId>aws-java-sdk-bom</artifactId>-->
+<!--        </dependency>-->
 
 
         <dependency>
