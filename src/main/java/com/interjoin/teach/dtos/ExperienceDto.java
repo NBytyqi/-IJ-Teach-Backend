@@ -15,6 +15,7 @@ import java.time.LocalDate;
 public class ExperienceDto {
 
     private Long id;
+    private String uuid;
     private String title;
     private String description;
     private String companyName;

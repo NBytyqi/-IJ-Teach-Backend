@@ -4,21 +4,20 @@ import com.interjoin.teach.dtos.ExperienceDto;
 import com.interjoin.teach.entities.Experience;
 import com.interjoin.teach.entities.User;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class ExperienceMapper {
 
     public static ExperienceDto map(Experience experience) {
         return ExperienceDto.builder()
                 .id(experience.getId())
+                .uuid(experience.getUuid())
                 .companyName(experience.getCompanyName())
                 .title(experience.getTitle())
                 .from(experience.getFrom())
                 .to(experience.getTo())
                 .awsLogoUrl(experience.getAwsLogoUrl())
+                .awsLogoRef(experience.getAwsLogoRef())
                 .description(experience.getDescription())
 //                .logo(
 //                        Optional.ofNullable(experience.getLogo()).map(prf ->
@@ -31,11 +30,13 @@ public class ExperienceMapper {
     public static Experience map(ExperienceDto experience, User forUser) {
         return Experience.builder()
                 .id(experience.getId())
+                .uuid(Optional.ofNullable(experience.getUuid()).orElse(UUID.randomUUID().toString()))
                 .companyName(experience.getCompanyName())
                 .title(experience.getTitle())
                 .from(experience.getFrom())
                 .to(experience.getTo())
-                .awsLogoUrl(experience.getAwsLogoUrl())
+//                .awsLogoUrl(experience.getAwsLogoUrl())
+//                .awsLogoRef(experience.getAwsLogoRef())
                 .user(forUser)
                 .description(experience.getDescription())
 
