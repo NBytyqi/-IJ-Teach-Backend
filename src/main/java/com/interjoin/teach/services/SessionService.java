@@ -181,7 +181,7 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
-    public void approveSession(String sessionUuid, boolean approve) throws SessionNotValidException {
+    public List<SessionDto> approveSession(String sessionUuid, boolean approve) throws SessionNotValidException {
         User teacher = userService.getCurrentUserDetails();
         Session session = sessionRepository.findByUuidAndTeacher(sessionUuid, teacher).orElseThrow(() -> new SessionNotValidException("Session is not found"));
 
@@ -193,5 +193,7 @@ public class SessionService {
 
         session.setSessionStatus(status);
         sessionRepository.save(session);
+
+        return getTeacherSessionRequests(Pageable.unpaged());
     }
 }

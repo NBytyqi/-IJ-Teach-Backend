@@ -69,9 +69,8 @@ public class SessionController {
 
     @PutMapping("/approve/{sessionUuid}")
     @RolesAllowed(value = { Roles.TEACHER })
-    public ResponseEntity<Void> approveBookSession(@PathVariable String sessionUuid) throws SessionNotValidException {
-        sessionService.approveSession(sessionUuid, true);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<List<SessionDto>> approveBookSession(@PathVariable String sessionUuid) throws SessionNotValidException {
+        return ResponseEntity.ok(sessionService.approveSession(sessionUuid, true));
     }
 
     @PutMapping("/decline/{sessionUuid}")
