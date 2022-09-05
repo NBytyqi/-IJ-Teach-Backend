@@ -39,12 +39,6 @@ public class InterjoinTeachApplication {
 
     @Bean
     public ConfigurableJWTProcessor configurableJWTProcessor() throws MalformedURLException {
-        Set<String> zoneIds= ZoneId.getAvailableZoneIds();
-
-        for (String zone : zoneIds) {
-            System.out.println(zone);
-        }
-
         ResourceRetriever resourceRetriever =
                 new DefaultResourceRetriever(jwtConfiguration.getConnectionTimeout(),
                         jwtConfiguration.getReadTimeout());
