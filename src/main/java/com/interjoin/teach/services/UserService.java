@@ -78,6 +78,14 @@ public class UserService {
 
     private final ActivityLogsRepository activityLogsRepository;
 
+
+    // EMAIL TEMPLATES
+    @Value("${spring.sendgrid.templates.otp}")
+    private String OTP_TEMPLATE;
+
+    // EMAIL TEMPLATE KEYS
+    private final String FIRST_NAME = "firstName";
+
     public void createAgency(AgencySignupRequest request) {
 //        String usernameCreated = awsService.signUpAgency(request);
         User newAgency = User.builder()
@@ -202,7 +210,8 @@ public class UserService {
         }
 
         User user = UserMapper.mapUserRequest(request);
-        user.setOtpVerificationCode(getRandomNumberString());
+        final String FINAL_OTP_CODE = getRandomNumberString();
+        user.setOtpVerificationCode(FINAL_OTP_CODE);
         user.setVerifiedEmail(false);
         user.setVerifiedTeacher(false);
         // TODO update profile pic in another endpoint
@@ -261,6 +270,21 @@ public class UserService {
         }
         user.setJoinAgencyStatus(JoinAgencyStatus.NOT_JOINED);
         user = repository.save(user);
+        Map<String, String> keys = new HashMap<>();
+        keys.put(FIRST_NAME, request.getFirstName());
+        keys.put("nr1", String.valueOf(FINAL_OTP_CODE.charAt(0)));
+        keys.put("nr2", String.valueOf(FINAL_OTP_CODE.charAt(1)));
+        keys.put("nr3", String.valueOf(FINAL_OTP_CODE.charAt(2)));
+        keys.put("nr4", String.valueOf(FINAL_OTP_CODE.charAt(3)));
+        keys.put("nr5", String.valueOf(FINAL_OTP_CODE.charAt(4)));
+        keys.put("nr6", String.valueOf(FINAL_OTP_CODE.charAt(5)));
+
+        EmailDTO email = EmailDTO.builder()
+                .templateId(OTP_TEMPLATE)
+                .toEmail(request.getEmail())
+                .templateKeys(keys)
+                .build();
+        emailService.sendEmail(email);
 
         return SignupResponseDto.builder().firstName(user.getFirstName())
                 .user(UserMapper.map(user))

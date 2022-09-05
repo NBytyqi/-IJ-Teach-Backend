@@ -57,12 +57,12 @@ public class EmailService {
     }
 
     private Mail configureMail(String templateId) {
-        Email from = new Email(defaultEmailFrom, "Hospital Management");
+        Email from = new Email(defaultEmailFrom, "InterJoinTeach");
 
         Mail mail = new Mail();
 
         mail.setFrom(from);
-        mail.setReplyTo(new Email(replyToEmail, "Hospital Management"));
+        mail.setReplyTo(new Email(replyToEmail, "InterJoinTeach"));
         mail.setTemplateId(templateId);
         return mail;
     }
