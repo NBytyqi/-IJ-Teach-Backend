@@ -68,6 +68,8 @@ public class SessionService {
                                  .student(student)
                                  .dateSlot(request.getDate().getDateTime())
                                  .sessionStatus(SessionStatus.PAYMENT_PENDING)
+                                 .subject(request.getSubject())
+                                 .curriculum(request.getCurriculum())
                                  .price(teacher.getListedPrice())
                 .uuid(UUID.randomUUID().toString())
                                  .build();

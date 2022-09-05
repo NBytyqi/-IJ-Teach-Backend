@@ -47,4 +47,8 @@ public class Session {
     private String review;
     @Column(name = "review_score", nullable = true)
     private Double reviewScore;
+
+    private String subject;
+    private String curriculum;
+
 }

@@ -18,6 +18,8 @@ public class SessionMapper {
                 .review(session.getReview())
                 .reviewScore(session.getReviewScore())
                 .uuid(session.getUuid())
+                .subject(session.getSubject())
+                .curriculum(session.getCurriculum())
                 .build();
     }
 

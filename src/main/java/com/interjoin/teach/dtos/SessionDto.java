@@ -16,4 +16,6 @@ public class SessionDto {
     private OffsetDateTime date;
     private String review;
     private Double reviewScore;
+    private String subject;
+    private String curriculum;
 }
