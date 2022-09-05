@@ -32,6 +32,7 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     List<Session> findByStudentAndDateSlotBefore(User currentStudent, OffsetDateTime today, Pageable pageable);
     List<Session> findByStudentAndDateSlotAfterAndSessionStatus(User currentStudent, OffsetDateTime today, SessionStatus status, Pageable pageable);
     List<Session> findByTeacherAndDateSlotBefore(User currentTeacher, OffsetDateTime today, Pageable pageable);
+    List<Session> findByTeacherAndDateSlotAfter(User currentTeacher, OffsetDateTime today, Pageable pageable);
     List<Session> findByTeacherAndDateSlotAfterAndSessionStatus(User currentTeacher, OffsetDateTime today, SessionStatus status, Pageable pageable);
 
     @Query(value = "SELECT s from Session s where (s.student = :currentUser or s.teacher = :currentUser) AND s.dateSlot >= :today ")

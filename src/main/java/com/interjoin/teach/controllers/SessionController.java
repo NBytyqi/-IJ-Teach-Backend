@@ -49,6 +49,12 @@ public class SessionController {
         return ResponseEntity.ok(sessionService.getTeacherSessionHistory(pageable));
     }
 
+    @GetMapping("/teacher/classes")
+    @RolesAllowed(value = { Roles.TEACHER })
+    public ResponseEntity<List<SessionDto>> getCurrentTeacherSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+        return ResponseEntity.ok(sessionService.getTeacherActiveSessions(pageable));
+    }
+
     @GetMapping("/teacher/requests")
     @RolesAllowed(value = { Roles.TEACHER })
     public ResponseEntity<List<SessionDto>> getCurrentTeacherRequestSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {

@@ -167,6 +167,13 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
+    public List<SessionDto> getTeacherActiveSessions(Pageable pageable) {
+        User currentTeacher = userService.getCurrentUserDetails();
+        return sessionRepository.findByTeacherAndDateSlotAfterAndSessionStatus(currentTeacher, OffsetDateTime.now(), SessionStatus.APPROVED, pageable)
+                .stream().map(session -> SessionMapper.map(session, currentTeacher.getTimeZone()))
+                .collect(Collectors.toList());
+    }
+
     public List<SessionDto> getTeacherSessionRequests(Pageable pageable) {
         User currentTeacher = userService.getCurrentUserDetails();
         return sessionRepository.findByTeacherAndDateSlotAfterAndSessionStatus(currentTeacher, OffsetDateTime.now(), SessionStatus.PENDING_APPROVAL, pageable)
