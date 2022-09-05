@@ -52,7 +52,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     "/api/auth/signup/agency",
                     "/api/auth/signin",
                     "/api/datat/**",
-                    "/api/stripe/success-webhook")
+                    "/api/stripe/success-webhook/**")
             .permitAll()
                 .anyRequest().authenticated().and().
                 exceptionHandling().and().sessionManagement()
