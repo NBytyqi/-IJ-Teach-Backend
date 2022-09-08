@@ -1,5 +1,9 @@
 package com.interjoin.teach.controllers;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
+import com.interjoin.teach.entities.Session;
+import com.interjoin.teach.enums.SessionStatus;
+import com.interjoin.teach.services.SessionService;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.stripe.exception.SignatureVerificationException;
@@ -7,6 +11,7 @@ import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.StripeObject;
 import com.stripe.net.Webhook;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,13 +23,17 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/stripe")
+@RequiredArgsConstructor
 public class StripePaymentController {
+    private final SessionService sessionService;
 
     @PostMapping("success-webhook")
-    public ResponseEntity<String> handleSuccessfulPayment(@RequestBody String payload, @RequestHeader("Stripe-Signature") String sigHeader) throws NoSuchAlgorithmException, InvalidKeyException {
+    public ResponseEntity<String> handleSuccessfulPayment(@RequestBody String payload, @RequestHeader("Stripe-Signature") String sigHeader) throws NoSuchAlgorithmException, InvalidKeyException, InterjoinException {
 
         String endpointSecret = "whsec_84XTv2ZwkfSCwRTqYotUZkNF4IIiETPW";
         Event event;
+
+
 
         try {
             event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
@@ -48,9 +57,21 @@ public class StripePaymentController {
         switch (event.getType()) {
             case "charge.succeeded": {
 
+//                final String CHARGE_ID = JsonPath.read(payload, "data.object.id");
+//                System.out.println("Nderim charge" + CHARGE_ID);
+//                System.out.println(payload);
+
+                final String SESSION_ID = JsonPath.read(payload, "data.object.metadata.sessionId");
+//                System.out.println("I read the dataset uuid");
                 final String CHARGE_ID = JsonPath.read(payload, "data.object.id");
-                System.out.println("Nderim charge" + CHARGE_ID);
-                System.out.println(payload);
+                final String PAYMENT_INTENT_ID = JsonPath.read(payload, "data.object.payment_intent");
+
+                Session session = sessionService.findById(Long.valueOf(SESSION_ID));
+                session.setChargeId(CHARGE_ID);
+                session.setPaymentIntent(PAYMENT_INTENT_ID);
+                session.setSessionStatus(SessionStatus.PENDING_APPROVAL);
+                sessionService.update(session);
+                System.out.println("Updating " + session);
 
             }
 
@@ -66,6 +87,8 @@ public class StripePaymentController {
                         System.out.println("Nderim session" + metadataValue);
                         System.out.println();
                         System.out.println(payload);
+
+
                     } catch (PathNotFoundException ex) {
                         System.out.println(ex);
                     }

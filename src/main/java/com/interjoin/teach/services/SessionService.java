@@ -89,6 +89,13 @@ public class SessionService {
         return sessionRepository.findByUuid(uuid).orElseThrow(() -> new InterjoinException("Session not found", HttpStatus.NOT_FOUND));
     }
 
+    public Session findById(Long sessionId) throws InterjoinException {
+        return sessionRepository.findById(sessionId).orElseThrow(() -> new InterjoinException("Session not found", HttpStatus.NOT_FOUND));
+    }
+
+    public void update(Session session) {
+        sessionRepository.save(session);
+    }
 
     public List<SessionDto> getCurrentTeacherSessions() {
         User teacher = userService.getCurrentUserDetails();
@@ -195,5 +202,11 @@ public class SessionService {
         sessionRepository.save(session);
 
         return getTeacherSessionRequests(Pageable.unpaged());
+    }
+
+    public void paymentSuccessfullyDone(Long sessionId, String chargeid) throws InterjoinException {
+        Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new InterjoinException("Session doesn't exist"));
+        session.setSessionStatus(SessionStatus.PENDING_APPROVAL);
+        sessionRepository.save(session);
     }
 }

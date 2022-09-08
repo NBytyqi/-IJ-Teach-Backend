@@ -38,6 +38,7 @@ public class PaymentService {
                 SessionCreateParams.builder()
 
                         .setPaymentIntentData(new SessionCreateParams.PaymentIntentData.Builder()
+                                .setCaptureMethod(SessionCreateParams.PaymentIntentData.CaptureMethod.MANUAL)
                                 .putAllMetadata(metadata)
                                 .build())
 
