@@ -1,5 +1,6 @@
 package com.interjoin.teach.controllers;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.AgencyDashboardDataDto;
 import com.interjoin.teach.dtos.AgencyTeacher;
 import com.interjoin.teach.dtos.AgencyTeachersList;
@@ -40,5 +41,12 @@ public class AgencyController {
     public ResponseEntity<AgencyDashboardDataDto> getAgencyDashboardData() {
         return ResponseEntity.ok(userService.getAgencyDashboardData());
     }
+
+    @PostMapping("/join/{agencyCode}")
+    public ResponseEntity<?> joinAgencyByCode(@PathVariable("agencyCode") String agencyCode) throws InterjoinException {
+        userService.joinAgencyByCode(agencyCode);
+        return ResponseEntity.ok().build();
+    }
+
 
 }

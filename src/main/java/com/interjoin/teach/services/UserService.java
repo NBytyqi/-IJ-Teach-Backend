@@ -96,6 +96,7 @@ public class UserService {
                 .agencyName(request.getAgencyName())
                 .numberOfTeachers(request.getNumberOfTeachers())
                 .location(request.getLocation())
+                .agencyCode(getRandomNumberString())
 //                .cognitoUsername(usernameCreated)
                 .role("AGENCY")
                 .uuid(UUID.randomUUID().toString())
@@ -867,6 +868,20 @@ public class UserService {
                 .build();
 
         return dashboardData;
+    }
+
+    public void joinAgencyByCode(String agencyCode) throws InterjoinException {
+        User currentTeacher = getCurrentUserDetails();
+        User agency = getAgencyByCode(agencyCode);
+
+        currentTeacher.setAgency(false);
+        currentTeacher.setAgencyName(agency.getAgencyName());
+        currentTeacher.setJoinAgencyStatus(JoinAgencyStatus.REQUEST);
+        repository.save(currentTeacher);
+    }
+
+    private User getAgencyByCode(String agencyCode) throws InterjoinException {
+        return repository.findFirstByAgencyCode(agencyCode).orElseThrow(() -> new InterjoinException("Agency doesn't exist"));
     }
 }
 
