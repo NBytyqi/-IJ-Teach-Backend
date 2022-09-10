@@ -777,56 +777,74 @@ public class UserService {
             teacherInfos = getCurrentStudentFilteredTeachersOnPreferences(filterRequest.getVerifiedTeacher());
         } else {
             Curriculum curriculum = curriculumRepository.findFirstByCurriculumName(filterRequest.getCurriculum());
-            List<Subject> subjects = new ArrayList<>();
-
-            if(Optional.ofNullable(filterRequest.getSubjects()).isEmpty()) {
-                subjects = curriculum.getSubjects();
-            } else {
-                subjects = subjectRepository.findBySubjectNameIn(filterRequest.getSubjects());
-            }
-
-            for(Subject subject : subjects) {
-                List<TeacherDto> teachers = UserMapper.mapTeachers(repository.getTeachersPerSubjectAndCurriculum(subject.getId(), curriculum.getId()));
-                if(Optional.ofNullable(filterRequest.getVerifiedTeacher()).isPresent()) {
-                    teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(filterRequest.getVerifiedTeacher())).collect(Collectors.toList());
-                }
-                teacherInfos.add(
-                        TeacherInfo.builder()
-                                .subjectName(String.format("%s (%s)", subject.getSubjectName(), curriculum.getCurriculumName()))
-                                .teachers(teachers)
-                                .build()
-                );
-            }
+            teacherInfos = getTeachersForCurriculum(filterRequest, curriculum);
         }
 
 
         return teacherInfos;
     }
 
+
+
     public List<TeacherInfo> getCurrentStudentFilteredTeachersOnPreferences(Boolean isVerified) {
         List<TeacherInfo> teacherInfos = new ArrayList<>();
         User currentStudent = getCurrentUserDetails();
 
-        List<Subject> subjects = currentStudent.getSubjectCurriculums()
-                .stream().map(SubjectCurriculum::getSubject)
-//                                              .map(Subject::getId).distinct()
-                .collect(Collectors.toList());
+        Set<SubjectCurriculum> subCurrs = currentStudent.getSubjectCurriculums();
 
+        for(SubjectCurriculum sub : subCurrs) {
+            teacherInfos.addAll(getTeachersForCurriculum(TeacherFilterRequest.builder()
+                    .verifiedTeacher(isVerified)
+                    .subjects(Arrays.asList(sub.getSubject().getSubjectName()))
+                    .build(), sub.getCurriculum()));
+        }
 
-//        List<Long> teachers = subCurrService.getTeachersForSubjects(subjectIds);
+//        teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(isVerified)).collect(Collectors.toList());
+
+//        List<Subject> subjects = currentStudent.getSubjectCurriculums()
+//                .stream().map(SubjectCurriculum::getSubject)
+////                                              .map(Subject::getId).distinct()
+//                .collect(Collectors.toList());
+//
+//
+////        List<Long> teachers = subCurrService.getTeachersForSubjects(subjectIds);
+//        for(Subject subject : subjects) {
+//            List<TeacherDto> teachers = UserMapper.mapTeachers(repository.getTeachersPerSubject(subject.getId()));
+//            if(Optional.ofNullable(isVerified).isPresent() && teachers.size() > 0) {
+//                teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(isVerified)).collect(Collectors.toList());
+//            }
+//            teacherInfos.add(
+//                    TeacherInfo.builder()
+//                            .subjectName(subject.getSubjectName())
+//                            .teachers(teachers)
+//                            .build()
+//            );
+//        }
+
+        return teacherInfos;
+    }
+
+    private List<TeacherInfo> getTeachersForCurriculum(TeacherFilterRequest filterRequest, Curriculum curriculum) {
+        List<Subject> subjects = new ArrayList<>();
+        List<TeacherInfo> teacherInfos = new ArrayList<>();
+        if(Optional.ofNullable(filterRequest.getSubjects()).isEmpty()) {
+            subjects = curriculum.getSubjects();
+        } else {
+            subjects = subjectRepository.findBySubjectNameIn(filterRequest.getSubjects());
+        }
+
         for(Subject subject : subjects) {
-            List<TeacherDto> teachers = UserMapper.mapTeachers(repository.getTeachersPerSubject(subject.getId()));
-            if(Optional.ofNullable(isVerified).isPresent() && teachers.size() > 0) {
-                teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(isVerified)).collect(Collectors.toList());
+            List<TeacherDto> teachers = UserMapper.mapTeachers(repository.getTeachersPerSubjectAndCurriculum(subject.getId(), curriculum.getId()));
+            if(Optional.ofNullable(filterRequest.getVerifiedTeacher()).isPresent()) {
+                teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(filterRequest.getVerifiedTeacher())).collect(Collectors.toList());
             }
             teacherInfos.add(
                     TeacherInfo.builder()
-                            .subjectName(subject.getSubjectName())
+                            .subjectName(String.format("%s (%s)", subject.getSubjectName(), curriculum.getCurriculumName()))
                             .teachers(teachers)
                             .build()
             );
         }
-
         return teacherInfos;
     }
 
