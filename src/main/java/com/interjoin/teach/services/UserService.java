@@ -446,11 +446,9 @@ public class UserService {
 
         User user = repository.findByEmail(request.getEmail()).get();
         String agencyProfilePictureUrl = null;
-        if(Optional.ofNullable(user.getAgencyName()).isPresent() && user.isAgency() == false) {
+        if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
             agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
         }
-
-
 
         final String JWT = jwtTokenUtil.generateToken(userDetails);
 
