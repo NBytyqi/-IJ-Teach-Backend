@@ -39,4 +39,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByAwsProfilePictureRefIsNotNull();
 
+
+    @Query("SELECT agency.awsProfilePictureUrl from User as agency where agency.agency = true AND agency.agencyName=:agencyName")
+    String getAgencyProfilePicture(@Param("agencyName") String agencyName);
+
 }

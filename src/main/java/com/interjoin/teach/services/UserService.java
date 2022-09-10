@@ -445,12 +445,22 @@ public class UserService {
                 .loadUserByUsername(request.getEmail());
 
         User user = repository.findByEmail(request.getEmail()).get();
+        String agencyProfilePictureUrl = null;
+        if(Optional.ofNullable(user.getAgencyName()).isPresent() && user.isAgency() == false) {
+            agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
+        }
+
+
 
         final String JWT = jwtTokenUtil.generateToken(userDetails);
 
         return AuthResponse.builder()
                 .token(JWT)
-                .userDetails(UserMapper.map(user))
+                .userDetails(
+                        UserMapper.map(user)
+                                  .toBuilder()
+                                .awsAgencyLogoUrl(agencyProfilePictureUrl)
+                                .build())
                 .build();
 
     }

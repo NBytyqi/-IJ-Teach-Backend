@@ -48,4 +48,6 @@ public class UserDto {
     private String awsProfilePictureUrl;
 
     private String uuid;
+
+    private String awsAgencyLogoUrl;
 }
