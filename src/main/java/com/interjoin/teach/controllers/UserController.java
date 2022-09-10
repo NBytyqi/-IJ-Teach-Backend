@@ -50,5 +50,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getCurriculumsOfSubjectAndTeacher(teacherId, subject));
     }
 
+    @DeleteMapping("/agency")
+    public ResponseEntity<Void> removeCurrentTeacherFromAgency() {
+        userService.removeMyselfFromAgency();
+        return ResponseEntity.ok().build();
+    }
+
 
 }

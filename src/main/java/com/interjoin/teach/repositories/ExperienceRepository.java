@@ -13,4 +13,6 @@ public interface ExperienceRepository extends JpaRepository<Experience, Long> {
 
     List<Experience> findByUser(User user);
     Optional<Experience> findByUuid(String uuid);
+
+    List<Experience> findByAwsLogoRefIsNotNull();
 }

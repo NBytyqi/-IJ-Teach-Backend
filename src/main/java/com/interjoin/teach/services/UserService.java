@@ -34,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityNotFoundException;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -746,6 +747,14 @@ public class UserService {
                 .build());
     }
 
+    @Transactional
+    public void removeMyselfFromAgency() {
+        User currentTeacher = getCurrentUserDetails();
+        currentTeacher.setAgency(false);
+        currentTeacher.setAgencyName(null);
+        currentTeacher.setDateOfJoiningAgency(null);
+    }
+
 
     public static String getRandomNumberString() {
         Random rnd = new Random();
@@ -878,6 +887,22 @@ public class UserService {
         currentTeacher.setAgencyName(agency.getAgencyName());
         currentTeacher.setJoinAgencyStatus(JoinAgencyStatus.REQUEST);
         repository.save(currentTeacher);
+    }
+
+    @Transactional
+    public void generateProfilePicturesAndExperiencesPresignedUrls() {
+        System.out.println("Generating presigned urls");
+        List<User> users = repository.findByAwsProfilePictureRefIsNotNull();
+        users.stream().forEach(user -> {
+            String newUrl = this.awsService.generatePresignedUrl(user.getAwsProfilePictureRef());
+            user.setAwsProfilePictureUrl(newUrl);
+        });
+
+        List<Experience> experiences = experienceService.findAllWithLogos();
+        experiences.stream().forEach(exp -> {
+            String newUrl = this.awsService.generatePresignedUrl(exp.getAwsLogoRef());
+            exp.setAwsLogoUrl(newUrl);
+        });
     }
 
     private User getAgencyByCode(String agencyCode) throws InterjoinException {

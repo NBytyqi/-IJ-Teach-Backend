@@ -37,6 +37,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             nativeQuery = true)
     List<UserInterface> getTeachersPerSubjectAndCurriculum(@Param("subjectId") Long subjectId, @Param("curriculumId") Long curriculumId);
 
-
+    List<User> findByAwsProfilePictureRefIsNotNull();
 
 }

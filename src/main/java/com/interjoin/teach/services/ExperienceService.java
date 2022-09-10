@@ -40,4 +40,8 @@ public class ExperienceService {
         experience.setAwsLogoRef(FILE_REF);
         repository.save(experience);
     }
+
+    public List<Experience> findAllWithLogos() {
+        return repository.findByAwsLogoRefIsNotNull();
+    }
 }
