@@ -792,7 +792,7 @@ public class UserService {
                 }
                 teacherInfos.add(
                         TeacherInfo.builder()
-                                .subjectName(subject.getSubjectName())
+                                .subjectName(String.format("%s (%s)", subject.getSubjectName(), curriculum.getCurriculumName()))
                                 .teachers(teachers)
                                 .build()
                 );
