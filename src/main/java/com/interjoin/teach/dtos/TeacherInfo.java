@@ -14,5 +14,6 @@ import java.util.List;
 public class TeacherInfo {
 
     private String subjectName;
+    private String curriculumName;
     private List<TeacherDto> teachers;
 }
