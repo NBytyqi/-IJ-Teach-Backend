@@ -419,7 +419,19 @@ public class UserService {
 //    }
 
     public UserDto getCurrentUserDetailsAsDto() {
-        return UserMapper.map(getCurrentUserDetails());
+        String agencyProfilePictureUrl = null;
+//        if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
+//            agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
+//        }
+        User user = getCurrentUserDetails();
+
+       if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
+            agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
+       }
+
+        return UserMapper.map(user).toBuilder()
+                .awsAgencyLogoUrl(agencyProfilePictureUrl)
+                .build();
     }
 
     public Optional<User> getUserByEmail(String email) {
