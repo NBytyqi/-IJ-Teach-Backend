@@ -29,7 +29,7 @@ deploy-dev:
         - echo "Deploying started..."
         - ssh ubuntu@$DEV_DEPLOY_SERVER_IP "sudo systemctl stop interjoin-teach.service"
         - scp ./target/interjoin-teach.jar ubuntu@$DEV_DEPLOY_SERVER_IP:~/interjoin-teach/
-        - ssh ubuntu@$DEPLOY_SERVER_IP "sudo systemctl start interjoin-teach.service"
+        - ssh ubuntu@$DEV_DEPLOY_SERVER_IP "sudo systemctl start interjoin-teach.service"
         - echo "Finished deploying the app."
     only:
         - develop
@@ -49,7 +49,7 @@ deploy-prod:
         - echo "Deploying started..."
         - ssh ubuntu@$PROD_DEPLOY_SERVER_IP "sudo systemctl stop interjoin-teach.service"
         - scp ./target/interjoin-teach.jar ubuntu@$PROD_DEPLOY_SERVER_IP:~/interjoin-teach/
-        - ssh ubuntu@$DEPLOY_SERVER_IP "sudo systemctl start interjoin-teach.service"
+        - ssh ubuntu@$PROD_DEPLOY_SERVER_IP "sudo systemctl start interjoin-teach.service"
         - echo "Finished deploying the app."
     only:
         - master
