@@ -13,10 +13,8 @@ build:
         expire_in: 1 week
         paths:
             - target/interjoin-teach.jar
-    only:
-        - master
 
-deploy:
+deploy-dev:
     stage: deploy
     image: alpine:3.11
     before_script:
@@ -26,11 +24,31 @@ deploy:
         - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
         - touch ~/.ssh/config
         - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-        - ssh-keyscan -H $DEPLOY_SERVER_IP >> ~/.ssh/known_hosts
+        - ssh-keyscan -H $DEV_DEPLOY_SERVER_IP >> ~/.ssh/known_hosts
     script:
         - echo "Deploying started..."
-        - ssh ubuntu@$DEPLOY_SERVER_IP "sudo systemctl stop interjoin-teach.service"
-        - scp ./target/interjoin-teach.jar ubuntu@$DEPLOY_SERVER_IP:~/interjoin-teach/
+        - ssh ubuntu@$DEV_DEPLOY_SERVER_IP "sudo systemctl stop interjoin-teach.service"
+        - scp ./target/interjoin-teach.jar ubuntu@$DEV_DEPLOY_SERVER_IP:~/interjoin-teach/
+        - ssh ubuntu@$DEPLOY_SERVER_IP "sudo systemctl start interjoin-teach.service"
+        - echo "Finished deploying the app."
+    only:
+        - develop
+
+deploy-prod:
+    stage: deploy
+    image: alpine:3.11
+    before_script:
+        - apk update && apk add openssh-client bash
+        - mkdir -p ~/.ssh
+        - eval $(ssh-agent -s)
+        - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+        - touch ~/.ssh/config
+        - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+        - ssh-keyscan -H $PROD_DEPLOY_SERVER_IP >> ~/.ssh/known_hosts
+    script:
+        - echo "Deploying started..."
+        - ssh ubuntu@$PROD_DEPLOY_SERVER_IP "sudo systemctl stop interjoin-teach.service"
+        - scp ./target/interjoin-teach.jar ubuntu@$PROD_DEPLOY_SERVER_IP:~/interjoin-teach/
         - ssh ubuntu@$DEPLOY_SERVER_IP "sudo systemctl start interjoin-teach.service"
         - echo "Finished deploying the app."
     only:
