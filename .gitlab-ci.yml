@@ -53,3 +53,4 @@ deploy-prod:
         - echo "Finished deploying the app."
     only:
         - master
+        
