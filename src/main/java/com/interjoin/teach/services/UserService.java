@@ -674,29 +674,27 @@ public class UserService {
         }
     }
 
-    public void forgotPassword(String email) throws InterjoinException {
-        User user = repository.findByEmail(email).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
-//        user.setResetPasswordCode(getRandomNumberString());
-        repository.save(user);
-        Map<String, String> templateKeys = new HashMap<>();
-        templateKeys.put("verificationCode", user.getResetPasswordCode());
-        //send an email to  notify them
-        EmailDTO emailDTO = EmailDTO.builder()
-                .templateId(FORGOT_PASSWORD_TEMPLATE)
-                .toEmail(email)
-                .build();
+//    public void forgotPassword(String email) throws InterjoinException {
+//        User user = repository.findByEmail(email).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
+////        user.setResetPasswordCode(getRandomNumberString());
+//        repository.save(user);
+//        Map<String, String> templateKeys = new HashMap<>();
+//        templateKeys.put("verificationCode", user.getResetPasswordCode());
+//        //send an email to  notify them
+//        EmailDTO emailDTO = EmailDTO.builder()
+//                .templateId(FORGOT_PASSWORD_TEMPLATE)
+//                .toEmail(email)
+//                .build();
+//
+//        emailService.sendEmail(emailDTO);
+//    }
 
-        emailService.sendEmail(emailDTO);
+    public void forgotPassword(String username) {
+        this.awsService.forgotForUser(username);
     }
 
     public void resetPassword(ResetPasswordDTO request) throws InterjoinException {
-        User user = repository.findByEmail(request.getEmail()).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
-        if(user.getResetPasswordCode().equals(request.getCode())) {
-            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        } else {
-            throw new InterjoinException("Reset code is not valid");
-        }
-//        this.awsService.resetUserPassword(request);
+        this.awsService.resetUserPassword(request);
     }
 
     public void uploadCV(MultipartFile file, String userUuid) throws IOException {

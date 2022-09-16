@@ -12,6 +12,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.interjoin.teach.config.AWSCredentialsConfig;
+import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.dtos.requests.AgencySignupRequest;
@@ -197,6 +198,28 @@ public class AwsService {
             catch (IOException e) {
                 throw e;
             }
+
+    }
+
+    public void forgotForUser(String username) {
+
+        AdminResetUserPasswordRequest resetUserPasswordRequest = new AdminResetUserPasswordRequest()
+                .withUserPoolId(this.cognitoCreds.getPoolId())
+                .withUsername(username);
+        basicAuthCognitoIdentityProvider.adminResetUserPassword(resetUserPasswordRequest);
+    }
+
+
+    public void resetUserPassword(ResetPasswordDTO resetPassword) throws UserNotFoundException {
+        ConfirmForgotPasswordRequest confirmForgotPasswordRequest = new ConfirmForgotPasswordRequest()
+                .withUsername(resetPassword.getEmail())
+                .withClientId(this.cognitoCreds.getClientId())
+                .withConfirmationCode(resetPassword.getCode())
+                .withPassword(resetPassword.getNewPassword())
+                .withSecretHash(
+                        SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), resetPassword.getEmail())
+                );
+        basicAuthCognitoIdentityProvider.confirmForgotPassword(confirmForgotPasswordRequest);
 
     }
 
