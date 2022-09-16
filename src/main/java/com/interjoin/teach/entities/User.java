@@ -37,8 +37,8 @@ public class User {
     @Column(name = "uuid", updatable = false)
     private String uuid;
 
-//    @JsonIgnore
-//    private String cognitoUsername;
+    @JsonIgnore
+    private String cognitoUsername;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
