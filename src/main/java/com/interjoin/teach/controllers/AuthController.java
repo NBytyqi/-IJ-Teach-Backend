@@ -12,7 +12,6 @@ import com.interjoin.teach.dtos.requests.UpdateProfileRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.RefreshTokenResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
-import com.interjoin.teach.jwt.JwtUtil;
 import com.interjoin.teach.services.SessionService;
 import com.interjoin.teach.services.UserService;
 import io.jsonwebtoken.impl.DefaultClaims;
@@ -34,7 +33,6 @@ public class AuthController {
 
     private final UserService service;
     private final SessionService sessionService;
-    private final JwtUtil jwtUtil;
 
     @PostMapping("/signup/teacher")
     public ResponseEntity<SignupResponseDto> signupTeacher(@Valid @RequestBody UserSignupRequest request) throws InterjoinException {
@@ -109,16 +107,6 @@ public class AuthController {
     public ResponseEntity<Void> resendOtp(@PathVariable String cognitoUsername) {
         service.resendVerificationEmail(cognitoUsername);
         return ResponseEntity.ok().build();
-    }
-
-    @GetMapping( "/refresh-token")
-    public ResponseEntity<RefreshTokenResponse> refreshToken(HttpServletRequest request) throws Exception {
-        // From the HttpRequest get the claims
-        DefaultClaims claims = (io.jsonwebtoken.impl.DefaultClaims) request.getAttribute("claims");
-
-        Map<String, Object> expectedMap = getMapFromIoJsonwebtokenClaims(claims);
-        String token = jwtUtil.doGenerateRefreshToken(expectedMap, expectedMap.get("sub").toString());
-        return ResponseEntity.ok(new RefreshTokenResponse(token));
     }
 
     private Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {

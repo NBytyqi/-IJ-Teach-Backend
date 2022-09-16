@@ -12,7 +12,6 @@ import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.*;
 import com.interjoin.teach.enums.JoinAgencyStatus;
-import com.interjoin.teach.jwt.JwtUtil;
 import com.interjoin.teach.mappers.ReviewMapper;
 import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.*;
@@ -23,11 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -72,8 +68,6 @@ public class UserService {
     private final SubjectCurriculumRepository subCurrRepository;
     private final CurriculumRepository curriculumRepository;
     private final SubjectRepository subjectRepository;
-
-    private final JwtUtil jwtTokenUtil;
 
     private final MyUserDetailsService userDetailsService;
 
@@ -495,21 +489,23 @@ public class UserService {
 //    }
 
     public User getCurrentUserDetails() {
-        MyUserDetails principal = getCurrentUser();
+        org.springframework.security.core.userdetails.User principal = getCurrentUser();
         User currentUser = null;
         if(principal != null) {
-            Optional<User> optionalUser = repository.findByEmail(principal.getUsername());
+            Optional<User> optionalUser = repository.findByCognitoUsername(principal.getUsername());
             if(optionalUser.isPresent())
                 currentUser = optionalUser.get();
         }
         return currentUser;
     }
 
-    private MyUserDetails getCurrentUser() {
+    private org.springframework.security.core.userdetails.User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MyUserDetails principal = (MyUserDetails) authentication.getPrincipal();
+        org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
         return principal;
     }
+
+
 
     public String getAgencyNameByReferalCode(String referalCode) {
         return repository.findFirstByAgencyCode(referalCode).map(User::getAgencyName).orElse(null);

@@ -21,8 +21,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final AwsCognitoJwtAuthFilter awsCognitoJwtAuthenticationFilter;
 
-    private final JwtRequestFilter jwtRequestFilter;
-
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors()
