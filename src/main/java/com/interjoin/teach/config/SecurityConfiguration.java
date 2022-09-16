@@ -1,6 +1,5 @@
 package com.interjoin.teach.config;
 
-import com.interjoin.teach.filters.AwsCognitoJwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +18,7 @@ import org.springframework.web.filter.CorsFilter;
 @RequiredArgsConstructor
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    private final AwsCognitoJwtAuthFilter awsCognitoJwtAuthenticationFilter;
+//    private final AwsCognitoJwtAuthFilter awsCognitoJwtAuthenticationFilter;
 
     private final JwtRequestFilter jwtRequestFilter;
 
@@ -48,21 +47,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     "/api/v3/api-docs/swagger-config",
                     "/api/auth/email/**",
                     "/api/auth/signup/teacher",
-                    "/api/auth/forgot/**",
+                    "/api/auth/forgot",
                     "/api/auth/signup/student",
                     "/api/auth/signup/agency",
                     "/api/auth/signin",
                     "/api/datat/**",
                     "/api/stripe/success-webhook/**")
             .permitAll()
-                .anyRequest().authenticated().and()
-                        .addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//                .addFilterBefore(awsCognitoJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//                exceptionHandling().and().sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .anyRequest().authenticated().and().
+                exceptionHandling().and().sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
 
-//        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
