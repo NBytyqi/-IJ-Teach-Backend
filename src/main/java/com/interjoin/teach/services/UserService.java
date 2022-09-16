@@ -652,7 +652,7 @@ public class UserService {
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put("teacherId", String.valueOf(currentTeacher.getId()));
-        final String URL_PARAMS = String.format("?status=IN_REVIEW&teacher=%s", currentTeacher.getFirstName());
+        final String URL_PARAMS = String.format("?status=IN_REVIEW&teacher=%d", currentTeacher.getId());
 
         return paymentService.openPaymentPage(price, VERIFICATION_PROCESS_SUBJECT, metadata, currentTeacher, URL_PARAMS);
     }
