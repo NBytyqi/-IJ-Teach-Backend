@@ -71,6 +71,7 @@ public class SessionService {
                                  .subject(request.getSubject())
                                  .curriculum(request.getCurriculum())
                                  .price(teacher.getListedPrice())
+                                 .comment(request.getComment())
                 .uuid(UUID.randomUUID().toString())
                                  .build();
         session = sessionRepository.save(session);

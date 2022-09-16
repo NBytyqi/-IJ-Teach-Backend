@@ -20,6 +20,7 @@ public class SessionMapper {
                 .uuid(session.getUuid())
                 .subject(session.getSubject())
                 .curriculum(session.getCurriculum())
+                .comment(session.getComment())
                 .build();
     }
 

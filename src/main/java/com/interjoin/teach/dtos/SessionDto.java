@@ -18,4 +18,5 @@ public class SessionDto {
     private Double reviewScore;
     private String subject;
     private String curriculum;
+    private String comment;
 }

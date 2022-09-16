@@ -16,4 +16,5 @@ public class BookSessionRequest {
     private Long teacherId;
     private String subject;
     private String curriculum;
+    private String comment;
 }
