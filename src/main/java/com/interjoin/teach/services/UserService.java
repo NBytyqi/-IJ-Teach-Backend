@@ -419,7 +419,7 @@ public class UserService {
 //        }
         User user = getCurrentUserDetails();
 
-       if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
+       if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
             agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
        }
 
@@ -464,7 +464,7 @@ public class UserService {
             response = awsService.signInUser(request);
             User user = getUserByEmail(request.getEmail()).orElseThrow(EntityNotFoundException::new);
             String agencyProfilePictureUrl = null;
-            if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
+            if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
                 agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
             }
 
