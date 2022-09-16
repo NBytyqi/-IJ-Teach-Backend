@@ -46,8 +46,8 @@ public class AuthController {
         this.service.addProfilePictureToCurrentUser(picture, userUuid);
     }
 
-    @PutMapping("/forgot/{email}")
-    public void forgotPassword(@PathVariable String email) throws InterjoinException {
+    @PutMapping("/forgot")
+    public void forgotPassword(@RequestParam("email") String email) throws InterjoinException {
         this.service.forgotPassword(email);
     }
 

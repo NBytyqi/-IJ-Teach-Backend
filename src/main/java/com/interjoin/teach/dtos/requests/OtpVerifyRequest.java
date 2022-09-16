@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OtpVerifyRequest {
-    private String cognitoUsername;
+    private String uuid;
     private String otpCode;
 }
