@@ -27,9 +27,9 @@ public class PaymentService {
     public String openPaymentPage(BigDecimal price, String subject, Map<String, String> metadata, User currentUser, String urlParams) {
 
         Stripe.apiKey = "sk_test_51KdsJaHiAI1FpLGq7shhYXjXrm3nsK5bM9ALw6Rk8YWSa6qLR40WS6NqFnwgwby5VyGD4hZITPIYe8gFoEQSUEJD00UIyHsMpM";
-
+        String finalPaymentUrl = paymentSuccessUrl;
         if(Optional.ofNullable(urlParams).isPresent()) {
-            paymentSuccessUrl = String.format("%s%s", paymentSuccessUrl, urlParams);
+            finalPaymentUrl = String.format("%s%s", paymentSuccessUrl, urlParams);
         }
 
         Customer customer = getStripeUserByEmail(currentUser);
@@ -44,7 +44,7 @@ public class PaymentService {
 
                         .putAllMetadata(metadata)
                         .setMode(SessionCreateParams.Mode.PAYMENT)
-                        .setSuccessUrl(paymentSuccessUrl)
+                        .setSuccessUrl(finalPaymentUrl)
 //                        .setCancelUrl(paymentCancelUrl + "/" + paymentRequestDto.getDatasetUuid() + "/edit")
                         .setCancelUrl(paymentCancelUrl)
                         .setCustomer(customer.getId())
