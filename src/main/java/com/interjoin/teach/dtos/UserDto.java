@@ -37,6 +37,9 @@ public class UserDto {
     private BigDecimal pricePerHour;
     private String agencyName;
     private boolean verifiedTeacher;
+
+    private Boolean purchasedVerification;
+
     private BigDecimal listedPrice;
     private String timezone;
     private boolean verifiedEmail;

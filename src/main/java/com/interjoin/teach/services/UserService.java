@@ -642,6 +642,7 @@ public class UserService {
 //        this.awsService.resendVerificationEmail(cognitoUsername);
     }
 
+    @Transactional
     public String purchaseVerification(String process) {
         BigDecimal price = BigDecimal.valueOf(60L);
         if(process.toLowerCase().equals("more")) {
@@ -653,6 +654,9 @@ public class UserService {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("teacherId", String.valueOf(currentTeacher.getId()));
         final String URL_PARAMS = String.format("?status=IN_REVIEW&teacher=%d", currentTeacher.getId());
+
+        //TODO
+        currentTeacher.setPurchasedVerification(true);
 
         return paymentService.openPaymentPage(price, VERIFICATION_PROCESS_SUBJECT, metadata, currentTeacher, URL_PARAMS);
     }
