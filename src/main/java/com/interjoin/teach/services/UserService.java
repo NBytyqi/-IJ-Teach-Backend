@@ -12,7 +12,6 @@ import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.*;
 import com.interjoin.teach.enums.JoinAgencyStatus;
-import com.interjoin.teach.jwt.JwtUtil;
 import com.interjoin.teach.mappers.ReviewMapper;
 import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.*;
@@ -23,11 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -72,8 +68,6 @@ public class UserService {
     private final SubjectCurriculumRepository subCurrRepository;
     private final CurriculumRepository curriculumRepository;
     private final SubjectRepository subjectRepository;
-
-    private final JwtUtil jwtTokenUtil;
 
     private final MyUserDetailsService userDetailsService;
 
@@ -425,7 +419,7 @@ public class UserService {
 //        }
         User user = getCurrentUserDetails();
 
-       if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
+       if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
             agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
        }
 
@@ -453,8 +447,13 @@ public class UserService {
         }
 
 
-        final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(request.getEmail());
+        if(Optional.ofNullable(request).isPresent()) {
+            response = awsService.signInUser(request);
+            User user = getUserByEmail(request.getEmail()).orElseThrow(EntityNotFoundException::new);
+            String agencyProfilePictureUrl = null;
+            if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
+                agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
+            }
 
         User user = repository.findByEmail(request.getEmail()).get();
         String agencyProfilePictureUrl = null;
@@ -480,21 +479,23 @@ public class UserService {
     }
 
     public User getCurrentUserDetails() {
-        MyUserDetails principal = getCurrentUser();
+        org.springframework.security.core.userdetails.User principal = getCurrentUser();
         User currentUser = null;
         if(principal != null) {
-            Optional<User> optionalUser = repository.findByEmail(principal.getUsername());
+            Optional<User> optionalUser = repository.findByCognitoUsername(principal.getUsername());
             if(optionalUser.isPresent())
                 currentUser = optionalUser.get();
         }
         return currentUser;
     }
 
-    private MyUserDetails getCurrentUser() {
+    private org.springframework.security.core.userdetails.User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MyUserDetails principal = (MyUserDetails) authentication.getPrincipal();
+        org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
         return principal;
     }
+
+
 
     public String getAgencyNameByReferalCode(String referalCode) {
         return repository.findFirstByAgencyCode(referalCode).map(User::getAgencyName).orElse(null);
@@ -631,6 +632,7 @@ public class UserService {
 //        this.awsService.resendVerificationEmail(cognitoUsername);
     }
 
+    @Transactional
     public String purchaseVerification(String process) {
         BigDecimal price = BigDecimal.valueOf(60L);
         if(process.toLowerCase().equals("more")) {
@@ -641,7 +643,10 @@ public class UserService {
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put("teacherId", String.valueOf(currentTeacher.getId()));
-        final String URL_PARAMS = String.format("?status=IN_REVIEW&teacher=%s", currentTeacher.getFirstName());
+        final String URL_PARAMS = String.format("?status=IN_REVIEW&teacher=%d", currentTeacher.getId());
+
+        //TODO
+        currentTeacher.setPurchasedVerification(true);
 
         return paymentService.openPaymentPage(price, VERIFICATION_PROCESS_SUBJECT, metadata, currentTeacher, URL_PARAMS);
     }

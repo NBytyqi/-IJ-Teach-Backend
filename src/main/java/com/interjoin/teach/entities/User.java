@@ -152,6 +152,8 @@ public class User {
     @Column(nullable = true)
     private boolean verifiedEmail;
 
+    private Boolean purchasedVerification;
+
     @Column(nullable = true)
     private String resetPasswordCode;
 

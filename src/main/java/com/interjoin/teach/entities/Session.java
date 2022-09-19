@@ -51,6 +51,8 @@ public class Session {
     private String subject;
     private String curriculum;
 
+    private String comment;
+
     // STRIPE
     private String chargeId;
     private String paymentIntent;
