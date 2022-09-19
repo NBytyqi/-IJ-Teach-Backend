@@ -82,7 +82,7 @@ public class UserService {
     private final String FIRST_NAME = "firstName";
 
     public void createAgency(AgencySignupRequest request) {
-        String usernameCreated = awsService.signUpAgency(request);
+//        String usernameCreated = awsService.signUpAgency(request);
         User newAgency = User.builder()
                 .agency(true)
                 .email(request.getContactEmail())
@@ -92,7 +92,7 @@ public class UserService {
                 .numberOfTeachers(request.getNumberOfTeachers())
                 .location(request.getLocation())
                 .agencyCode(getRandomNumberString())
-                .cognitoUsername(usernameCreated)
+//                .cognitoUsername(usernameCreated)
                 .role("AGENCY")
                 .uuid(UUID.randomUUID().toString())
                 .firstName(request.getAgencyName())
@@ -213,8 +213,8 @@ public class UserService {
         // TODO update profile pic in another endpoint
 //        user.setProfilePicture(request.getProfilePicture());
 
-        String usernameCreated = awsService.signUpUser(request, role);
-        user.setCognitoUsername(usernameCreated);
+//        String usernameCreated = awsService.signUpUser(request, role);
+//        user.setCognitoUsername(usernameCreated);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
@@ -240,7 +240,7 @@ public class UserService {
         user.setCreatedDate(LocalDateTime.now());
         user.setUuid(UUID.randomUUID().toString());
         user.setAgency(false);
-//        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user = repository.save(user);
 
         // CHECK IF EXPERIENCE IS NULL
@@ -266,27 +266,27 @@ public class UserService {
         }
         user.setJoinAgencyStatus(JoinAgencyStatus.NOT_JOINED);
         user = repository.save(user);
-//        Map<String, String> keys = new HashMap<>();
-//        keys.put(FIRST_NAME, request.getFirstName());
-//        keys.put("nr1", String.valueOf(FINAL_OTP_CODE.charAt(0)));
-//        keys.put("nr2", String.valueOf(FINAL_OTP_CODE.charAt(1)));
-//        keys.put("nr3", String.valueOf(FINAL_OTP_CODE.charAt(2)));
-//        keys.put("nr4", String.valueOf(FINAL_OTP_CODE.charAt(3)));
-//        keys.put("nr5", String.valueOf(FINAL_OTP_CODE.charAt(4)));
-//        keys.put("nr6", String.valueOf(FINAL_OTP_CODE.charAt(5)));
-//
-//        EmailDTO email = EmailDTO.builder()
-//                .templateId(OTP_TEMPLATE)
-//                .toEmail(request.getEmail())
-//                .templateKeys(keys)
-//                .build();
-//        emailService.sendEmail(email);
+        Map<String, String> keys = new HashMap<>();
+        keys.put(FIRST_NAME, request.getFirstName());
+        keys.put("nr1", String.valueOf(FINAL_OTP_CODE.charAt(0)));
+        keys.put("nr2", String.valueOf(FINAL_OTP_CODE.charAt(1)));
+        keys.put("nr3", String.valueOf(FINAL_OTP_CODE.charAt(2)));
+        keys.put("nr4", String.valueOf(FINAL_OTP_CODE.charAt(3)));
+        keys.put("nr5", String.valueOf(FINAL_OTP_CODE.charAt(4)));
+        keys.put("nr6", String.valueOf(FINAL_OTP_CODE.charAt(5)));
+
+        EmailDTO email = EmailDTO.builder()
+                .templateId(OTP_TEMPLATE)
+                .toEmail(request.getEmail())
+                .templateKeys(keys)
+                .build();
+        emailService.sendEmail(email);
 
         return SignupResponseDto.builder().firstName(user.getFirstName())
                 .user(UserMapper.map(user))
                 .lastName(user.getLastName())
                 .uuid(user.getUuid())
-                .cognitoUsername(user.getCognitoUsername())
+//                .cognitoUsername(user.getCognitoUsername())
                 .subCurrList(request.getSubCurrList())
                 .build();
     }
@@ -438,27 +438,14 @@ public class UserService {
 
     public AuthResponse signIn(UserSignInRequest request) throws InterjoinException {
 
-//        try {
-//            authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-//            );
-//        } catch (BadCredentialsException e) {
-//            throw new InterjoinException("Email or password not valid", HttpStatus.UNAUTHORIZED);
-//        }
-//
-//
-//        final UserDetails userDetails = userDetailsService
-//                .loadUserByUsername(request.getEmail());
-//
-//        User user = repository.findByEmail(request.getEmail()).get();
-//        String agencyProfilePictureUrl = null;
-//        if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
-//            agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
-//        }
-//
-//        final String JWT = jwtTokenUtil.generateToken(userDetails);
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (BadCredentialsException e) {
+            throw new InterjoinException("Email or password not valid", HttpStatus.UNAUTHORIZED);
+        }
 
-        AuthResponse response = null;
 
         if(Optional.ofNullable(request).isPresent()) {
             response = awsService.signInUser(request);
@@ -468,25 +455,28 @@ public class UserService {
                 agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
             }
 
-            response.setUserDetails(UserMapper.map(user).toBuilder().awsAgencyLogoUrl(agencyProfilePictureUrl).build());
-            response.setRole(Optional.ofNullable(user.getRole()).orElse(null));
+        User user = repository.findByEmail(request.getEmail()).get();
+        String agencyProfilePictureUrl = null;
+        if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
+            agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
         }
-        return response;
 
-//        return AuthResponse.builder()
-//                .token(JWT)
-//                .userDetails(
-//                        UserMapper.map(user)
-//                                  .toBuilder()
-//                                .awsAgencyLogoUrl(agencyProfilePictureUrl)
-//                                .build())
-//                .build();
+        final String JWT = jwtTokenUtil.generateToken(userDetails);
+
+        return AuthResponse.builder()
+                .token(JWT)
+                .userDetails(
+                        UserMapper.map(user)
+                                  .toBuilder()
+                                .awsAgencyLogoUrl(agencyProfilePictureUrl)
+                                .build())
+                .build();
 
     }
 
-//    private boolean checkIfPasswordMatch(String currentPasswordEncoded, String signInRequestPassword) {
-//        return passwordEncoder.encode(signInRequestPassword).equals(currentPasswordEncoded);
-//    }
+    private boolean checkIfPasswordMatch(String currentPasswordEncoded, String signInRequestPassword) {
+        return passwordEncoder.encode(signInRequestPassword).equals(currentPasswordEncoded);
+    }
 
     public User getCurrentUserDetails() {
         org.springframework.security.core.userdetails.User principal = getCurrentUser();
@@ -624,15 +614,15 @@ public class UserService {
     }
 
     public void verifyUser(OtpVerifyRequest request) throws InterjoinException {
-        User user = repository.findByCognitoUsername(request.getCognitoUsername()).orElseThrow(() -> new InterjoinException(String.format("User with uuid: [%s] doesn't exist", request.getCognitoUsername()), HttpStatus.BAD_REQUEST));
+        User user = repository.findByUuid(request.getUuid()).orElseThrow(() -> new InterjoinException(String.format("User with uuid: [%s] doesn't exist", request.getUuid()), HttpStatus.BAD_REQUEST));
         if(user.isVerifiedEmail()) {
             throw new InterjoinException("User is already verified", HttpStatus.BAD_REQUEST);
         }
 
-//        if(!user.getOtpVerificationCode().equals(request.getOtpCode())) {
-//            throw new InterjoinException("OTP code not valid", HttpStatus.BAD_REQUEST);
-        this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
-//        }
+        if(!user.getOtpVerificationCode().equals(request.getOtpCode())) {
+            throw new InterjoinException("OTP code not valid", HttpStatus.BAD_REQUEST);
+//        this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
+        }
 
         user.setVerifiedEmail(true);
         repository.save(user);
@@ -674,27 +664,29 @@ public class UserService {
         }
     }
 
-//    public void forgotPassword(String email) throws InterjoinException {
-//        User user = repository.findByEmail(email).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
-////        user.setResetPasswordCode(getRandomNumberString());
-//        repository.save(user);
-//        Map<String, String> templateKeys = new HashMap<>();
-//        templateKeys.put("verificationCode", user.getResetPasswordCode());
-//        //send an email to  notify them
-//        EmailDTO emailDTO = EmailDTO.builder()
-//                .templateId(FORGOT_PASSWORD_TEMPLATE)
-//                .toEmail(email)
-//                .build();
-//
-//        emailService.sendEmail(emailDTO);
-//    }
+    public void forgotPassword(String email) throws InterjoinException {
+        User user = repository.findByEmail(email).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
+        user.setResetPasswordCode(getRandomNumberString());
+        repository.save(user);
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put("verificationCode", user.getResetPasswordCode());
+        //send an email to  notify them
+        EmailDTO emailDTO = EmailDTO.builder()
+                .templateId(FORGOT_PASSWORD_TEMPLATE)
+                .toEmail(email)
+                .build();
 
-    public void forgotPassword(String username) {
-        this.awsService.forgotForUser(username);
+        emailService.sendEmail(emailDTO);
     }
 
     public void resetPassword(ResetPasswordDTO request) throws InterjoinException {
-        this.awsService.resetUserPassword(request);
+        User user = repository.findByEmail(request.getEmail()).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
+        if(user.getResetPasswordCode().equals(request.getCode())) {
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        } else {
+            throw new InterjoinException("Reset code is not valid");
+        }
+//        this.awsService.resetUserPassword(request);
     }
 
     public void uploadCV(MultipartFile file, String userUuid) throws IOException {
