@@ -624,7 +624,7 @@ public class UserService {
     }
 
     public void verifyUser(OtpVerifyRequest request) throws InterjoinException {
-        User user = repository.findByCognitoUsername(request.getUuid()).orElseThrow(() -> new InterjoinException(String.format("User with uuid: [%s] doesn't exist", request.getCognitoUsername()), HttpStatus.BAD_REQUEST));
+        User user = repository.findByCognitoUsername(request.getUuid()).orElseThrow(() -> new InterjoinException(String.format("User with uuid: [%s] doesn't exist", request.getUuid()), HttpStatus.BAD_REQUEST));
         if(user.isVerifiedEmail()) {
             throw new InterjoinException("User is already verified", HttpStatus.BAD_REQUEST);
         }
