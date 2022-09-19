@@ -12,6 +12,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.interjoin.teach.config.AWSCredentialsConfig;
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
@@ -20,6 +21,7 @@ import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
 import com.interjoin.teach.utils.IdentityProviderFactory;
 import com.interjoin.teach.utils.SecretHashUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -112,7 +114,7 @@ public class AwsService {
         basicAuthCognitoIdentityProvider.adminAddUserToGroup(addUserToGroupRequest);
     }
 
-    public AuthResponse signInUser(UserSignInRequest request) {
+    public AuthResponse signInUser(UserSignInRequest request) throws InterjoinException {
         InitiateAuthRequest initiateAuthRequest = new InitiateAuthRequest();
 
         initiateAuthRequest.setAuthFlow(AuthFlowType.USER_PASSWORD_AUTH);
@@ -124,8 +126,13 @@ public class AwsService {
         if (this.cognitoCreds.getClientSecret() != null && !this.cognitoCreds.getClientSecret().isEmpty()) {
             initiateAuthRequest.addAuthParametersEntry("SECRET_HASH", SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), request.getEmail()));
         }
+        InitiateAuthResult initiateAuthResult = null;
+        try {
+            initiateAuthResult = cognitoIdentityProvider.initiateAuth(initiateAuthRequest);
+        } catch (UserNotConfirmedException ex) {
+            throw new InterjoinException("User is not confirmed", HttpStatus.FORBIDDEN);
+        }
 
-        InitiateAuthResult initiateAuthResult = cognitoIdentityProvider.initiateAuth(initiateAuthRequest);
 
         final String ACCESS_TOKEN = initiateAuthResult.getAuthenticationResult().getAccessToken();
         final String REFRESH_TOKEN = initiateAuthResult.getAuthenticationResult().getRefreshToken();
