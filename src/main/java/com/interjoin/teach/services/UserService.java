@@ -638,6 +638,14 @@ public class UserService {
         repository.save(user);
     }
 
+    public void verifyUserByEmail(OtpVerifyRequest request) throws InterjoinException {
+        User user = repository.findByEmail(request.getEmail()).orElseThrow(() -> new InterjoinException(String.format("User with email: [%s] doesn't exist", request.getEmail()), HttpStatus.BAD_REQUEST));
+        this.awsService.verifyUser(user.getCognitoUsername(), request.getOtpCode());
+
+        user.setVerifiedEmail(true);
+        repository.save(user);
+    }
+
     public void resendVerificationEmail(String cognitoUsername) {
         this.awsService.resendVerificationEmail(cognitoUsername);
     }

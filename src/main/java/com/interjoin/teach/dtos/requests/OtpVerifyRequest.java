@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OtpVerifyRequest {
     private String cognitoUsername;
+    private String email;
     private String otpCode;
 }

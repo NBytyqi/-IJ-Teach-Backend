@@ -131,6 +131,8 @@ public class AwsService {
             initiateAuthResult = cognitoIdentityProvider.initiateAuth(initiateAuthRequest);
         } catch (UserNotConfirmedException ex) {
             throw new InterjoinException("User is not confirmed", HttpStatus.FORBIDDEN);
+        } catch (NotAuthorizedException e) {
+            throw new InterjoinException("Email or password incorrect", HttpStatus.FORBIDDEN);
         }
 
 

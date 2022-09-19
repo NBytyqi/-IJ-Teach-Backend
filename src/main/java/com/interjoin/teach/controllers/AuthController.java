@@ -69,6 +69,12 @@ public class AuthController {
         return ResponseEntity.ok(service.signIn(request));
     }
 
+    @PostMapping("/checktop/email")
+    public ResponseEntity<Void> checkOtpByEmail(@RequestBody OtpVerifyRequest request) throws InterjoinException {
+        service.verifyUserByEmail(request);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/signup/agency")
     public ResponseEntity<Void> signupStudent(@Valid @RequestBody AgencySignupRequest request) {
         service.createAgency(request);
@@ -108,6 +114,7 @@ public class AuthController {
         service.resendVerificationEmail(cognitoUsername);
         return ResponseEntity.ok().build();
     }
+
 
     private Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
         Map<String, Object> expectedMap = new HashMap<>();
