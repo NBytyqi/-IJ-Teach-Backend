@@ -639,7 +639,7 @@ public class UserService {
     }
 
     public void resendVerificationEmail(String cognitoUsername) {
-//        this.awsService.resendVerificationEmail(cognitoUsername);
+        this.awsService.resendVerificationEmail(cognitoUsername);
     }
 
     @Transactional
