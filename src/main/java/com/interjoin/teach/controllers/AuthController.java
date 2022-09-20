@@ -103,7 +103,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/checktop/email")
+    @PostMapping("/checkotp/email")
     public ResponseEntity<Void> checkOtpByEmail(@RequestBody OtpVerifyRequest request) throws InterjoinException {
         service.verifyUserByEmail(request);
         return ResponseEntity.ok().build();
