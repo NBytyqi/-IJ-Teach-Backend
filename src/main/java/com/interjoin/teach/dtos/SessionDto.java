@@ -11,6 +11,7 @@ import java.time.OffsetDateTime;
 public class SessionDto {
 
     private UserDto student;
+    private UserDto teacher;
     private String uuid;
     private String studentFullName;
     private OffsetDateTime date;

@@ -661,7 +661,7 @@ public class UserService {
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put("teacherId", String.valueOf(currentTeacher.getId()));
-        final String URL_PARAMS = String.format("?status=IN_REVIEW&teacher=%d", currentTeacher.getId());
+        final String URL_PARAMS = String.format("/booking-status?status=IN_REVIEW&teacherId=%d", currentTeacher.getId());
 
         //TODO
         currentTeacher.setPurchasedVerification(true);

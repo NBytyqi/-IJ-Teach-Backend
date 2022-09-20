@@ -14,6 +14,7 @@ public class SessionMapper {
         return SessionDto.builder()
                 .student(Optional.ofNullable(session.getStudent()).map(UserMapper::map).orElse(null))
                 .studentFullName(Optional.ofNullable(session.getStudent()).map(student -> String.format("%s %s", student.getFirstName(), student.getLastName())).orElse(null))
+                .teacher(Optional.ofNullable(session.getTeacher()).map(UserMapper::map).orElse(null))
                 .date(DateUtils.map(session.getDateSlot(), userTimezone))
                 .review(session.getReview())
                 .reviewScore(session.getReviewScore())
