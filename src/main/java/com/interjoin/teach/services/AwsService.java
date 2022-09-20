@@ -210,6 +210,22 @@ public class AwsService {
 
     }
 
+    public boolean userExists( String username) {
+
+        try {
+            AdminGetUserRequest getUserRequest = new AdminGetUserRequest();
+            getUserRequest.setUserPoolId(cognitoCreds.getPoolId());
+            getUserRequest.setUsername(username);
+
+                AdminGetUserResult getUserResult = basicAuthCognitoIdentityProvider.adminGetUser(getUserRequest);
+            return true;
+        } catch (UserNotFoundException userNotFoundException) {
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public void forgotForUser(String username) {
 
         AdminResetUserPasswordRequest resetUserPasswordRequest = new AdminResetUserPasswordRequest()

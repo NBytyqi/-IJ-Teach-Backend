@@ -1,5 +1,6 @@
 package com.interjoin.teach.services;
 
+import com.amazonaws.services.cognitoidp.model.AdminGetUserRequest;
 import com.amazonaws.services.cognitoidp.model.UsernameExistsException;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.InterjoinException;
@@ -619,10 +620,7 @@ public class UserService {
     }
 
     public boolean emailAlreadyExists(String email) throws EmailAlreadyExistsException {
-        if(repository.findByEmail(email).isPresent()) {
-            throw new EmailAlreadyExistsException();
-        }
-        return false;
+        return awsService.userExists(email);
     }
 
     public User findByUuid(String uuid) {
