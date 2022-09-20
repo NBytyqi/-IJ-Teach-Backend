@@ -618,8 +618,11 @@ public class UserService {
         return strings;
     }
 
-    public boolean emailAlreadyExists(String email) throws EmailAlreadyExistsException {
-        return awsService.userExists(email);
+    public void emailAlreadyExists(String email) throws EmailAlreadyExistsException {
+        boolean exists =  awsService.userExists(email);
+        if(exists) {
+            throw new EmailAlreadyExistsException();
+        }
     }
 
     public User findByUuid(String uuid) {

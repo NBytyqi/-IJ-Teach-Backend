@@ -82,7 +82,8 @@ public class AuthController {
 
     @GetMapping("/email/{email}")
     public ResponseEntity<Boolean> checkIfUserEmailExists(@PathVariable String email) throws EmailAlreadyExistsException {
-        return ResponseEntity.ok(service.emailAlreadyExists(email));
+        service.emailAlreadyExists(email);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/update-profile")
