@@ -1,5 +1,6 @@
 package com.interjoin.teach.services;
 
+import com.amazonaws.services.cognitoidp.model.UsernameExistsException;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.*;
@@ -212,8 +213,13 @@ public class UserService {
         user.setVerifiedTeacher(false);
         // TODO update profile pic in another endpoint
 //        user.setProfilePicture(request.getProfilePicture());
+        String usernameCreated = null;
+        try {
+            usernameCreated = awsService.signUpUser(request, role);
+        } catch (UsernameExistsException ex) {
+            throw new InterjoinException("User already exists");
+        }
 
-        String usernameCreated = awsService.signUpUser(request, role);
         user.setCognitoUsername(usernameCreated);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
