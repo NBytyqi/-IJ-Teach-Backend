@@ -35,8 +35,8 @@ public class ExperienceMapper {
                 .title(experience.getTitle())
                 .from(experience.getFrom())
                 .to(experience.getTo())
-//                .awsLogoUrl(experience.getAwsLogoUrl())
-//                .awsLogoRef(experience.getAwsLogoRef())
+                .awsLogoUrl(experience.getAwsLogoUrl())
+                .awsLogoRef(experience.getAwsLogoRef())
                 .user(forUser)
                 .description(experience.getDescription())
 
@@ -60,4 +60,22 @@ public class ExperienceMapper {
         }
         return exps;
     }
+
+//    public static List<Experience> mapForSave(List<ExperienceDto> experiences, User forUser) {
+//        List<Experience> experiencess = new ArrayList<>();
+//        for(ExperienceDto experience : experiences) {
+//            experiencess.add(
+//                    Experience.builder()
+//                            .id(experience.getId())
+//                            .uuid(Optional.ofNullable(experience.getUuid()).orElse(UUID.randomUUID().toString()))
+//                            .companyName(experience.getCompanyName())
+//                            .title(experience.getTitle())
+//                            .from(experience.getFrom())
+//                            .to(experience.getTo())
+//                            .user(forUser)
+//                            .description(experience.getDescription())
+//                            .build();
+//            )
+//        }
+//    }
 }
