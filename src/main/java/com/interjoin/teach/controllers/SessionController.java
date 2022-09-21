@@ -33,25 +33,25 @@ public class SessionController {
 
     @GetMapping("/student/history")
     @RolesAllowed(value = { Roles.STUDENT })
-    public ResponseEntity<List<SessionDto>> getCurrentStudentHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+    public ResponseEntity<List<SessionDto>> getCurrentStudentHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) throws SessionExistsException {
         return ResponseEntity.ok(sessionService.getStudentSessionHistory(pageable));
     }
 
     @GetMapping("/student/classes")
     @RolesAllowed(value = { Roles.STUDENT })
-    public ResponseEntity<List<SessionDto>> getCurrentStudentClassesSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+    public ResponseEntity<List<SessionDto>> getCurrentStudentClassesSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) throws SessionExistsException {
         return ResponseEntity.ok(sessionService.getStudentSessionClasses(pageable));
     }
 
     @GetMapping("/teacher/history")
     @RolesAllowed(value = { Roles.TEACHER })
-    public ResponseEntity<List<SessionDto>> getCurrentTeacherHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+    public ResponseEntity<List<SessionDto>> getCurrentTeacherHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) throws SessionExistsException {
         return ResponseEntity.ok(sessionService.getTeacherSessionHistory(pageable));
     }
 
     @GetMapping("/teacher/classes")
     @RolesAllowed(value = { Roles.TEACHER })
-    public ResponseEntity<List<SessionDto>> getOneCurrentTeacherSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+    public ResponseEntity<List<SessionDto>> getOneCurrentTeacherSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) throws SessionExistsException {
         return ResponseEntity.ok(sessionService.getTeacherActiveSessions(pageable));
     }
 
