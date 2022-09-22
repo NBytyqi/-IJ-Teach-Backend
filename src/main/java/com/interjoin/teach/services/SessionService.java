@@ -161,6 +161,13 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
+    public List<SessionDto> getStudentSessionRequests(Pageable pageable) {
+        User currentStudent = userService.getCurrentUserDetails();
+        return sessionRepository.findByStudentAndDateSlotAfterAndSessionStatus(currentStudent, OffsetDateTime.now(), SessionStatus.PENDING_APPROVAL, pageable)
+                .stream().map(session -> SessionMapper.map(session, currentStudent.getTimeZone()))
+                .collect(Collectors.toList());
+    }
+
     public List<SessionDto> getStudentSessionHistory(Pageable pageable) {
         User currentStudent = userService.getCurrentUserDetails();
         return sessionRepository.findByStudentAndDateSlotBefore(currentStudent, OffsetDateTime.now(), pageable)
@@ -210,4 +217,6 @@ public class SessionService {
         session.setSessionStatus(SessionStatus.PENDING_APPROVAL);
         sessionRepository.save(session);
     }
+
+
 }

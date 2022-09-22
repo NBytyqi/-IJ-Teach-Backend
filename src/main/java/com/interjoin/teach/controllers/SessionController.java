@@ -43,6 +43,12 @@ public class SessionController {
         return ResponseEntity.ok(sessionService.getStudentSessionClasses(pageable));
     }
 
+    @GetMapping("/student/requests")
+    @RolesAllowed(value = { Roles.STUDENT })
+    public ResponseEntity<List<SessionDto>> getStudentRequestedSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) {
+        return ResponseEntity.ok(sessionService.getStudentSessionRequests(pageable));
+    }
+
     @GetMapping("/teacher/history")
     @RolesAllowed(value = { Roles.TEACHER })
     public ResponseEntity<List<SessionDto>> getCurrentTeacherHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) throws SessionExistsException {
