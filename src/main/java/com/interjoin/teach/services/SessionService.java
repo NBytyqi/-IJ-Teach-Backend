@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -218,6 +219,8 @@ public class SessionService {
             throw new SessionNotValidException("Session is expired");
         }
 
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ssxxx");
+
         SessionStatus status = approve ? SessionStatus.APPROVED : SessionStatus.DECLINED;
 
         // TODO if approve is false, refund the payment
@@ -230,7 +233,7 @@ public class SessionService {
         Map<String, String> templateKeys = new HashMap<>();
         templateKeys.put(FIRST_NAME, student.getFirstName());
         templateKeys.put(TEACHER_FIRST_NAME, teacher.getFirstName());
-        templateKeys.put(DATE, String.valueOf(DateUtils.map(session.getDateSlot(), student.getTimeZone())));
+        templateKeys.put(DATE, DateUtils.map(session.getDateSlot(), student.getTimeZone()).format(outputFormatter));
         templateKeys.put(CURRICULUM, session.getCurriculum());
         templateKeys.put(SUBJECT, session.getSubject());
         templateKeys.put(PRICE, String.valueOf(session.getPrice()));
@@ -246,10 +249,11 @@ public class SessionService {
         // send session confirmation email
 
         if(approve) {
+
             Map<String, String> templateKeysForTeacher = new HashMap<>();
             templateKeysForTeacher.put(FIRST_NAME, teacher.getFirstName());
             templateKeysForTeacher.put(STUDENT_FIRST_NAME, student.getFirstName());
-            templateKeysForTeacher.put(DATE, String.valueOf(DateUtils.map(session.getDateSlot(), teacher.getTimeZone())));
+            templateKeysForTeacher.put(DATE, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(outputFormatter));
             templateKeysForTeacher.put(CURRICULUM, session.getCurriculum());
             templateKeysForTeacher.put(SUBJECT, session.getSubject());
             templateKeys.put(COMMENT, session.getComment());
