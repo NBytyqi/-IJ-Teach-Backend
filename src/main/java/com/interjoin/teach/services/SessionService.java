@@ -254,7 +254,7 @@ public class SessionService {
             templateKeysForTeacher.put(SUBJECT, session.getSubject());
             templateKeys.put(COMMENT, session.getComment());
             EmailDTO emailDTOForTeacher = EmailDTO.builder()
-                    .toEmail(student.getEmail())
+                    .toEmail(teacher.getEmail())
                     .templateId(sessionConfirmationTemplate)
                     .templateKeys(templateKeysForTeacher)
                     .build();
