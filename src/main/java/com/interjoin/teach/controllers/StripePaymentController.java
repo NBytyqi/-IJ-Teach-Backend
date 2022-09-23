@@ -77,12 +77,12 @@ public class StripePaymentController {
                     SESSION_ID = JsonPath.read(payload, "data.object.metadata.sessionId");
 
                 } catch (Exception e) {
-                    System.out.println("Exception is thrown there " + e.getMessage());
+//                    System.out.println("Exception is thrown there " + e.getMessage());
                 }
                 try {
                     INTERJOIN_VERIFICATION_TEACHER_ID = JsonPath.read(payload, "data.object.metadata.teacherIdForVerification");
                 } catch (Exception e) {
-                    System.out.println("Exception is thrown there " + e.getMessage());
+//                    System.out.println("Exception is thrown there " + e.getMessage());
                 }
 //                System.out.println("Going down");
                 final String CHARGE_ID = JsonPath.read(payload, "data.object.id");
