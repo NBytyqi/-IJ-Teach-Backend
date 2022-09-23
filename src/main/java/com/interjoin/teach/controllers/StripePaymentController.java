@@ -75,6 +75,11 @@ public class StripePaymentController {
                 String INTERJOIN_VERIFICATION_TEACHER_ID = null;
                 try {
                     SESSION_ID = JsonPath.read(payload, "data.object.metadata.sessionId");
+
+                } catch (Exception e) {
+                    System.out.println("Exception is thrown there " + e.getMessage());
+                }
+                try {
                     INTERJOIN_VERIFICATION_TEACHER_ID = JsonPath.read(payload, "data.object.metadata.teacherIdForVerification");
                 } catch (Exception e) {
                     System.out.println("Exception is thrown there " + e.getMessage());
