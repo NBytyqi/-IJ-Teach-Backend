@@ -84,12 +84,14 @@ public class StripePaymentController {
                 } catch (Exception e) {
                     System.out.println("Exception is thrown there " + e.getMessage());
                 }
-//                System.out.println("I read the dataset uuid");
+//                System.out.println("Going down");
                 final String CHARGE_ID = JsonPath.read(payload, "data.object.id");
                 final String PAYMENT_INTENT_ID = JsonPath.read(payload, "data.object.payment_intent");
                 if(Optional.ofNullable(SESSION_ID).isPresent()) {
+                    System.out.println("Finishing up the payment");
                     finishPaymentForSession(SESSION_ID, CHARGE_ID, PAYMENT_INTENT_ID);
                 } else if(Optional.ofNullable(INTERJOIN_VERIFICATION_TEACHER_ID).isPresent()) {
+                    System.out.println("Finishing up the purchase verification");
                     finishPaymentForPurchaseVerification(INTERJOIN_VERIFICATION_TEACHER_ID, CHARGE_ID, PAYMENT_INTENT_ID);
                 }
 
