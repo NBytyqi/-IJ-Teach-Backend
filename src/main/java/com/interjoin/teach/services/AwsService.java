@@ -226,12 +226,16 @@ public class AwsService {
         }
     }
 
-    public void forgotForUser(String username) {
+    public void forgotForUser(String username) throws InterjoinException {
+        try {
+            AdminResetUserPasswordRequest resetUserPasswordRequest = new AdminResetUserPasswordRequest()
+                    .withUserPoolId(this.cognitoCreds.getPoolId())
+                    .withUsername(username);
+            basicAuthCognitoIdentityProvider.adminResetUserPassword(resetUserPasswordRequest);
+        } catch (InvalidParameterException e) {
+            throw new InterjoinException(e.getErrorMessage());
+        }
 
-        AdminResetUserPasswordRequest resetUserPasswordRequest = new AdminResetUserPasswordRequest()
-                .withUserPoolId(this.cognitoCreds.getPoolId())
-                .withUsername(username);
-        basicAuthCognitoIdentityProvider.adminResetUserPassword(resetUserPasswordRequest);
     }
 
 

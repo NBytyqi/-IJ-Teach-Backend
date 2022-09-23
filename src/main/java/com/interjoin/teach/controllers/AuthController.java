@@ -93,7 +93,7 @@ public class AuthController {
 
     @DeleteMapping
     public ResponseEntity<Void> deleteCurrentAccount() throws Exception {
-        sessionService.deleteCurrentUser();
+        service.deleteAccount();
         return ResponseEntity.noContent().build();
     }
 

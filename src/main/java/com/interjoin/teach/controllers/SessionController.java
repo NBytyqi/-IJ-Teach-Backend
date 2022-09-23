@@ -85,4 +85,18 @@ public class SessionController {
         sessionService.approveSession(sessionUuid, false);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/finish/{sessionUuid}")
+    @RolesAllowed(value = { Roles.TEACHER })
+    public ResponseEntity<Void> markSessionAsFinished(@PathVariable String sessionUuid) throws InterjoinException {
+        sessionService.markSessionAsFinished(sessionUuid);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/teacher/absent")
+    @RolesAllowed(value = { Roles.STUDENT })
+    public ResponseEntity<Void> markTeacherAsAbsent(@PathVariable String sessionUuid) throws InterjoinException {
+        sessionService.markTeacherAsAbsent(sessionUuid);
+        return ResponseEntity.noContent().build();
+    }
 }

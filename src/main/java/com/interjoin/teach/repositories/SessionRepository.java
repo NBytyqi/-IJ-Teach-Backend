@@ -21,6 +21,7 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
     Optional<Session> findByUuid(String uuid);
 
     Optional<Session> findByUuidAndTeacher(String uuid, User teacher);
+    Optional<Session> findByUuidAndStudentAndSessionStatus(String uuid, User student, SessionStatus sessionStatus);
 
     Optional<Session> findByTeacherAndDateSlotAndSessionStatusNot(User teacher, OffsetDateTime dateSlot, SessionStatus status);
 

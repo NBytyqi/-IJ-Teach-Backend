@@ -46,8 +46,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
-    @Value("${spring.sendgrid.template.forget-password}")
-    private String FORGOT_PASSWORD_TEMPLATE;
+    @Value("${spring.sendgrid.templates.welcome-email}")
+    private String welcomeEmailTemplate;
+
+    @Value("${spring.sendgrid.templates.verification-approve-template}")
+    private String verificationApproveTemplate;
+
+    @Value("${spring.sendgrid.templates.verification-decline-template}")
+    private String verificationDeclineTemplate;
+
+    @Value("${spring.sendgrid.templates.account-deletion}")
+    private String accountDeleteTemplate;
+
+
+    @Value("${spring.sendgrid.templates.teacher-agency-approval}")
+    private String agencyApprovalTemplate;
+
+    @Value("${spring.sendgrid.templates.teacher-agency-decline}")
+    private String agencyDeclineTemplate;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -76,11 +92,11 @@ public class UserService {
 
 
     // EMAIL TEMPLATES
-    @Value("${spring.sendgrid.templates.otp}")
-    private String OTP_TEMPLATE;
+
 
     // EMAIL TEMPLATE KEYS
     private final String FIRST_NAME = "firstName";
+    private final String AGENCY_NAME = "agencyName";
 
     public void createAgency(AgencySignupRequest request) {
         String usernameCreated = awsService.signUpAgency(request);
@@ -272,21 +288,6 @@ public class UserService {
         }
         user.setJoinAgencyStatus(JoinAgencyStatus.NOT_JOINED);
         user = repository.save(user);
-//        Map<String, String> keys = new HashMap<>();
-//        keys.put(FIRST_NAME, request.getFirstName());
-//        keys.put("nr1", String.valueOf(FINAL_OTP_CODE.charAt(0)));
-//        keys.put("nr2", String.valueOf(FINAL_OTP_CODE.charAt(1)));
-//        keys.put("nr3", String.valueOf(FINAL_OTP_CODE.charAt(2)));
-//        keys.put("nr4", String.valueOf(FINAL_OTP_CODE.charAt(3)));
-//        keys.put("nr5", String.valueOf(FINAL_OTP_CODE.charAt(4)));
-//        keys.put("nr6", String.valueOf(FINAL_OTP_CODE.charAt(5)));
-//
-//        EmailDTO email = EmailDTO.builder()
-//                .templateId(OTP_TEMPLATE)
-//                .toEmail(request.getEmail())
-//                .templateKeys(keys)
-//                .build();
-//        emailService.sendEmail(email);
 
         return SignupResponseDto.builder().firstName(user.getFirstName())
                 .user(UserMapper.map(user))
@@ -635,13 +636,20 @@ public class UserService {
             throw new InterjoinException("User is already verified", HttpStatus.BAD_REQUEST);
         }
 
-//        if(!user.getOtpVerificationCode().equals(request.getOtpCode())) {
-//            throw new InterjoinException("OTP code not valid", HttpStatus.BAD_REQUEST);
         this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
-//        }
 
         user.setVerifiedEmail(true);
         repository.save(user);
+
+        //send welcome email
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put(FIRST_NAME, user.getFirstName());
+        EmailDTO emailDTO = EmailDTO.builder()
+                .toEmail(user.getEmail())
+                .templateId(welcomeEmailTemplate)
+                .templateKeys(templateKeys)
+                .build();
+        emailService.sendEmail(emailDTO);
     }
 
     public void verifyUserByEmail(OtpVerifyRequest request) throws InterjoinException {
@@ -666,7 +674,7 @@ public class UserService {
         User currentTeacher = getCurrentUserDetails();
 
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("teacherId", String.valueOf(currentTeacher.getId()));
+        metadata.put("teacherIdForVerification", currentTeacher.getUuid());
         final String URL_PARAMS = String.format("/booking-status?status=IN_REVIEW&teacherId=%d", currentTeacher.getId());
 
         //TODO
@@ -703,7 +711,7 @@ public class UserService {
 //        emailService.sendEmail(emailDTO);
 //    }
 
-    public void forgotPassword(String username) {
+    public void forgotPassword(String username) throws InterjoinException {
         this.awsService.forgotForUser(username);
     }
 
@@ -723,13 +731,22 @@ public class UserService {
         this.awsService.uploadFile(FILE_REF, file);
     }
 
-
-
-
-    // TODO
+    // TODO update his/her email address and save information
     public void deleteAccount() {
-        // CHECK IF THERE IS ANY SESSION LEFT FOR THE TEACHER
-//        subCurrRepository.d
+        User user = getCurrentUserDetails();
+
+        // TODO just update the user email to _deleted at the end and save all his/her information
+//        sessionRepository.deleteUserSessions(user);
+
+        //send account soft delete email
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put(FIRST_NAME, user.getFirstName());
+        EmailDTO emailDTO = EmailDTO.builder()
+                .toEmail(user.getEmail())
+                .templateId(accountDeleteTemplate)
+                .templateKeys(templateKeys)
+                .build();
+        emailService.sendEmail(emailDTO);
     }
 
     public List<AgencyTeacher> getAgencyUsers(String status) {
@@ -792,6 +809,17 @@ public class UserService {
                         .agency(currentAgency)
                         .log(LOG)
                 .build());
+
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put(FIRST_NAME, teacher.getFirstName());
+        templateKeys.put(AGENCY_NAME, currentAgency.getFirstName());
+        EmailDTO emailDTO = EmailDTO.builder()
+                .toEmail(teacher.getEmail())
+                .templateId(approve ? agencyApprovalTemplate : agencyDeclineTemplate)
+                .templateKeys(templateKeys)
+                .build();
+        emailService.sendEmail(emailDTO);
+
     }
 
     @Transactional
@@ -973,6 +1001,33 @@ public class UserService {
 
     private User getAgencyByCode(String agencyCode) throws InterjoinException {
         return repository.findFirstByAgencyCode(agencyCode).orElseThrow(() -> new InterjoinException("Agency doesn't exist"));
+    }
+
+
+    @Transactional
+    public void verifyTeacherProfessionalism(Long teacherId, boolean verify) throws InterjoinException {
+        User user = findById(teacherId);
+        if(user.getPurchasedVerification().equals(true)) {
+            user.setVerifiedTeacher(verify);
+            if(!verify) {
+                user.setPurchasedVerification(false);
+            }
+
+            Map<String, String> templateKeys = new HashMap<>();
+            templateKeys.put(FIRST_NAME, user.getFirstName());
+            EmailDTO emailDTO = EmailDTO.builder()
+                    .toEmail(user.getEmail())
+                    .templateId(verify ? verificationApproveTemplate : verificationDeclineTemplate)
+                    .templateKeys(templateKeys)
+                    .build();
+            emailService.sendEmail(emailDTO);
+        } else {
+            throw new InterjoinException(String.format("Teacher with id %d has not purchased verification", teacherId));
+        }
+    }
+
+    public User save(User user) {
+        return repository.save(user);
     }
 }
 
