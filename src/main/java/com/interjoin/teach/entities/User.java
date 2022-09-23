@@ -1,10 +1,7 @@
 package com.interjoin.teach.entities;
 
 import com.interjoin.teach.enums.JoinAgencyStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -22,7 +19,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@Data
+@Getter
+@Setter
 public class User {
 
     @Id
