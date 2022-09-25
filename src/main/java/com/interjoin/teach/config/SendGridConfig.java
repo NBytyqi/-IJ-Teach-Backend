@@ -21,7 +21,7 @@ public class SendGridConfig {
 
     private final AWSCredentialsConfig cognitoCreds;
 
-    @Value("#{systemEnvironment['SENDGRID']?:'**'}")
+    @Value("${SENDGRID_KEY}")
     private String sendgridKey;
 
     @Bean
