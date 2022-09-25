@@ -9,6 +9,7 @@ import com.amazonaws.services.secretsmanager.model.*;
 import com.sendgrid.SendGrid;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,10 +21,13 @@ public class SendGridConfig {
 
     private final AWSCredentialsConfig cognitoCreds;
 
+    @Value("${spring.sendgrid.api-key}")
+    private String sendgridKey;
+
     @Bean
     public SendGrid configSendgrid() {
         String SENDGRID_KEY = getSecret();
-        System.out.println("Sendgrid key: " + SENDGRID_KEY);
+        System.out.println("Sendgrid key printed: " + sendgridKey);
         return new SendGrid(SENDGRID_KEY);
     }
 
