@@ -93,7 +93,7 @@ public class SessionController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/teacher/absent")
+    @PutMapping("/teacher/absent/{sessionUuid}")
     @RolesAllowed(value = { Roles.STUDENT })
     public ResponseEntity<Void> markTeacherAsAbsent(@PathVariable String sessionUuid) throws InterjoinException {
         sessionService.markTeacherAsAbsent(sessionUuid);

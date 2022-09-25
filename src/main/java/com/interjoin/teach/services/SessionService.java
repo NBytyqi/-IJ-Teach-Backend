@@ -45,11 +45,16 @@ public class SessionService {
     @Value("${spring.sendgrid.templates.session-confirmation-template}")
     private String sessionConfirmationTemplate;
 
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd");
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mma ('UTC' xxx)");
+
+
 
     private final String FIRST_NAME = "firstName";
     private final String TEACHER_FIRST_NAME = "teacherName";
     private final String STUDENT_FIRST_NAME = "studentName";
     private final String DATE = "date";
+    private final String TIME = "time";
     private final String CURRICULUM = "curriculum";
     private final String SUBJECT = "subject";
     private final String COMMENT = "comment";
@@ -219,7 +224,6 @@ public class SessionService {
             throw new SessionNotValidException("Session is expired");
         }
 
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ssxxx");
 
         SessionStatus status = approve ? SessionStatus.APPROVED : SessionStatus.DECLINED;
 
@@ -233,10 +237,11 @@ public class SessionService {
         Map<String, String> templateKeys = new HashMap<>();
         templateKeys.put(FIRST_NAME, student.getFirstName());
         templateKeys.put(TEACHER_FIRST_NAME, teacher.getFirstName());
-        templateKeys.put(DATE, DateUtils.map(session.getDateSlot(), student.getTimeZone()).format(outputFormatter));
+        templateKeys.put(DATE, DateUtils.map(session.getDateSlot(), student.getTimeZone()).format(dateFormatter));
+        templateKeys.put(TIME, DateUtils.map(session.getDateSlot(), student.getTimeZone()).format(timeFormatter));
         templateKeys.put(CURRICULUM, session.getCurriculum());
         templateKeys.put(SUBJECT, session.getSubject());
-        templateKeys.put(PRICE, String.valueOf(session.getPrice()));
+        templateKeys.put(PRICE,  session.getPrice() + "$");
         templateKeys.put(COMMENT, session.getComment());
 
         EmailDTO emailDTO = EmailDTO.builder()
@@ -253,7 +258,8 @@ public class SessionService {
             Map<String, String> templateKeysForTeacher = new HashMap<>();
             templateKeysForTeacher.put(FIRST_NAME, teacher.getFirstName());
             templateKeysForTeacher.put(STUDENT_FIRST_NAME, student.getFirstName());
-            templateKeysForTeacher.put(DATE, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(outputFormatter));
+            templateKeysForTeacher.put(DATE, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(dateFormatter));
+            templateKeysForTeacher.put(TIME, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(timeFormatter));
             templateKeysForTeacher.put(CURRICULUM, session.getCurriculum());
             templateKeysForTeacher.put(SUBJECT, session.getSubject());
             templateKeys.put(COMMENT, session.getComment());
@@ -299,9 +305,9 @@ public class SessionService {
         Map<String, String> templateKeysForTeacher = new HashMap<>();
         templateKeysForTeacher.put(FIRST_NAME, teacher.getFirstName());
         EmailDTO emailDTOForTeacher = EmailDTO.builder()
-                .toEmail(student.getEmail())
+                .toEmail(teacher.getEmail())
                 .templateId(teacherSessionCompletedTemplate)
-                .templateKeys(templateKeys)
+                .templateKeys(templateKeysForTeacher)
                 .build();
         emailService.sendEmail(emailDTOForTeacher);
 
@@ -331,7 +337,8 @@ public class SessionService {
         Map<String, String> templateKeysForTeacher = new HashMap<>();
         templateKeysForTeacher.put(FIRST_NAME, teacher.getFirstName());
         templateKeysForTeacher.put(STUDENT_FIRST_NAME, currentStudent.getFirstName());
-        templateKeysForTeacher.put(DATE, String.valueOf(DateUtils.map(session.getDateSlot(), teacher.getTimeZone())));
+        templateKeysForTeacher.put(DATE, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(dateFormatter));
+        templateKeysForTeacher.put(TIME, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(timeFormatter));
         templateKeysForTeacher.put(CURRICULUM, session.getCurriculum());
         templateKeysForTeacher.put(SUBJECT, session.getSubject());
         templateKeys.put(COMMENT, session.getComment());

@@ -146,14 +146,10 @@ public class User {
     @Column(nullable = true)
     private boolean verifiedTeacher;
 
-    private String otpVerificationCode;
     @Column(nullable = true)
     private boolean verifiedEmail;
 
     private Boolean purchasedVerification;
-
-    @Column(nullable = true)
-    private String resetPasswordCode;
 
     private BigDecimal totalEarned;
     private Long totalHours;
