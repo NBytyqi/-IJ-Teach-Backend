@@ -54,7 +54,6 @@ public class UserMapper {
                 .listedPrice(user.getListedPrice())
                 .agencyName(user.getAgencyName())
                 .verifiedTeacher(user.isVerifiedTeacher())
-                .verifiedEmail(user.isVerifiedEmail())
                 .timezone(user.getTimeZone())
                 .role(user.getRole())
                 .subjects(user.getSubjects())

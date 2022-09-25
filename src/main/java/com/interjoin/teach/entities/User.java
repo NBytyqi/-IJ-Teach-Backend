@@ -146,9 +146,6 @@ public class User {
     @Column(nullable = true)
     private boolean verifiedTeacher;
 
-    @Column(nullable = true)
-    private boolean verifiedEmail;
-
     private Boolean purchasedVerification;
 
     private BigDecimal totalEarned;

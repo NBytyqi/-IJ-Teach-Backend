@@ -86,13 +86,9 @@ public class UserService {
     private final CurriculumRepository curriculumRepository;
     private final SubjectRepository subjectRepository;
 
-    private final MyUserDetailsService userDetailsService;
-
     private final ActivityLogsRepository activityLogsRepository;
 
-
     // EMAIL TEMPLATES
-
 
     // EMAIL TEMPLATE KEYS
     private final String FIRST_NAME = "firstName";
@@ -223,9 +219,7 @@ public class UserService {
         }
 
         User user = UserMapper.mapUserRequest(request);
-        final String FINAL_OTP_CODE = getRandomNumberString();
-        user.setOtpVerificationCode(FINAL_OTP_CODE);
-        user.setVerifiedEmail(false);
+
         user.setVerifiedTeacher(false);
         // TODO update profile pic in another endpoint
 //        user.setProfilePicture(request.getProfilePicture());
@@ -632,13 +626,9 @@ public class UserService {
 
     public void verifyUser(OtpVerifyRequest request) throws InterjoinException {
         User user = repository.findByCognitoUsername(request.getCognitoUsername()).orElseThrow(() -> new InterjoinException(String.format("User with uuid: [%s] doesn't exist", request.getCognitoUsername()), HttpStatus.BAD_REQUEST));
-        if(user.isVerifiedEmail()) {
-            throw new InterjoinException("User is already verified", HttpStatus.BAD_REQUEST);
-        }
 
         this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
 
-        user.setVerifiedEmail(true);
         repository.save(user);
 
         //send welcome email
@@ -655,9 +645,6 @@ public class UserService {
     public void verifyUserByEmail(OtpVerifyRequest request) throws InterjoinException {
         User user = repository.findByEmail(request.getEmail()).orElseThrow(() -> new InterjoinException(String.format("User with email: [%s] doesn't exist", request.getEmail()), HttpStatus.BAD_REQUEST));
         this.awsService.verifyUser(user.getCognitoUsername(), request.getOtpCode());
-
-        user.setVerifiedEmail(true);
-        repository.save(user);
     }
 
     public void resendVerificationEmail(String cognitoUsername) {
