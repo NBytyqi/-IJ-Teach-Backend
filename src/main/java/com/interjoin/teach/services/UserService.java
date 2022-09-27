@@ -816,7 +816,6 @@ public class UserService {
 
     public RefreshTokenResponse loginWithRefreshToken(RefreshTokenLoginRequest request) {
         return this.awsService.loginWithRefreshToken(request.getRefreshToken(), request.getCognitoUsername());
-//        return null;
     }
 
     @Transactional

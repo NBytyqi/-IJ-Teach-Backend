@@ -12,17 +12,13 @@ import com.interjoin.teach.dtos.responses.RefreshTokenResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.services.SessionService;
 import com.interjoin.teach.services.UserService;
-import io.jsonwebtoken.impl.DefaultClaims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -59,7 +55,7 @@ public class AuthController {
     }
 
     @PutMapping("/refresh-token")
-    public ResponseEntity<?> signInWithToken(@RequestBody @Valid RefreshTokenLoginRequest request) {
+    public ResponseEntity<RefreshTokenResponse> signInWithToken(@RequestBody @Valid RefreshTokenLoginRequest request) {
         return ResponseEntity.ok(service.loginWithRefreshToken(request));
     }
 
@@ -126,12 +122,5 @@ public class AuthController {
     }
 
 
-    private Map<String, Object> getMapFromIoJsonwebtokenClaims(DefaultClaims claims) {
-        Map<String, Object> expectedMap = new HashMap<>();
-        for (Map.Entry<String, Object> entry : claims.entrySet()) {
-            expectedMap.put(entry.getKey(), entry.getValue());
-        }
-        return expectedMap;
-    }
 
 }

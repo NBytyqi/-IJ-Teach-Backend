@@ -29,10 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class AwsService {
@@ -285,7 +282,7 @@ public class AwsService {
         InitiateAuthResult result = this.cognitoIdentityProvider.initiateAuth(authRequest);
         response.setToken(result.getAuthenticationResult().getAccessToken());
 
-        String newRefreshToken = result.getAuthenticationResult().getRefreshToken();
+        String newRefreshToken = Optional.ofNullable(result.getAuthenticationResult().getRefreshToken()).isPresent()? result.getAuthenticationResult().getRefreshToken() : refreshToken;
         response.setRefreshToken(newRefreshToken);
         return response;
     }

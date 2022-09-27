@@ -22,6 +22,7 @@ public class UserDto {
     private String email;
     private String location;
     private String phoneNumber;
+    private String cognitoUsername;
     private LocalDate dateOfBirth;
 //    private String profilePicture;
     private String parentEmail;

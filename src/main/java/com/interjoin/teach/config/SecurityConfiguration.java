@@ -35,6 +35,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     "/api/auth/resend-otp/**",
                     "/api/suggest",
                     "/api/auth/profile-pic",
+                    "/api/auth/refresh-token",
                     "/api/auth/checkotp",
                     "/api/auth/checkotp/**",
                     "/api/auth/reset",

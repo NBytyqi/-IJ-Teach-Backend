@@ -37,6 +37,7 @@ public class UserMapper {
                 .rating(user.getRating())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
+                .cognitoUsername(user.getCognitoUsername())
                 .email(user.getEmail())
                 .location(user.getLocation())
                 .phoneNumber(user.getPhoneNumber())
