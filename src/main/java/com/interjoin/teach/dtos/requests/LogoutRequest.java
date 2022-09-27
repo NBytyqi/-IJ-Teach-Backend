@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 @Data
 public class LogoutRequest {
 
-    @NotNull
+//    @NotNull
     private String refreshToken;
+    private String token;
 }

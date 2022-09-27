@@ -260,13 +260,17 @@ public class AwsService {
     }
 
     public void logoutUser(String username, LogoutRequest request) {
-        InitiateAuthRequest authRequest = new InitiateAuthRequest()
-                .withClientId(this.cognitoCreds.getClientId())
-                .addAuthParametersEntry("SECRET_HASH", SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), username))
-                .addAuthParametersEntry("REFRESH_TOKEN", request.getRefreshToken())
-                .withAuthFlow(AuthFlowType.REFRESH_TOKEN_AUTH);
+//        InitiateAuthRequest authRequest = new InitiateAuthRequest()
+//                .withClientId(this.cognitoCreds.getClientId())
+//                .addAuthParametersEntry("SECRET_HASH", SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), username))
+//                .addAuthParametersEntry("REFRESH_TOKEN", request.getRefreshToken())
+//                .withAuthFlow(AuthFlowType.REFRESH_TOKEN_AUTH);
+        GlobalSignOutRequest globalSignOutRequest = new GlobalSignOutRequest();
 
-        InitiateAuthResult result = this.cognitoIdentityProvider.initiateAuth(authRequest);
+        globalSignOutRequest.setAccessToken(request.getToken());
+        GlobalSignOutResult result = this.cognitoIdentityProvider.globalSignOut(globalSignOutRequest);
+
+//        InitiateAuthResult result = this.cognitoIdentityProvider.initiateAuth(authRequest);
     }
 
     public RefreshTokenResponse loginWithRefreshToken(String refreshToken, String username) {
