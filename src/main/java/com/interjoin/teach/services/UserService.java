@@ -4,12 +4,10 @@ import com.amazonaws.services.cognitoidp.model.UsernameExistsException;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.*;
-import com.interjoin.teach.dtos.requests.AgencySignupRequest;
-import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
-import com.interjoin.teach.dtos.requests.TeacherFilterRequest;
-import com.interjoin.teach.dtos.requests.UpdateProfileRequest;
+import com.interjoin.teach.dtos.requests.*;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
+import com.interjoin.teach.dtos.responses.RefreshTokenResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.*;
 import com.interjoin.teach.enums.JoinAgencyStatus;
@@ -420,9 +418,9 @@ public class UserService {
 //        }
         User user = getCurrentUserDetails();
 
-       if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
+        if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
             agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
-       }
+        }
 
         return UserMapper.map(user).toBuilder()
                 .awsAgencyLogoUrl(agencyProfilePictureUrl)
@@ -585,9 +583,9 @@ public class UserService {
             System.out.println("Without convert " + time.getDateTime());
             System.out.println("After map: " + DateUtils.map(time.getDateTime(), teacherTimezone, true));
             Long index = dto.getAvailableTimes().stream().filter(ex -> {
-            OffsetDateTime date = DateUtils.map(time.getDateTime(), teacherTimezone, true);
-            OffsetDateTime exDate = ex.getDateTime();
-            return date.getHour() == exDate.getHour() && date.getMinute() == date.getMinute();
+                        OffsetDateTime date = DateUtils.map(time.getDateTime(), teacherTimezone, true);
+                        OffsetDateTime exDate = ex.getDateTime();
+                        return date.getHour() == exDate.getHour() && date.getMinute() == date.getMinute();
                     })
                     .findFirst().get().getIndex();
             returns.add(index);
@@ -793,8 +791,8 @@ public class UserService {
         final String LOG = approve ? APPROVE_MESSAGE : DECLINE_MESSAGE;
 
         activityLogsRepository.save(ActivityLogs.builder()
-                        .agency(currentAgency)
-                        .log(LOG)
+                .agency(currentAgency)
+                .log(LOG)
                 .build());
 
         Map<String, String> templateKeys = new HashMap<>();
@@ -807,6 +805,18 @@ public class UserService {
                 .build();
         emailService.sendEmail(emailDTO);
 
+    }
+
+    public void logoutUser(LogoutRequest logoutRequest) {
+
+        User currentUser = getCurrentUserDetails();
+        this.awsService.logoutUser(currentUser.getCognitoUsername(), logoutRequest);
+
+    }
+
+    public RefreshTokenResponse loginWithRefreshToken(RefreshTokenLoginRequest request) {
+        return this.awsService.loginWithRefreshToken(request.getRefreshToken(), request.getCognitoUsername());
+//        return null;
     }
 
     @Transactional
@@ -921,9 +931,9 @@ public class UserService {
         User user = getUserById(teacherId);
 //        Set<SubjectCurriculum> subjectCurriculumSet =
         List<Curriculum> curriculumList = user.getSubjectCurriculums().stream()
-                                          .filter(sc -> sc.getSubject().getSubjectName().equals(subjectName))
-                                          .map(SubjectCurriculum::getCurriculum)
-                                          .collect(Collectors.toList());
+                .filter(sc -> sc.getSubject().getSubjectName().equals(subjectName))
+                .map(SubjectCurriculum::getCurriculum)
+                .collect(Collectors.toList());
 
         List<String> curriculums = new ArrayList<>();
         if(curriculumList != null && !curriculumList.isEmpty()) {

@@ -17,7 +17,9 @@ import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.dtos.requests.AgencySignupRequest;
+import com.interjoin.teach.dtos.requests.LogoutRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
+import com.interjoin.teach.dtos.responses.RefreshTokenResponse;
 import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
 import com.interjoin.teach.utils.IdentityProviderFactory;
 import com.interjoin.teach.utils.SecretHashUtils;
@@ -48,8 +50,6 @@ public class AwsService {
 
 
     private final AmazonS3 s3Client;
-
-//    private UserService userService;
 
     public AwsService(AWSCredentialsConfig cognitoCreds) {
         this.cognitoCreds = cognitoCreds;
@@ -260,6 +260,34 @@ public class AwsService {
         return this.s3Client.generatePresignedUrl(new GeneratePresignedUrlRequest(this.cognitoCreds.getDefaultBucketName(), fileRef)
                 .withMethod(HttpMethod.GET)
                 .withExpiration(expiration)).toString();
+    }
+
+    public void logoutUser(String username, LogoutRequest request) {
+        InitiateAuthRequest authRequest = new InitiateAuthRequest()
+                .withClientId(this.cognitoCreds.getClientId())
+                .addAuthParametersEntry("SECRET_HASH", SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), username))
+                .addAuthParametersEntry("REFRESH_TOKEN", request.getRefreshToken())
+                .withAuthFlow(AuthFlowType.REFRESH_TOKEN_AUTH);
+
+        InitiateAuthResult result = this.cognitoIdentityProvider.initiateAuth(authRequest);
+    }
+
+    public RefreshTokenResponse loginWithRefreshToken(String refreshToken, String username) {
+        RefreshTokenResponse response = RefreshTokenResponse.builder()
+                .build();
+
+        InitiateAuthRequest authRequest = new InitiateAuthRequest()
+                .withClientId(this.cognitoCreds.getClientId())
+                .addAuthParametersEntry("SECRET_HASH", SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), username))
+                .addAuthParametersEntry("REFRESH_TOKEN", refreshToken)
+                .withAuthFlow(AuthFlowType.REFRESH_TOKEN_AUTH);
+
+        InitiateAuthResult result = this.cognitoIdentityProvider.initiateAuth(authRequest);
+        response.setToken(result.getAuthenticationResult().getAccessToken());
+
+        String newRefreshToken = result.getAuthenticationResult().getRefreshToken();
+        response.setRefreshToken(newRefreshToken);
+        return response;
     }
 
 }

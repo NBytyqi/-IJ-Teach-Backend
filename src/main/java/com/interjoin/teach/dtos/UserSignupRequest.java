@@ -40,7 +40,9 @@ public class UserSignupRequest {
 
     private Set<SubjectCurriculumDto> subCurrList;
 
+    @NotNull
     private String shortBio;
+    @NotNull
     private String longBio;
 
     @NotNull

@@ -6,9 +6,7 @@ import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
-import com.interjoin.teach.dtos.requests.AgencySignupRequest;
-import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
-import com.interjoin.teach.dtos.requests.UpdateProfileRequest;
+import com.interjoin.teach.dtos.requests.*;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.RefreshTokenResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
@@ -52,6 +50,17 @@ public class AuthController {
     @PutMapping("/reset")
     public void resetPassword(@Valid @RequestBody  ResetPasswordDTO request) throws InterjoinException {
         this.service.resetPassword(request);
+    }
+
+    @PutMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody @Valid LogoutRequest logoutRequest) {
+        service.logoutUser(logoutRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/refresh-token")
+    public ResponseEntity<?> signInWithToken(@RequestBody @Valid RefreshTokenLoginRequest request) {
+        return ResponseEntity.ok(service.loginWithRefreshToken(request));
     }
 
     @PostMapping("/cv")
