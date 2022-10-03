@@ -216,6 +216,8 @@ public class UserService {
             throw new InterjoinException("User already exists.", HttpStatus.BAD_REQUEST);
         }
 
+        request.setEmail(request.getEmail().toLowerCase());
+
         User user = UserMapper.mapUserRequest(request);
 
         user.setVerifiedTeacher(false);
@@ -267,9 +269,11 @@ public class UserService {
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
 
-            List<AvailableTimesDto>  avTimesDto = getAvailableTimes(request.getAvailableTimes(), request.getTimeZone());
+            if(Optional.ofNullable(request.getAvailableTimes()).isPresent()) {
+                List<AvailableTimesDto>  avTimesDto = getAvailableTimes(request.getAvailableTimes(), request.getTimeZone());
 
-            user.setAvailableTimes(availableTimesService.save(avTimesDto, user.getTimeZone(), user));
+                user.setAvailableTimes(availableTimesService.save(avTimesDto, user.getTimeZone(), user));
+            }
             // SET THE AGENCY
             user.setAgency(false);
             user.setAgencyName(getAgencyNameByReferalCode(request.getAgencyReferalCode()));
@@ -1025,5 +1029,10 @@ public class UserService {
     public User save(User user) {
         return repository.save(user);
     }
+
+    public void getUserDetails(String token) {
+        this.awsService.isTokenRevoked(token);
+    }
+
 }
 

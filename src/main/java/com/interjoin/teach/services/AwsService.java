@@ -291,4 +291,10 @@ public class AwsService {
         return response;
     }
 
+    public void isTokenRevoked(String token) {
+        GetUserRequest request  = new GetUserRequest();
+        request.setAccessToken(token);
+        GetUserResult result = this.cognitoIdentityProvider.getUser(request);
+    }
+
 }

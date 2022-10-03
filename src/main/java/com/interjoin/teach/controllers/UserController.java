@@ -6,6 +6,7 @@ import com.interjoin.teach.dtos.UserDto;
 import com.interjoin.teach.dtos.requests.TeacherFilterRequest;
 import com.interjoin.teach.roles.Roles;
 import com.interjoin.teach.services.UserService;
+import com.sendgrid.Response;
 import lombok.RequiredArgsConstructor;
 import org.bouncycastle.jcajce.provider.symmetric.TEA;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,12 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/token/{token}")
+    public ResponseEntity<Void> checkToken(@PathVariable String token) {
+        this.userService.getUserDetails(token);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping
     public ResponseEntity<UserDto> getCurrentUser() {

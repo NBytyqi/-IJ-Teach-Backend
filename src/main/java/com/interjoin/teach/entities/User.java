@@ -21,6 +21,7 @@ import java.util.Set;
 @Builder(toBuilder = true)
 @Getter
 @Setter
+@EqualsAndHashCode
 public class User {
 
     @Id

@@ -1,5 +1,8 @@
 package com.interjoin.teach.jwt;
 
+import com.amazonaws.services.cognitoidp.model.NotAuthorizedException;
+import com.interjoin.teach.config.exceptions.InterjoinException;
+import com.interjoin.teach.services.AwsService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -23,10 +26,17 @@ import java.util.stream.Collectors;
 
     private final JwtConfiguration jwtConfiguration;
     private final ConfigurableJWTProcessor configurableJWTProcessor;
+    private final AwsService awsService;
 
     public Authentication authenticate(HttpServletRequest request) throws Exception {
         String idToken = request.getHeader(this.jwtConfiguration.getHttpHeader());
         if (idToken != null) {
+
+//            try {
+//                this.awsService.isTokenRevoked(getBearerToken(idToken));
+//            } catch (NotAuthorizedException ex) {
+//                throw new InterjoinException("Token is revoked");
+//            }
 
             JWTClaimsSet claims = getClaimsFromToken(idToken);
             validateIssuer(claims);
