@@ -1034,5 +1034,15 @@ public class UserService {
         this.awsService.isTokenRevoked(token);
     }
 
+    @Transactional
+    public void deleteUserByEmail(String userEmail) throws InterjoinException {
+        User user = repository.findByEmail(userEmail).orElseThrow(() -> new InterjoinException("User doesn't exists"));
+//        String emailPrefix = user.getEmail().split(0, user.getEmail().indexOf("@"));
+        String newUserEmail = String.format("%s+deleted+%s", userEmail, LocalDateTime.now());
+        user.setEmail(newUserEmail);
+        user.setDeleted(true);
+        this.awsService.deleteUser(user);
+    }
+
 }
 

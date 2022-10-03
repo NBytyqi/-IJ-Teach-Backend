@@ -20,6 +20,7 @@ import com.interjoin.teach.dtos.requests.AgencySignupRequest;
 import com.interjoin.teach.dtos.requests.LogoutRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.RefreshTokenResponse;
+import com.interjoin.teach.entities.User;
 import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
 import com.interjoin.teach.utils.IdentityProviderFactory;
 import com.interjoin.teach.utils.SecretHashUtils;
@@ -295,6 +296,13 @@ public class AwsService {
         GetUserRequest request  = new GetUserRequest();
         request.setAccessToken(token);
         GetUserResult result = this.cognitoIdentityProvider.getUser(request);
+    }
+
+    public void deleteUser(User user) {
+        AdminDeleteUserRequest request = new AdminDeleteUserRequest();
+        request.setUserPoolId(this.cognitoCreds.getPoolId());
+        request.setUsername(user.getCognitoUsername());
+        this.cognitoIdentityProvider.adminDeleteUser(request);
     }
 
 }

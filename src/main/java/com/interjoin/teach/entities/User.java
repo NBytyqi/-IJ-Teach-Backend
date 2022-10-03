@@ -95,6 +95,8 @@ public class User {
     private String subjectsStr;
     private String curriculumsStr;
 
+    private boolean deleted = false;
+
     // Teacher specific
     @Column(name = "short_bio")
     private String shortBio;
