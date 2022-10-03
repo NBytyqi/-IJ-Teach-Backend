@@ -21,13 +21,10 @@ public class SendGridConfig {
 
     private final AWSCredentialsConfig cognitoCreds;
 
-    @Value("${spring.sendgrid.api-key}")
-    private String sendgridKey;
 
     @Bean
     public SendGrid configSendgrid() {
         String SENDGRID_KEY = getSecret();
-        System.out.println("Sendgrid key printe: " + sendgridKey);
         return new SendGrid(SENDGRID_KEY);
     }
 
