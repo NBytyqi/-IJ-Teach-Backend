@@ -1,4 +1,4 @@
-package com.interjoin.teach;
+package com.interjoin.teach.auth;
 
 import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.UserSignupRequest;
@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+//@SpringBootTest
 class SignupTests {
 
     @Autowired
@@ -28,33 +28,31 @@ class SignupTests {
 
     private UserSignupRequest userSignupRequest;
 
-    private final String upperCaseEmail = "Test@gmail.com";
+    private final String upperCaseEmail = "Test4@gmail.com";
 
     private String teacherRole = Roles.TEACHER;
 
-//    @BeforeEach
-//    public void setup() {
-//        userSignupRequest = UserSignupRequest.builder()
-//                                            .email(upperCaseEmail)
-//                                            .firstName("John")
-//                                            .lastName("Smith")
-//                                            .shortBio("Test short bio")
-//                                            .longBio("Test long bio")
-//                                            .password("InterJoin2022!")
-//                                            .timeZone("Europe/Berlin")
-//                                            .pricePerHour(BigDecimal.TEN)
-//                                            .build();
-//    }
-//
-//    @AfterEach
-//    public void deleteUser() {
-//
-//    }
-////    @DisplayName("JUnit test for create user method")
-//    @Test
-//    public void saveUser() {
-//
-//        User savedUser = null;
+    @BeforeEach
+    public void setup() {
+        userSignupRequest = UserSignupRequest.builder()
+                                            .email(upperCaseEmail)
+                                            .firstName("John")
+                                            .lastName("Smith")
+                                            .shortBio("Test short bio")
+                                            .longBio("Test long bio")
+                                            .password("InterJoin2022!")
+                                            .timeZone("Europe/Berlin")
+                                            .pricePerHour(BigDecimal.TEN)
+                                            .build();
+    }
+
+    @AfterEach
+    public void deleteUser() throws InterjoinException {
+//        this.userService.deleteUserByEmail(upperCaseEmail.toLowerCase());
+    }
+
+    @Test
+    public void saveUserWithUpperCaseLetterOnEmail() throws InterjoinException {
 //        try {
 //            SignupResponseDto responseDto = userService.createUser(userSignupRequest, teacherRole);
 //            Long userId = responseDto.getUser().getId();
@@ -64,8 +62,9 @@ class SignupTests {
 //
 //        } catch (InterjoinException e) {
 //            e.printStackTrace();
+//            throw e;
 //        }
-//
-//    }
+
+    }
 
 }

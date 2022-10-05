@@ -1,5 +1,6 @@
 package com.interjoin.teach.controllers;
 
+import com.amazonaws.services.cognitoidp.model.SignUpResult;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.ResetPasswordDTO;
@@ -10,9 +11,12 @@ import com.interjoin.teach.dtos.requests.*;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.RefreshTokenResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
-import com.interjoin.teach.services.SessionService;
+import com.interjoin.teach.entities.AffiliateMarketer;
+import com.interjoin.teach.services.AffiliateMarketingService;
+import com.interjoin.teach.services.AwsService;
 import com.interjoin.teach.services.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,11 +30,22 @@ import java.io.IOException;
 public class AuthController {
 
     private final UserService service;
-    private final SessionService sessionService;
+    private final AwsService awsService;
+    private final AffiliateMarketingService afmService;
 
     @PostMapping("/signup/teacher")
     public ResponseEntity<SignupResponseDto> signupTeacher(@Valid @RequestBody UserSignupRequest request) throws InterjoinException {
-        return ResponseEntity.ok(service.createUser(request, "TEACHER"));
+        SignUpResult result = awsService.signUpUser(request, "TEACHER");
+        AffiliateMarketer affiliateMarketerCode = null;
+        String error = null;
+        try {
+            affiliateMarketerCode = afmService.getAffiliateByReferalCode(request.getAffiliateMarketerCode());
+        } catch (InterjoinException e) {
+            error = String.format("Referal code %s is invalid!", request.getAffiliateMarketerCode());
+        }
+        SignupResponseDto response = service.createUser(request, "TEACHER", result.getUserSub(), affiliateMarketerCode);
+        response.setReferalCodeNotValid(error);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/profile-pic")
@@ -66,12 +81,15 @@ public class AuthController {
 
     @PostMapping("/signup/student")
     public ResponseEntity<SignupResponseDto> signupStudent(@Valid @RequestBody UserSignupRequest request) throws InterjoinException {
-        return ResponseEntity.ok(service.createUser(request, "STUDENT"));
+        SignUpResult result = awsService.signUpUser(request, "STUDENT");
+        return ResponseEntity.ok(service.createUser(request, "STUDENT", result.getUserSub(), null));
     }
 
     @PostMapping("/signin")
     public ResponseEntity<AuthResponse> signInUser(@Valid @RequestBody UserSignInRequest request) throws InterjoinException {
-        return ResponseEntity.ok(service.signIn(request));
+        AuthResponse authResponse = awsService.signInUser(request);
+        authResponse = service.signIn(authResponse, request.getEmail());
+        return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/signup/agency")

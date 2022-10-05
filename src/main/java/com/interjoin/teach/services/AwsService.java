@@ -69,16 +69,16 @@ public class AwsService {
         this.cognitoIdTokenProcessor = cognitoIdTokenProcessor;
     }
 
-    public String signUpUser(UserSignupRequest requestForm, String groupName) {
-
-        String userCreatedUsername = null;
-
+    public SignUpResult signUpUser(UserSignupRequest requestForm, String groupName) {
+        if(Optional.ofNullable(requestForm.getEmail()).isPresent()) {
+            requestForm.setEmail(requestForm.getEmail().toLowerCase());
+        }
         List<AttributeType> attributeTypes = new ArrayList<>();
         attributeTypes.addAll(Arrays.asList(new AttributeType().withName("email").withValue(requestForm.getEmail()),
                 new AttributeType().withName("custom:role").withValue(groupName.toLowerCase())
         ));
 
-//        ResponseEntity<AuthenticationResponseDTO> authResponse;
+        SignUpResult signUpResult = null;
         try {
             String secretVal = SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), requestForm.getEmail());
             SignUpRequest signUpRequest = new SignUpRequest();
@@ -89,8 +89,7 @@ public class AwsService {
             signUpRequest.setPassword(requestForm.getPassword());
             signUpRequest.setSecretHash(secretVal);
 
-            SignUpResult signUpResult = basicAuthCognitoIdentityProvider.signUp(signUpRequest);
-            userCreatedUsername = signUpResult.getUserSub();
+            signUpResult = basicAuthCognitoIdentityProvider.signUp(signUpRequest);
 
             addUserToGroup(requestForm.getEmail(), groupName);
 
@@ -98,7 +97,7 @@ public class AwsService {
         } catch (AWSCognitoIdentityProviderException ex) {
             throw ex;
         }
-        return userCreatedUsername;
+        return signUpResult;
     }
 
     public void addUserToGroup(String username, String groupName) {
@@ -125,14 +124,8 @@ public class AwsService {
             initiateAuthRequest.addAuthParametersEntry("SECRET_HASH", SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), request.getEmail()));
         }
         InitiateAuthResult initiateAuthResult = null;
-        try {
-            initiateAuthResult = cognitoIdentityProvider.initiateAuth(initiateAuthRequest);
-        } catch (UserNotConfirmedException ex) {
-            throw new InterjoinException("User is not confirmed", HttpStatus.FORBIDDEN);
-        } catch (NotAuthorizedException e) {
-            throw new InterjoinException("Email or password incorrect", HttpStatus.FORBIDDEN);
-        }
 
+        initiateAuthResult = cognitoIdentityProvider.initiateAuth(initiateAuthRequest);
 
         final String ACCESS_TOKEN = initiateAuthResult.getAuthenticationResult().getAccessToken();
         final String REFRESH_TOKEN = initiateAuthResult.getAuthenticationResult().getRefreshToken();
@@ -302,7 +295,7 @@ public class AwsService {
         AdminDeleteUserRequest request = new AdminDeleteUserRequest();
         request.setUserPoolId(this.cognitoCreds.getPoolId());
         request.setUsername(user.getCognitoUsername());
-        this.cognitoIdentityProvider.adminDeleteUser(request);
+        this.basicAuthCognitoIdentityProvider.adminDeleteUser(request);
     }
 
 }

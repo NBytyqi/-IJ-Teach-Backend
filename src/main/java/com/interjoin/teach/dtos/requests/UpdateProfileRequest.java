@@ -14,7 +14,6 @@ import java.util.Set;
 @NoArgsConstructor
 @JsonIgnoreProperties
 public class UpdateProfileRequest {
-    private String password;
     private String location;
     private String phoneNumber;
 

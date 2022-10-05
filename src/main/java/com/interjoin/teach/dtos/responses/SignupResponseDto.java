@@ -20,4 +20,5 @@ public class SignupResponseDto {
     private String uuid;
     private Set<SubjectCurriculumDto> subCurrList;
     private UserDto user;
+    private String referalCodeNotValid;
 }

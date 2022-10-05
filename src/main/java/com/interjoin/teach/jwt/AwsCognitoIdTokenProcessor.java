@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,15 +29,22 @@ import java.util.stream.Collectors;
     private final ConfigurableJWTProcessor configurableJWTProcessor;
     private final AwsService awsService;
 
+    public String getCurrentTimeStamp() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
+    }
+
     public Authentication authenticate(HttpServletRequest request) throws Exception {
         String idToken = request.getHeader(this.jwtConfiguration.getHttpHeader());
         if (idToken != null) {
 
-//            try {
-//                this.awsService.isTokenRevoked(getBearerToken(idToken));
-//            } catch (NotAuthorizedException ex) {
-//                throw new InterjoinException("Token is revoked");
-//            }
+            try {
+                System.out.println("On try " + getCurrentTimeStamp());
+                this.awsService.isTokenRevoked(getBearerToken(idToken));
+            } catch (NotAuthorizedException ex) {
+                System.out.println("On exception " + getCurrentTimeStamp());
+                throw new InterjoinException("Token is revoked");
+            }
+            System.out.println("All right " + getCurrentTimeStamp());
 
             JWTClaimsSet claims = getClaimsFromToken(idToken);
             validateIssuer(claims);

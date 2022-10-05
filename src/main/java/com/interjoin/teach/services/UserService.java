@@ -1,6 +1,5 @@
 package com.interjoin.teach.services;
 
-import com.amazonaws.services.cognitoidp.model.UsernameExistsException;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.*;
@@ -16,6 +15,7 @@ import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.*;
 import com.interjoin.teach.roles.Roles;
 import com.interjoin.teach.utils.DateUtils;
+import com.interjoin.teach.utils.EmailValidatorUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -97,7 +97,6 @@ public class UserService {
         User newAgency = User.builder()
                 .agency(true)
                 .email(request.getContactEmail())
-                .password(passwordEncoder.encode("DefaultPass1!"))
                 .additionalComments(request.getAdditionalComments())
                 .agencyName(request.getAgencyName())
                 .numberOfTeachers(request.getNumberOfTeachers())
@@ -126,11 +125,6 @@ public class UserService {
 
     public UserDto updateProfile(UpdateProfileRequest request) {
         User user = getCurrentUserDetails();
-        if(StringUtils.isNotBlank(request.getPassword())) {
-            System.out.println("Updating password");
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-//            this.awsService.updateUserPassword(request.getPassword(), user.getCognitoUsername());
-        }
 
         if(StringUtils.isNotBlank(request.getLocation())) {
             System.out.println("Updating location");
@@ -210,7 +204,11 @@ public class UserService {
         return UserMapper.map(repository.save(user));
     }
 
-    public SignupResponseDto createUser(UserSignupRequest request, String role) throws InterjoinException {
+    public SignupResponseDto createUser(UserSignupRequest request, String role, String cognitoUsername, AffiliateMarketer affiliateMarketer) throws InterjoinException {
+
+        if(!EmailValidatorUtil.patternMatches(request.getEmail())) {
+            throw new InterjoinException("Email is not valid");
+        }
 
         if(repository.findByEmail(request.getEmail()).isPresent()) {
             throw new InterjoinException("User already exists.", HttpStatus.BAD_REQUEST);
@@ -221,16 +219,8 @@ public class UserService {
         User user = UserMapper.mapUserRequest(request);
 
         user.setVerifiedTeacher(false);
-        // TODO update profile pic in another endpoint
-//        user.setProfilePicture(request.getProfilePicture());
-        String usernameCreated = null;
-        try {
-            usernameCreated = awsService.signUpUser(request, role);
-        } catch (UsernameExistsException ex) {
-            throw new InterjoinException("User already exists");
-        }
 
-        user.setCognitoUsername(usernameCreated);
+        user.setCognitoUsername(cognitoUsername);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
@@ -256,7 +246,8 @@ public class UserService {
         user.setCreatedDate(LocalDateTime.now());
         user.setUuid(UUID.randomUUID().toString());
         user.setAgency(false);
-//        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setAffiliateMarketer(affiliateMarketer);
+
         user = repository.save(user);
 
         // CHECK IF EXPERIENCE IS NULL
@@ -439,52 +430,18 @@ public class UserService {
         return repository.findById(id).get();
     }
 
-    public AuthResponse signIn(UserSignInRequest request) throws InterjoinException {
+    public AuthResponse signIn(AuthResponse authResponse, String email) throws InterjoinException {
 
-//        try {
-//            authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-//            );
-//        } catch (BadCredentialsException e) {
-//            throw new InterjoinException("Email or password not valid", HttpStatus.UNAUTHORIZED);
-//        }
-//
-//
-//        final UserDetails userDetails = userDetailsService
-//                .loadUserByUsername(request.getEmail());
-//
-//        User user = repository.findByEmail(request.getEmail()).get();
-//        String agencyProfilePictureUrl = null;
-//        if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
-//            agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
-//        }
-//
-//        final String JWT = jwtTokenUtil.generateToken(userDetails);
-
-        AuthResponse response = null;
-
-        if(Optional.ofNullable(request).isPresent()) {
-            response = awsService.signInUser(request);
-            User user = getUserByEmail(request.getEmail()).orElseThrow(EntityNotFoundException::new);
+            User user = getUserByEmail(authResponse.getUserDetails().getEmail()).orElseThrow(EntityNotFoundException::new);
             String agencyProfilePictureUrl = null;
             if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
                 agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
             }
 
-            response.setUserDetails(UserMapper.map(user).toBuilder().awsAgencyLogoUrl(agencyProfilePictureUrl).build());
-            response.setRole(Optional.ofNullable(user.getRole()).orElse(null));
-        }
-        return response;
+            authResponse.setUserDetails(UserMapper.map(user).toBuilder().awsAgencyLogoUrl(agencyProfilePictureUrl).build());
+            authResponse.setRole(Optional.ofNullable(user.getRole()).orElse(null));
 
-//        return AuthResponse.builder()
-//                .token(JWT)
-//                .userDetails(
-//                        UserMapper.map(user)
-//                                  .toBuilder()
-//                                .awsAgencyLogoUrl(agencyProfilePictureUrl)
-//                                .build())
-//                .build();
-
+        return authResponse;
     }
 
 //    private boolean checkIfPasswordMatch(String currentPasswordEncoded, String signInRequestPassword) {
@@ -1037,11 +994,9 @@ public class UserService {
     @Transactional
     public void deleteUserByEmail(String userEmail) throws InterjoinException {
         User user = repository.findByEmail(userEmail).orElseThrow(() -> new InterjoinException("User doesn't exists"));
-//        String emailPrefix = user.getEmail().split(0, user.getEmail().indexOf("@"));
         String newUserEmail = String.format("%s+deleted+%s", userEmail, LocalDateTime.now());
         user.setEmail(newUserEmail);
         user.setDeleted(true);
-        this.awsService.deleteUser(user);
     }
 
 }

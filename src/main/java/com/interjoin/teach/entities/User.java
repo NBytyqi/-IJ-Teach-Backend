@@ -48,10 +48,6 @@ public class User {
     @Column(name = "email", nullable = false)
     private String email;
 
-    @Column(name = "password", nullable = true)
-    @JsonIgnore
-    private String password;
-
     @Column(name = "location")
     private String location;
 
@@ -160,5 +156,9 @@ public class User {
     private String awsProfilePictureRef;
     @Column(length = 5000)
     private String awsProfilePictureUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "affiliate_marketer_id", referencedColumnName = "id")
+    private AffiliateMarketer affiliateMarketer;
 
 }

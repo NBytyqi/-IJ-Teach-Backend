@@ -63,4 +63,6 @@ public class UserSignupRequest {
 
     private String profilePicture;
 
+    private String affiliateMarketerCode;
+
 }
