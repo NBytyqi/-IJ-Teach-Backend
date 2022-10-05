@@ -432,7 +432,7 @@ public class UserService {
 
     public AuthResponse signIn(AuthResponse authResponse, String email) throws InterjoinException {
 
-            User user = getUserByEmail(authResponse.getUserDetails().getEmail()).orElseThrow(EntityNotFoundException::new);
+            User user = getUserByEmail(email).orElseThrow(EntityNotFoundException::new);
             String agencyProfilePictureUrl = null;
             if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
                 agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
