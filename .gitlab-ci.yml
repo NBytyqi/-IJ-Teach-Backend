@@ -44,10 +44,10 @@ deploy-stage:
         - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
         - touch ~/.ssh/config
         - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-        - ssh-keyscan -H $DEV_DEPLOY_SERVER_IP >> ~/.ssh/known_hosts
+        - ssh-keyscan -H $STAGE_DEPLOY_SERVER_IP >> ~/.ssh/known_hosts
     script:
         - echo "Deploying started..."
-        - ssh ubuntu@$DEV_DEPLOY_SERVER_IP "sudo systemctl stop interjoin-teach.service"
+        - ssh ubuntu@$STAGE_DEPLOY_SERVER_IP "sudo systemctl stop interjoin-teach.service"
         - scp ./target/interjoin-teach.jar ubuntu@$STAGE_DEPLOY_SERVER_IP:~/interjoin-teach/
         - ssh ubuntu@$STAGE_DEPLOY_SERVER_IP "sudo systemctl start interjoin-teach.service"
         - echo "Finished deploying the app."
