@@ -3,12 +3,10 @@ package com.interjoin.teach.services;
 import com.interjoin.teach.config.exceptions.EmailAlreadyExistsException;
 import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.*;
-import com.interjoin.teach.dtos.requests.AgencySignupRequest;
-import com.interjoin.teach.dtos.requests.OtpVerifyRequest;
-import com.interjoin.teach.dtos.requests.TeacherFilterRequest;
-import com.interjoin.teach.dtos.requests.UpdateProfileRequest;
+import com.interjoin.teach.dtos.requests.*;
 import com.interjoin.teach.dtos.responses.AuthResponse;
 import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
+import com.interjoin.teach.dtos.responses.RefreshTokenResponse;
 import com.interjoin.teach.dtos.responses.SignupResponseDto;
 import com.interjoin.teach.entities.*;
 import com.interjoin.teach.enums.JoinAgencyStatus;
@@ -17,6 +15,7 @@ import com.interjoin.teach.mappers.UserMapper;
 import com.interjoin.teach.repositories.*;
 import com.interjoin.teach.roles.Roles;
 import com.interjoin.teach.utils.DateUtils;
+import com.interjoin.teach.utils.EmailValidatorUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,8 +44,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
 
-    @Value("${spring.sendgrid.template.forget-password}")
-    private String FORGOT_PASSWORD_TEMPLATE;
+    @Value("${spring.sendgrid.templates.welcome-email}")
+    private String welcomeEmailTemplate;
+
+    @Value("${spring.sendgrid.templates.verification-approve-template}")
+    private String verificationApproveTemplate;
+
+    @Value("${spring.sendgrid.templates.verification-decline-template}")
+    private String verificationDeclineTemplate;
+
+    @Value("${spring.sendgrid.templates.account-deletion}")
+    private String accountDeleteTemplate;
+
+
+    @Value("${spring.sendgrid.templates.teacher-agency-approval}")
+    private String agencyApprovalTemplate;
+
+    @Value("${spring.sendgrid.templates.teacher-agency-decline}")
+    private String agencyDeclineTemplate;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -69,24 +84,19 @@ public class UserService {
     private final CurriculumRepository curriculumRepository;
     private final SubjectRepository subjectRepository;
 
-    private final MyUserDetailsService userDetailsService;
-
     private final ActivityLogsRepository activityLogsRepository;
 
-
     // EMAIL TEMPLATES
-    @Value("${spring.sendgrid.templates.otp}")
-    private String OTP_TEMPLATE;
 
     // EMAIL TEMPLATE KEYS
     private final String FIRST_NAME = "firstName";
+    private final String AGENCY_NAME = "agencyName";
 
     public void createAgency(AgencySignupRequest request) {
         String usernameCreated = awsService.signUpAgency(request);
         User newAgency = User.builder()
                 .agency(true)
                 .email(request.getContactEmail())
-                .password(passwordEncoder.encode("DefaultPass1!"))
                 .additionalComments(request.getAdditionalComments())
                 .agencyName(request.getAgencyName())
                 .numberOfTeachers(request.getNumberOfTeachers())
@@ -115,11 +125,6 @@ public class UserService {
 
     public UserDto updateProfile(UpdateProfileRequest request) {
         User user = getCurrentUserDetails();
-        if(StringUtils.isNotBlank(request.getPassword())) {
-            System.out.println("Updating password");
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-//            this.awsService.updateUserPassword(request.getPassword(), user.getCognitoUsername());
-        }
 
         if(StringUtils.isNotBlank(request.getLocation())) {
             System.out.println("Updating location");
@@ -199,22 +204,23 @@ public class UserService {
         return UserMapper.map(repository.save(user));
     }
 
-    public SignupResponseDto createUser(UserSignupRequest request, String role) throws InterjoinException {
+    public SignupResponseDto createUser(UserSignupRequest request, String role, String cognitoUsername, AffiliateMarketer affiliateMarketer) throws InterjoinException {
+
+        if(!EmailValidatorUtil.patternMatches(request.getEmail())) {
+            throw new InterjoinException("Email is not valid");
+        }
 
         if(repository.findByEmail(request.getEmail()).isPresent()) {
             throw new InterjoinException("User already exists.", HttpStatus.BAD_REQUEST);
         }
 
-        User user = UserMapper.mapUserRequest(request);
-        final String FINAL_OTP_CODE = getRandomNumberString();
-        user.setOtpVerificationCode(FINAL_OTP_CODE);
-        user.setVerifiedEmail(false);
-        user.setVerifiedTeacher(false);
-        // TODO update profile pic in another endpoint
-//        user.setProfilePicture(request.getProfilePicture());
+        request.setEmail(request.getEmail().toLowerCase());
 
-        String usernameCreated = awsService.signUpUser(request, role);
-        user.setCognitoUsername(usernameCreated);
+        User user = UserMapper.mapUserRequest(request);
+
+        user.setVerifiedTeacher(false);
+
+        user.setCognitoUsername(cognitoUsername);
 
         if(Optional.ofNullable(request.getSubCurrList()).isPresent()) {
             Set<SubjectCurriculum> subCurrs = new HashSet<>();
@@ -240,7 +246,8 @@ public class UserService {
         user.setCreatedDate(LocalDateTime.now());
         user.setUuid(UUID.randomUUID().toString());
         user.setAgency(false);
-//        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setAffiliateMarketer(affiliateMarketer);
+
         user = repository.save(user);
 
         // CHECK IF EXPERIENCE IS NULL
@@ -253,9 +260,11 @@ public class UserService {
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
 
-            List<AvailableTimesDto>  avTimesDto = getAvailableTimes(request.getAvailableTimes(), request.getTimeZone());
+            if(Optional.ofNullable(request.getAvailableTimes()).isPresent()) {
+                List<AvailableTimesDto>  avTimesDto = getAvailableTimes(request.getAvailableTimes(), request.getTimeZone());
 
-            user.setAvailableTimes(availableTimesService.save(avTimesDto, user.getTimeZone(), user));
+                user.setAvailableTimes(availableTimesService.save(avTimesDto, user.getTimeZone(), user));
+            }
             // SET THE AGENCY
             user.setAgency(false);
             user.setAgencyName(getAgencyNameByReferalCode(request.getAgencyReferalCode()));
@@ -266,21 +275,6 @@ public class UserService {
         }
         user.setJoinAgencyStatus(JoinAgencyStatus.NOT_JOINED);
         user = repository.save(user);
-//        Map<String, String> keys = new HashMap<>();
-//        keys.put(FIRST_NAME, request.getFirstName());
-//        keys.put("nr1", String.valueOf(FINAL_OTP_CODE.charAt(0)));
-//        keys.put("nr2", String.valueOf(FINAL_OTP_CODE.charAt(1)));
-//        keys.put("nr3", String.valueOf(FINAL_OTP_CODE.charAt(2)));
-//        keys.put("nr4", String.valueOf(FINAL_OTP_CODE.charAt(3)));
-//        keys.put("nr5", String.valueOf(FINAL_OTP_CODE.charAt(4)));
-//        keys.put("nr6", String.valueOf(FINAL_OTP_CODE.charAt(5)));
-//
-//        EmailDTO email = EmailDTO.builder()
-//                .templateId(OTP_TEMPLATE)
-//                .toEmail(request.getEmail())
-//                .templateKeys(keys)
-//                .build();
-//        emailService.sendEmail(email);
 
         return SignupResponseDto.builder().firstName(user.getFirstName())
                 .user(UserMapper.map(user))
@@ -419,9 +413,9 @@ public class UserService {
 //        }
         User user = getCurrentUserDetails();
 
-       if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
+        if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
             agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
-       }
+        }
 
         return UserMapper.map(user).toBuilder()
                 .awsAgencyLogoUrl(agencyProfilePictureUrl)
@@ -436,52 +430,18 @@ public class UserService {
         return repository.findById(id).get();
     }
 
-    public AuthResponse signIn(UserSignInRequest request) throws InterjoinException {
+    public AuthResponse signIn(AuthResponse authResponse, String email) throws InterjoinException {
 
-//        try {
-//            authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-//            );
-//        } catch (BadCredentialsException e) {
-//            throw new InterjoinException("Email or password not valid", HttpStatus.UNAUTHORIZED);
-//        }
-//
-//
-//        final UserDetails userDetails = userDetailsService
-//                .loadUserByUsername(request.getEmail());
-//
-//        User user = repository.findByEmail(request.getEmail()).get();
-//        String agencyProfilePictureUrl = null;
-//        if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
-//            agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
-//        }
-//
-//        final String JWT = jwtTokenUtil.generateToken(userDetails);
-
-        AuthResponse response = null;
-
-        if(Optional.ofNullable(request).isPresent()) {
-            response = awsService.signInUser(request);
-            User user = getUserByEmail(request.getEmail()).orElseThrow(EntityNotFoundException::new);
+            User user = getUserByEmail(email).orElseThrow(EntityNotFoundException::new);
             String agencyProfilePictureUrl = null;
             if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
                 agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
             }
 
-            response.setUserDetails(UserMapper.map(user).toBuilder().awsAgencyLogoUrl(agencyProfilePictureUrl).build());
-            response.setRole(Optional.ofNullable(user.getRole()).orElse(null));
-        }
-        return response;
+            authResponse.setUserDetails(UserMapper.map(user).toBuilder().awsAgencyLogoUrl(agencyProfilePictureUrl).build());
+            authResponse.setRole(Optional.ofNullable(user.getRole()).orElse(null));
 
-//        return AuthResponse.builder()
-//                .token(JWT)
-//                .userDetails(
-//                        UserMapper.map(user)
-//                                  .toBuilder()
-//                                .awsAgencyLogoUrl(agencyProfilePictureUrl)
-//                                .build())
-//                .build();
-
+        return authResponse;
     }
 
 //    private boolean checkIfPasswordMatch(String currentPasswordEncoded, String signInRequestPassword) {
@@ -584,9 +544,9 @@ public class UserService {
             System.out.println("Without convert " + time.getDateTime());
             System.out.println("After map: " + DateUtils.map(time.getDateTime(), teacherTimezone, true));
             Long index = dto.getAvailableTimes().stream().filter(ex -> {
-            OffsetDateTime date = DateUtils.map(time.getDateTime(), teacherTimezone, true);
-            OffsetDateTime exDate = ex.getDateTime();
-            return date.getHour() == exDate.getHour() && date.getMinute() == date.getMinute();
+                        OffsetDateTime date = DateUtils.map(time.getDateTime(), teacherTimezone, true);
+                        OffsetDateTime exDate = ex.getDateTime();
+                        return date.getHour() == exDate.getHour() && date.getMinute() == date.getMinute();
                     })
                     .findFirst().get().getIndex();
             returns.add(index);
@@ -612,11 +572,11 @@ public class UserService {
         return strings;
     }
 
-    public boolean emailAlreadyExists(String email) throws EmailAlreadyExistsException {
-        if(repository.findByEmail(email).isPresent()) {
+    public void emailAlreadyExists(String email) throws EmailAlreadyExistsException {
+        boolean exists =  awsService.userExists(email);
+        if(exists) {
             throw new EmailAlreadyExistsException();
         }
-        return false;
     }
 
     public User findByUuid(String uuid) {
@@ -625,21 +585,29 @@ public class UserService {
 
     public void verifyUser(OtpVerifyRequest request) throws InterjoinException {
         User user = repository.findByCognitoUsername(request.getCognitoUsername()).orElseThrow(() -> new InterjoinException(String.format("User with uuid: [%s] doesn't exist", request.getCognitoUsername()), HttpStatus.BAD_REQUEST));
-        if(user.isVerifiedEmail()) {
-            throw new InterjoinException("User is already verified", HttpStatus.BAD_REQUEST);
-        }
 
-//        if(!user.getOtpVerificationCode().equals(request.getOtpCode())) {
-//            throw new InterjoinException("OTP code not valid", HttpStatus.BAD_REQUEST);
         this.awsService.verifyUser(request.getCognitoUsername(), request.getOtpCode());
-//        }
 
-        user.setVerifiedEmail(true);
         repository.save(user);
+
+        //send welcome email
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put(FIRST_NAME, user.getFirstName());
+        EmailDTO emailDTO = EmailDTO.builder()
+                .toEmail(user.getEmail())
+                .templateId(welcomeEmailTemplate)
+                .templateKeys(templateKeys)
+                .build();
+        emailService.sendEmail(emailDTO);
+    }
+
+    public void verifyUserByEmail(OtpVerifyRequest request) throws InterjoinException {
+        User user = repository.findByEmail(request.getEmail()).orElseThrow(() -> new InterjoinException(String.format("User with email: [%s] doesn't exist", request.getEmail()), HttpStatus.BAD_REQUEST));
+        this.awsService.verifyUser(user.getCognitoUsername(), request.getOtpCode());
     }
 
     public void resendVerificationEmail(String cognitoUsername) {
-//        this.awsService.resendVerificationEmail(cognitoUsername);
+        this.awsService.resendVerificationEmail(cognitoUsername);
     }
 
     @Transactional
@@ -652,8 +620,8 @@ public class UserService {
         User currentTeacher = getCurrentUserDetails();
 
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("teacherId", String.valueOf(currentTeacher.getId()));
-        final String URL_PARAMS = String.format("?status=IN_REVIEW&teacher=%d", currentTeacher.getId());
+        metadata.put("teacherIdForVerification", currentTeacher.getUuid());
+        final String URL_PARAMS = String.format("/booking-status?status=IN_REVIEW&teacherId=%d", currentTeacher.getId());
 
         //TODO
         currentTeacher.setPurchasedVerification(true);
@@ -689,7 +657,7 @@ public class UserService {
 //        emailService.sendEmail(emailDTO);
 //    }
 
-    public void forgotPassword(String username) {
+    public void forgotPassword(String username) throws InterjoinException {
         this.awsService.forgotForUser(username);
     }
 
@@ -709,13 +677,22 @@ public class UserService {
         this.awsService.uploadFile(FILE_REF, file);
     }
 
-
-
-
-    // TODO
+    // TODO update his/her email address and save information
     public void deleteAccount() {
-        // CHECK IF THERE IS ANY SESSION LEFT FOR THE TEACHER
-//        subCurrRepository.d
+        User user = getCurrentUserDetails();
+
+        // TODO just update the user email to _deleted at the end and save all his/her information
+//        sessionRepository.deleteUserSessions(user);
+
+        //send account soft delete email
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put(FIRST_NAME, user.getFirstName());
+        EmailDTO emailDTO = EmailDTO.builder()
+                .toEmail(user.getEmail())
+                .templateId(accountDeleteTemplate)
+                .templateKeys(templateKeys)
+                .build();
+        emailService.sendEmail(emailDTO);
     }
 
     public List<AgencyTeacher> getAgencyUsers(String status) {
@@ -775,9 +752,31 @@ public class UserService {
         final String LOG = approve ? APPROVE_MESSAGE : DECLINE_MESSAGE;
 
         activityLogsRepository.save(ActivityLogs.builder()
-                        .agency(currentAgency)
-                        .log(LOG)
+                .agency(currentAgency)
+                .log(LOG)
                 .build());
+
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put(FIRST_NAME, teacher.getFirstName());
+        templateKeys.put(AGENCY_NAME, currentAgency.getFirstName());
+        EmailDTO emailDTO = EmailDTO.builder()
+                .toEmail(teacher.getEmail())
+                .templateId(approve ? agencyApprovalTemplate : agencyDeclineTemplate)
+                .templateKeys(templateKeys)
+                .build();
+        emailService.sendEmail(emailDTO);
+
+    }
+
+    public void logoutUser(LogoutRequest logoutRequest) {
+
+        User currentUser = getCurrentUserDetails();
+        this.awsService.logoutUser(currentUser.getCognitoUsername(), logoutRequest);
+
+    }
+
+    public RefreshTokenResponse loginWithRefreshToken(RefreshTokenLoginRequest request) {
+        return this.awsService.loginWithRefreshToken(request.getRefreshToken(), request.getCognitoUsername());
     }
 
     @Transactional
@@ -892,9 +891,9 @@ public class UserService {
         User user = getUserById(teacherId);
 //        Set<SubjectCurriculum> subjectCurriculumSet =
         List<Curriculum> curriculumList = user.getSubjectCurriculums().stream()
-                                          .filter(sc -> sc.getSubject().getSubjectName().equals(subjectName))
-                                          .map(SubjectCurriculum::getCurriculum)
-                                          .collect(Collectors.toList());
+                .filter(sc -> sc.getSubject().getSubjectName().equals(subjectName))
+                .map(SubjectCurriculum::getCurriculum)
+                .collect(Collectors.toList());
 
         List<String> curriculums = new ArrayList<>();
         if(curriculumList != null && !curriculumList.isEmpty()) {
@@ -960,5 +959,45 @@ public class UserService {
     private User getAgencyByCode(String agencyCode) throws InterjoinException {
         return repository.findFirstByAgencyCode(agencyCode).orElseThrow(() -> new InterjoinException("Agency doesn't exist"));
     }
+
+
+    @Transactional
+    public void verifyTeacherProfessionalism(Long teacherId, boolean verify) throws InterjoinException {
+        User user = findById(teacherId);
+        if(user.getPurchasedVerification().equals(true)) {
+            user.setVerifiedTeacher(verify);
+            if(!verify) {
+                user.setPurchasedVerification(false);
+            }
+
+            Map<String, String> templateKeys = new HashMap<>();
+            templateKeys.put(FIRST_NAME, user.getFirstName());
+            EmailDTO emailDTO = EmailDTO.builder()
+                    .toEmail(user.getEmail())
+                    .templateId(verify ? verificationApproveTemplate : verificationDeclineTemplate)
+                    .templateKeys(templateKeys)
+                    .build();
+            emailService.sendEmail(emailDTO);
+        } else {
+            throw new InterjoinException(String.format("Teacher with id %d has not purchased verification", teacherId));
+        }
+    }
+
+    public User save(User user) {
+        return repository.save(user);
+    }
+
+    public void getUserDetails(String token) {
+        this.awsService.isTokenRevoked(token);
+    }
+
+    @Transactional
+    public void deleteUserByEmail(String userEmail) throws InterjoinException {
+        User user = repository.findByEmail(userEmail).orElseThrow(() -> new InterjoinException("User doesn't exists"));
+        String newUserEmail = String.format("%s+deleted+%s", userEmail, LocalDateTime.now());
+        user.setEmail(newUserEmail);
+        user.setDeleted(true);
+    }
+
 }
 

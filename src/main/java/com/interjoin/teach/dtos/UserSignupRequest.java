@@ -1,6 +1,7 @@
 package com.interjoin.teach.dtos;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder(toBuilder = true)
 public class UserSignupRequest {
 
     @NotNull
@@ -40,7 +42,9 @@ public class UserSignupRequest {
 
     private Set<SubjectCurriculumDto> subCurrList;
 
+    @NotNull
     private String shortBio;
+    @NotNull
     private String longBio;
 
     @NotNull
@@ -58,5 +62,7 @@ public class UserSignupRequest {
     private BigDecimal pricePerHour;
 
     private String profilePicture;
+
+    private String affiliateMarketerCode;
 
 }

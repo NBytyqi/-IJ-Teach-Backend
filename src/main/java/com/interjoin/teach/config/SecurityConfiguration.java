@@ -8,7 +8,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,7 +34,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     "/api/auth/resend-otp/**",
                     "/api/suggest",
                     "/api/auth/profile-pic",
+                    "/api/auth/refresh-token",
                     "/api/auth/checkotp",
+                    "/api/auth/checkotp/**",
                     "/api/auth/reset",
                     "/api/times/signup",
                     "/api/api-docs",

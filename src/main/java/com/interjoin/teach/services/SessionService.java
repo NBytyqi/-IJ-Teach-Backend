@@ -4,6 +4,7 @@ import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.config.exceptions.SessionNotValidException;
 import com.interjoin.teach.dtos.AvailableHourMinuteDto;
 import com.interjoin.teach.dtos.AvailableTimesStringDto;
+import com.interjoin.teach.dtos.EmailDTO;
 import com.interjoin.teach.dtos.SessionDto;
 import com.interjoin.teach.dtos.requests.BookSessionRequest;
 import com.interjoin.teach.entities.AvailableTimes;
@@ -14,11 +15,14 @@ import com.interjoin.teach.mappers.SessionMapper;
 import com.interjoin.teach.repositories.SessionRepository;
 import com.interjoin.teach.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,6 +30,37 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SessionService {
 
+    @Value("${spring.sendgrid.templates.teacher-absent}")
+    private String teacherAbsentTemplate;
+
+    @Value("${spring.sendgrid.templates.teacher-absent-to-teacher-template}")
+    private String teacherAbsentToTeacherTemplate;
+
+    @Value("${spring.sendgrid.templates.teacher-approve-session}")
+    private String approveSessionTemplate;
+
+    @Value("${spring.sendgrid.templates.teacher-decline-session}")
+    private String declineSessionTemplate;
+
+    @Value("${spring.sendgrid.templates.session-confirmation-template}")
+    private String sessionConfirmationTemplate;
+
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd");
+    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mma ('UTC' xxx)");
+
+
+
+    private final String FIRST_NAME = "firstName";
+    private final String TEACHER_FIRST_NAME = "teacherName";
+    private final String STUDENT_FIRST_NAME = "studentName";
+    private final String DATE = "date";
+    private final String TIME = "time";
+    private final String CURRICULUM = "curriculum";
+    private final String SUBJECT = "subject";
+    private final String COMMENT = "comment";
+    private final String PRICE = "price";
+
+    private final EmailService emailService;
     private final UserService userService;
     private final AvailableTimesService timesService;
 
@@ -103,21 +138,6 @@ public class SessionService {
         return SessionMapper.map(sessionRepository.findByTeacherOrderByDateSlotDesc(teacher), teacher.getTimeZone());
     }
 
-
-    // GET TEACHER/STUDENT SESSIONS FROM CURRENT DATE TIME AND ON
-    // TODO - Refactor method to user service
-    public void deleteCurrentUser() throws Exception {
-        User user = userService.getCurrentUserDetails();
-        List<Session> slots = sessionRepository.findByStudentOrTeacherAndDateSlotAfter(user, OffsetDateTime.now().minusDays(1));
-        if(!slots.isEmpty()) {
-            throw new Exception("User cannot be deleted since it has active session or future sessions");
-        }
-        sessionRepository.deleteUserSessions(user);
-        userService.deleteAccount();
-
-
-    }
-
     private List<AvailableTimes> filterAvailableTimes(List<AvailableTimes> availableTimes, String weekDay) {
         return availableTimes.stream().filter(date -> {
             return date.getDateTime().getDayOfWeek().toString().toLowerCase(Locale.ROOT).equals(weekDay);
@@ -161,6 +181,13 @@ public class SessionService {
                 .collect(Collectors.toList());
     }
 
+    public List<SessionDto> getStudentSessionRequests(Pageable pageable) {
+        User currentStudent = userService.getCurrentUserDetails();
+        return sessionRepository.findByStudentAndDateSlotAfterAndSessionStatus(currentStudent, OffsetDateTime.now(), SessionStatus.PENDING_APPROVAL, pageable)
+                .stream().map(session -> SessionMapper.map(session, currentStudent.getTimeZone()))
+                .collect(Collectors.toList());
+    }
+
     public List<SessionDto> getStudentSessionHistory(Pageable pageable) {
         User currentStudent = userService.getCurrentUserDetails();
         return sessionRepository.findByStudentAndDateSlotBefore(currentStudent, OffsetDateTime.now(), pageable)
@@ -197,10 +224,52 @@ public class SessionService {
             throw new SessionNotValidException("Session is expired");
         }
 
+
         SessionStatus status = approve ? SessionStatus.APPROVED : SessionStatus.DECLINED;
+
+        // TODO if approve is false, refund the payment
 
         session.setSessionStatus(status);
         sessionRepository.save(session);
+
+        User student = session.getStudent();
+
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put(FIRST_NAME, student.getFirstName());
+        templateKeys.put(TEACHER_FIRST_NAME, teacher.getFirstName());
+        templateKeys.put(DATE, DateUtils.map(session.getDateSlot(), student.getTimeZone()).format(dateFormatter));
+        templateKeys.put(TIME, DateUtils.map(session.getDateSlot(), student.getTimeZone()).format(timeFormatter));
+        templateKeys.put(CURRICULUM, session.getCurriculum());
+        templateKeys.put(SUBJECT, session.getSubject());
+        templateKeys.put(PRICE,  session.getPrice() + "$");
+        templateKeys.put(COMMENT, session.getComment());
+
+        EmailDTO emailDTO = EmailDTO.builder()
+                .toEmail(student.getEmail())
+                .templateId(approve ? approveSessionTemplate : declineSessionTemplate)
+                .templateKeys(templateKeys)
+                .build();
+        emailService.sendEmail(emailDTO);
+
+        // send session confirmation email
+
+        if(approve) {
+
+            Map<String, String> templateKeysForTeacher = new HashMap<>();
+            templateKeysForTeacher.put(FIRST_NAME, teacher.getFirstName());
+            templateKeysForTeacher.put(STUDENT_FIRST_NAME, student.getFirstName());
+            templateKeysForTeacher.put(DATE, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(dateFormatter));
+            templateKeysForTeacher.put(TIME, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(timeFormatter));
+            templateKeysForTeacher.put(CURRICULUM, session.getCurriculum());
+            templateKeysForTeacher.put(SUBJECT, session.getSubject());
+            templateKeys.put(COMMENT, session.getComment());
+            EmailDTO emailDTOForTeacher = EmailDTO.builder()
+                    .toEmail(teacher.getEmail())
+                    .templateId(sessionConfirmationTemplate)
+                    .templateKeys(templateKeysForTeacher)
+                    .build();
+            emailService.sendEmail(emailDTOForTeacher);
+        }
 
         return getTeacherSessionRequests(Pageable.unpaged());
     }
@@ -209,5 +278,75 @@ public class SessionService {
         Session session = sessionRepository.findById(sessionId).orElseThrow(() -> new InterjoinException("Session doesn't exist"));
         session.setSessionStatus(SessionStatus.PENDING_APPROVAL);
         sessionRepository.save(session);
+    }
+
+    @Value("${spring.sendgrid.templates.session-completed}")
+    private String studentSessionCompletedTemplate;
+    @Value("${spring.sendgrid.templates.session-finished-template}")
+    private String teacherSessionCompletedTemplate;
+    @Transactional
+    public void markSessionAsFinished(String sessionUuid) throws InterjoinException {
+        User teacher = userService.getCurrentUserDetails();
+        Session session = sessionRepository.findByUuidAndTeacher(sessionUuid, teacher).orElseThrow(() -> new InterjoinException("Session with uuid doesn't exist"));
+        session.setSessionStatus(SessionStatus.FINISHED);
+        // send session completed email
+        User student = session.getStudent();
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put(FIRST_NAME, student.getFirstName());
+        templateKeys.put(TEACHER_FIRST_NAME, teacher.getFirstName());
+        EmailDTO emailDTO = EmailDTO.builder()
+                .toEmail(student.getEmail())
+                .templateId(studentSessionCompletedTemplate)
+                .templateKeys(templateKeys)
+                .build();
+        emailService.sendEmail(emailDTO);
+
+        // send email to teacher
+        Map<String, String> templateKeysForTeacher = new HashMap<>();
+        templateKeysForTeacher.put(FIRST_NAME, teacher.getFirstName());
+        EmailDTO emailDTOForTeacher = EmailDTO.builder()
+                .toEmail(teacher.getEmail())
+                .templateId(teacherSessionCompletedTemplate)
+                .templateKeys(templateKeysForTeacher)
+                .build();
+        emailService.sendEmail(emailDTOForTeacher);
+
+    }
+
+    @Transactional
+    public void markTeacherAsAbsent(String sessionUuid) throws InterjoinException {
+        User currentStudent = userService.getCurrentUserDetails();
+
+        Session session = sessionRepository.findByUuidAndStudentAndSessionStatus(sessionUuid, currentStudent, SessionStatus.APPROVED).orElseThrow(() -> new InterjoinException("Session with uuid doesn't exist"));
+        session.setSessionStatus(SessionStatus.TEACHER_ABSENT);
+
+        User teacher = session.getTeacher();
+
+        //send email to student to mark teacher as absent
+        Map<String, String> templateKeys = new HashMap<>();
+        templateKeys.put(FIRST_NAME, currentStudent.getFirstName());
+        templateKeys.put(TEACHER_FIRST_NAME, session.getTeacher().getFirstName());
+        EmailDTO emailDTO = EmailDTO.builder()
+                .toEmail(currentStudent.getEmail())
+                .templateId(teacherAbsentTemplate)
+                .templateKeys(templateKeys)
+                .build();
+        emailService.sendEmail(emailDTO);
+
+        //send email to teacher to mark teacher as absent
+        Map<String, String> templateKeysForTeacher = new HashMap<>();
+        templateKeysForTeacher.put(FIRST_NAME, teacher.getFirstName());
+        templateKeysForTeacher.put(STUDENT_FIRST_NAME, currentStudent.getFirstName());
+        templateKeysForTeacher.put(DATE, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(dateFormatter));
+        templateKeysForTeacher.put(TIME, DateUtils.map(session.getDateSlot(), teacher.getTimeZone()).format(timeFormatter));
+        templateKeysForTeacher.put(CURRICULUM, session.getCurriculum());
+        templateKeysForTeacher.put(SUBJECT, session.getSubject());
+        templateKeys.put(COMMENT, session.getComment());
+        EmailDTO emailDTOForTeacher = EmailDTO.builder()
+                .toEmail(teacher.getEmail())
+                .templateId(teacherAbsentToTeacherTemplate)
+                .templateKeys(templateKeysForTeacher)
+                .build();
+        emailService.sendEmail(emailDTOForTeacher);
     }
 }

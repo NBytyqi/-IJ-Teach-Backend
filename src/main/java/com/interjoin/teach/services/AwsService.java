@@ -12,23 +12,25 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.interjoin.teach.config.AWSCredentialsConfig;
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.ResetPasswordDTO;
 import com.interjoin.teach.dtos.UserSignInRequest;
 import com.interjoin.teach.dtos.UserSignupRequest;
 import com.interjoin.teach.dtos.requests.AgencySignupRequest;
+import com.interjoin.teach.dtos.requests.LogoutRequest;
 import com.interjoin.teach.dtos.responses.AuthResponse;
+import com.interjoin.teach.dtos.responses.RefreshTokenResponse;
+import com.interjoin.teach.entities.User;
 import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
 import com.interjoin.teach.utils.IdentityProviderFactory;
 import com.interjoin.teach.utils.SecretHashUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class AwsService {
@@ -46,8 +48,6 @@ public class AwsService {
 
 
     private final AmazonS3 s3Client;
-
-//    private UserService userService;
 
     public AwsService(AWSCredentialsConfig cognitoCreds) {
         this.cognitoCreds = cognitoCreds;
@@ -69,16 +69,16 @@ public class AwsService {
         this.cognitoIdTokenProcessor = cognitoIdTokenProcessor;
     }
 
-    public String signUpUser(UserSignupRequest requestForm, String groupName) {
-
-        String userCreatedUsername = null;
-
+    public SignUpResult signUpUser(UserSignupRequest requestForm, String groupName) {
+        if(Optional.ofNullable(requestForm.getEmail()).isPresent()) {
+            requestForm.setEmail(requestForm.getEmail().toLowerCase());
+        }
         List<AttributeType> attributeTypes = new ArrayList<>();
         attributeTypes.addAll(Arrays.asList(new AttributeType().withName("email").withValue(requestForm.getEmail()),
                 new AttributeType().withName("custom:role").withValue(groupName.toLowerCase())
         ));
 
-//        ResponseEntity<AuthenticationResponseDTO> authResponse;
+        SignUpResult signUpResult = null;
         try {
             String secretVal = SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), requestForm.getEmail());
             SignUpRequest signUpRequest = new SignUpRequest();
@@ -89,8 +89,7 @@ public class AwsService {
             signUpRequest.setPassword(requestForm.getPassword());
             signUpRequest.setSecretHash(secretVal);
 
-            SignUpResult signUpResult = basicAuthCognitoIdentityProvider.signUp(signUpRequest);
-            userCreatedUsername = signUpResult.getUserSub();
+            signUpResult = basicAuthCognitoIdentityProvider.signUp(signUpRequest);
 
             addUserToGroup(requestForm.getEmail(), groupName);
 
@@ -98,7 +97,7 @@ public class AwsService {
         } catch (AWSCognitoIdentityProviderException ex) {
             throw ex;
         }
-        return userCreatedUsername;
+        return signUpResult;
     }
 
     public void addUserToGroup(String username, String groupName) {
@@ -112,7 +111,7 @@ public class AwsService {
         basicAuthCognitoIdentityProvider.adminAddUserToGroup(addUserToGroupRequest);
     }
 
-    public AuthResponse signInUser(UserSignInRequest request) {
+    public AuthResponse signInUser(UserSignInRequest request) throws InterjoinException {
         InitiateAuthRequest initiateAuthRequest = new InitiateAuthRequest();
 
         initiateAuthRequest.setAuthFlow(AuthFlowType.USER_PASSWORD_AUTH);
@@ -124,8 +123,9 @@ public class AwsService {
         if (this.cognitoCreds.getClientSecret() != null && !this.cognitoCreds.getClientSecret().isEmpty()) {
             initiateAuthRequest.addAuthParametersEntry("SECRET_HASH", SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), request.getEmail()));
         }
+        InitiateAuthResult initiateAuthResult = null;
 
-        InitiateAuthResult initiateAuthResult = cognitoIdentityProvider.initiateAuth(initiateAuthRequest);
+        initiateAuthResult = cognitoIdentityProvider.initiateAuth(initiateAuthRequest);
 
         final String ACCESS_TOKEN = initiateAuthResult.getAuthenticationResult().getAccessToken();
         final String REFRESH_TOKEN = initiateAuthResult.getAuthenticationResult().getRefreshToken();
@@ -201,12 +201,32 @@ public class AwsService {
 
     }
 
-    public void forgotForUser(String username) {
+    public boolean userExists( String username) {
 
-        AdminResetUserPasswordRequest resetUserPasswordRequest = new AdminResetUserPasswordRequest()
-                .withUserPoolId(this.cognitoCreds.getPoolId())
-                .withUsername(username);
-        basicAuthCognitoIdentityProvider.adminResetUserPassword(resetUserPasswordRequest);
+        try {
+            AdminGetUserRequest getUserRequest = new AdminGetUserRequest();
+            getUserRequest.setUserPoolId(cognitoCreds.getPoolId());
+            getUserRequest.setUsername(username);
+
+                AdminGetUserResult getUserResult = basicAuthCognitoIdentityProvider.adminGetUser(getUserRequest);
+            return true;
+        } catch (UserNotFoundException userNotFoundException) {
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void forgotForUser(String username) throws InterjoinException {
+        try {
+            AdminResetUserPasswordRequest resetUserPasswordRequest = new AdminResetUserPasswordRequest()
+                    .withUserPoolId(this.cognitoCreds.getPoolId())
+                    .withUsername(username);
+            basicAuthCognitoIdentityProvider.adminResetUserPassword(resetUserPasswordRequest);
+        } catch (InvalidParameterException e) {
+            throw new InterjoinException(e.getErrorMessage());
+        }
+
     }
 
 
@@ -231,6 +251,51 @@ public class AwsService {
         return this.s3Client.generatePresignedUrl(new GeneratePresignedUrlRequest(this.cognitoCreds.getDefaultBucketName(), fileRef)
                 .withMethod(HttpMethod.GET)
                 .withExpiration(expiration)).toString();
+    }
+
+    public void logoutUser(String username, LogoutRequest request) {
+//        InitiateAuthRequest authRequest = new InitiateAuthRequest()
+//                .withClientId(this.cognitoCreds.getClientId())
+//                .addAuthParametersEntry("SECRET_HASH", SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), username))
+//                .addAuthParametersEntry("REFRESH_TOKEN", request.getRefreshToken())
+//                .withAuthFlow(AuthFlowType.REFRESH_TOKEN_AUTH);
+        GlobalSignOutRequest globalSignOutRequest = new GlobalSignOutRequest();
+
+        globalSignOutRequest.setAccessToken(request.getToken());
+        GlobalSignOutResult result = this.cognitoIdentityProvider.globalSignOut(globalSignOutRequest);
+
+//        InitiateAuthResult result = this.cognitoIdentityProvider.initiateAuth(authRequest);
+    }
+
+    public RefreshTokenResponse loginWithRefreshToken(String refreshToken, String username) {
+        RefreshTokenResponse response = RefreshTokenResponse.builder()
+                .build();
+
+        InitiateAuthRequest authRequest = new InitiateAuthRequest()
+                .withClientId(this.cognitoCreds.getClientId())
+                .addAuthParametersEntry("SECRET_HASH", SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), username))
+                .addAuthParametersEntry("REFRESH_TOKEN", refreshToken)
+                .withAuthFlow(AuthFlowType.REFRESH_TOKEN_AUTH);
+
+        InitiateAuthResult result = this.cognitoIdentityProvider.initiateAuth(authRequest);
+        response.setToken(result.getAuthenticationResult().getAccessToken());
+
+        String newRefreshToken = Optional.ofNullable(result.getAuthenticationResult().getRefreshToken()).isPresent()? result.getAuthenticationResult().getRefreshToken() : refreshToken;
+        response.setRefreshToken(newRefreshToken);
+        return response;
+    }
+
+    public void isTokenRevoked(String token) {
+        GetUserRequest request  = new GetUserRequest();
+        request.setAccessToken(token);
+        GetUserResult result = this.cognitoIdentityProvider.getUser(request);
+    }
+
+    public void deleteUser(User user) {
+        AdminDeleteUserRequest request = new AdminDeleteUserRequest();
+        request.setUserPoolId(this.cognitoCreds.getPoolId());
+        request.setUsername(user.getCognitoUsername());
+        this.basicAuthCognitoIdentityProvider.adminDeleteUser(request);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.interjoin.teach.filters;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.config.exceptions.TokenExpiredException;
 import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,15 @@ public class AwsCognitoJwtAuthFilter extends OncePerRequestFilter {
             }
         }
         catch (TokenExpiredException ex) {
+            logger.error("Cognito ID Token processing error", ex);
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{ \"error\": \"Session expired. Please login again.\" }");
+            return;
+        }
+
+        catch (InterjoinException ex) {
             logger.error("Cognito ID Token processing error", ex);
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType("application/json");

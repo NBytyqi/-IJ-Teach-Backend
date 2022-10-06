@@ -1,5 +1,6 @@
 package com.interjoin.teach.controllers;
 
+import com.interjoin.teach.config.exceptions.InterjoinException;
 import com.interjoin.teach.dtos.*;
 import com.interjoin.teach.dtos.responses.AvailableTimesSignupDto;
 import com.interjoin.teach.services.AvailableTimesService;
@@ -28,7 +29,7 @@ public class TimesController {
     }
 
     @GetMapping("/teacher/{teacherId}")
-    public ResponseEntity<AvailableTimesSlots> getTeacherAvailableTimes(@PathVariable Long teacherId) {
+    public ResponseEntity<AvailableTimesSlots> getTeacherAvailableTimes(@PathVariable Long teacherId) throws InterjoinException {
         return ResponseEntity.ok(userService.getAvailableTimesForTeacher(teacherId));
     }
 

@@ -33,25 +33,31 @@ public class SessionController {
 
     @GetMapping("/student/history")
     @RolesAllowed(value = { Roles.STUDENT })
-    public ResponseEntity<List<SessionDto>> getCurrentStudentHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+    public ResponseEntity<List<SessionDto>> getCurrentStudentHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) throws SessionExistsException {
         return ResponseEntity.ok(sessionService.getStudentSessionHistory(pageable));
     }
 
     @GetMapping("/student/classes")
     @RolesAllowed(value = { Roles.STUDENT })
-    public ResponseEntity<List<SessionDto>> getCurrentStudentClassesSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+    public ResponseEntity<List<SessionDto>> getCurrentStudentClassesSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) throws SessionExistsException {
         return ResponseEntity.ok(sessionService.getStudentSessionClasses(pageable));
+    }
+
+    @GetMapping("/student/requests")
+    @RolesAllowed(value = { Roles.STUDENT })
+    public ResponseEntity<List<SessionDto>> getStudentRequestedSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) {
+        return ResponseEntity.ok(sessionService.getStudentSessionRequests(pageable));
     }
 
     @GetMapping("/teacher/history")
     @RolesAllowed(value = { Roles.TEACHER })
-    public ResponseEntity<List<SessionDto>> getCurrentTeacherHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+    public ResponseEntity<List<SessionDto>> getCurrentTeacherHistorySessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) throws SessionExistsException {
         return ResponseEntity.ok(sessionService.getTeacherSessionHistory(pageable));
     }
 
     @GetMapping("/teacher/classes")
     @RolesAllowed(value = { Roles.TEACHER })
-    public ResponseEntity<List<SessionDto>> getOneCurrentTeacherSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.DESC, size = 5) Pageable pageable) throws SessionExistsException {
+    public ResponseEntity<List<SessionDto>> getOneCurrentTeacherSessions(@PageableDefault(sort = {"dateSlot"}, direction = Sort.Direction.ASC, size = 5) Pageable pageable) throws SessionExistsException {
         return ResponseEntity.ok(sessionService.getTeacherActiveSessions(pageable));
     }
 
@@ -77,6 +83,20 @@ public class SessionController {
     @RolesAllowed(value = { Roles.TEACHER })
     public ResponseEntity<Void> declineBookSession(@PathVariable String sessionUuid) throws SessionNotValidException {
         sessionService.approveSession(sessionUuid, false);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/finish/{sessionUuid}")
+    @RolesAllowed(value = { Roles.TEACHER })
+    public ResponseEntity<Void> markSessionAsFinished(@PathVariable String sessionUuid) throws InterjoinException {
+        sessionService.markSessionAsFinished(sessionUuid);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/teacher/absent/{sessionUuid}")
+    @RolesAllowed(value = { Roles.STUDENT })
+    public ResponseEntity<Void> markTeacherAsAbsent(@PathVariable String sessionUuid) throws InterjoinException {
+        sessionService.markTeacherAsAbsent(sessionUuid);
         return ResponseEntity.noContent().build();
     }
 }
