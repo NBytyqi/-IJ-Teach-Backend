@@ -91,7 +91,8 @@ public class User {
     private String subjectsStr;
     private String curriculumsStr;
 
-    private boolean deleted = false;
+    @Column(name = "is_deleted", nullable = true)
+    private Boolean deleted = false;
 
     // Teacher specific
     @Column(name = "short_bio")
