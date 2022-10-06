@@ -1,4 +1,4 @@
-create table affiliate_marketer if not exists
+create table if not exists affiliate_marketer
 (
     id           bigint not null
         primary key,
