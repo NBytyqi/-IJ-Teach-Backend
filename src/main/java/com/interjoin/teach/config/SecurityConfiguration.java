@@ -38,6 +38,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                     "/api/auth/checkotp",
                     "/api/auth/checkotp/**",
                     "/api/auth/reset",
+                    "/api/restrictions",
                     "/api/times/signup",
                     "/api/api-docs",
                     "/api/api-docs",
