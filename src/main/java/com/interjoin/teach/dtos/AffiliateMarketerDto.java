@@ -12,15 +12,16 @@ import javax.validation.constraints.NotNull;
 @Builder(toBuilder = true)
 public class AffiliateMarketerDto {
 
-    @NotNull
+    @NotNull(message = "First name cannot be empty")
     private String firstName;
-    @NotNull
+    @NotNull(message = "Last name cannot be empty")
     private String lastName;
-    @NotNull
+
+    @NotNull(message = "Email cannot be empty")
     @Email
     private String email;
-    @NotNull
+    @NotNull(message = "Phone number cannot be empty")
     private String phoneNumber;
-    @NotNull
+
     private String referalCode;
 }

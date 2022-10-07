@@ -163,26 +163,17 @@ public class UserService {
                     SubjectCurriculum subjectCurriculum = subCurrRepository.findFirstByCurriculumCurriculumNameAndSubjectSubjectName(data.getCurriculumName(), subject);
                     subCurrs.add(subjectCurriculum);
                     subCurrStr.append(String.format("%s,%s", subject, data.getCurriculumName()));
-//                    subStrBuilder.append(subject + ", ");
                     subjects.add(subject);
                 }
-//                currStrBuilder.append(data.getCurriculumName() + ", ");
 
             }
-//            subStrBuilder.delete(subStrBuilder.length() -2, subStrBuilder.length()-1);
-//            currStrBuilder.delete(currStrBuilder.length() -2, subStrBuilder.length()-1);
-//
+
             user.setSubjectCurriculums(subCurrs);
             user.setSubCurrStr(subCurrStr.toString());
             user.setSubjects(subjects);
-//            user.setSubjectsStr(subStrBuilder.toString());
-//            user.setCurriculumsStr(currStrBuilder.toString());
         }
 
         if(Optional.ofNullable(request.getExperiences()).isPresent()) {
-            //delete old experiences
-            //add new ones
-//            experienceService.deleteForUser(user);
             user.setExperiences(experienceService.save(request.getExperiences(), user));
         }
 
@@ -195,12 +186,6 @@ public class UserService {
             user.setFavoriteTeacherIds(request.getFavoriteTeacherIds());
         }
 
-//        if(Optional.ofNullable(request.getProfilePicture()).isPresent()) {
-//            user.setProfilePicture(request.getProfilePicture());
-//        }
-        //delete old available times
-//        availableTimesService.deleteAllByUser(user);
-//        user.setAvailableTimes(availableTimesService.save(request.getAvailableTimes(),  user.getTimeZone(), user));
         return UserMapper.map(repository.save(user));
     }
 
@@ -254,8 +239,6 @@ public class UserService {
         if(Optional.ofNullable(request.getExperiences()).isPresent() && !request.getExperiences().isEmpty()) {
             experienceService.save(request.getExperiences(), user);
         }
-
-        request = transformDays(request);
 
         // CHECK FOR AVAILABLE TIMES
         if(role.toUpperCase().equals("TEACHER")) {
@@ -363,54 +346,9 @@ public class UserService {
         return avTimesDto;
     }
 
-    private UserSignupRequest transformDays(UserSignupRequest request) {
-//        for(AvailableTimesDto ava : request.getAvailableTimes()) {
-//            switch (ava.getWeekDay()) {
-//                case "Mon": {
-//                    ava.setWeekDay("monday");
-//                    break;
-//                }
-//                case "Tue": {
-//                    ava.setWeekDay("tuesday");
-//                    break;
-//                }
-//                case "Wed": {
-//                    ava.setWeekDay("wednesday");
-//                    break;
-//                }
-//                case "Thu": {
-//                    ava.setWeekDay("thursday");
-//                    break;
-//                }
-//                case "Fri": {
-//                    ava.setWeekDay("friday");
-//                    break;
-//                }
-//                case "Sat": {
-//                    ava.setWeekDay("saturday");
-//                    break;
-//                }
-//                case "Sun": {
-//                    ava.setWeekDay("sunday");
-//                    break;
-//                }
-//
-//            }
-//        }
-        return request;
-    }
-
-//    private org.springframework.security.core.userdetails.User getCurrentUser() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        org.springframework.security.core.userdetails.User principal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-//        return principal;
-//    }
-
     public UserDto getCurrentUserDetailsAsDto() {
         String agencyProfilePictureUrl = null;
-//        if(user.getRole().equals("TEACHER") && user.getAgencyName() != null) {
-//            agencyProfilePictureUrl = repository.getAgencyProfilePicture(user.getAgencyName());
-//        }
+
         User user = getCurrentUserDetails();
 
         if(user.getRole().equals("TEACHER") && user.getAgencyName() != null && (user.getJoinAgencyStatus() != null && user.getJoinAgencyStatus().equals(JoinAgencyStatus.APPROVED))) {
@@ -444,10 +382,6 @@ public class UserService {
         return authResponse;
     }
 
-//    private boolean checkIfPasswordMatch(String currentPasswordEncoded, String signInRequestPassword) {
-//        return passwordEncoder.encode(signInRequestPassword).equals(currentPasswordEncoded);
-//    }
-
     public User getCurrentUserDetails() {
         org.springframework.security.core.userdetails.User principal = getCurrentUser();
         User currentUser = null;
@@ -471,31 +405,12 @@ public class UserService {
         return repository.findFirstByAgencyCode(referalCode).map(User::getAgencyName).orElse(null);
     }
 
-//    public List<AvailableTimesStringDto> getAvailableTimesForTeacher(Long teacherId) {
-//        User teacher = findById(teacherId);
-//        User currentStudent = getCurrentUserDetails();
-//        List<AvailableTimes> times = availableTimesService.findByUser(teacher);
-//
-//        List<AvailableTimesStringDto> strings = DateUtils.map(times, currentStudent.getTimeZone());
-//        strings.forEach(availableTimesStringDto -> {
-//            availableTimesStringDto.setAvailableHourMinute(
-//                    availableTimesStringDto.getAvailableHourMinute().stream().filter(specificDate -> {
-//                        return specificDate.getDateTime().getDayOfWeek().toString().equals(availableTimesStringDto.getWeekDay().toUpperCase(Locale.ROOT));
-//                    }).collect(Collectors.toList())
-//            );
-//
-//        });
-//
-//        return strings;
-//    }
 
     public AvailableTimesSlots getAvailableTimesForTeacher(Long teacherId) {
         return getAvailableTimesForTeacher(findById(teacherId));
     }
 
     public AvailableTimesSlots getAvailableTimesForTeacher(User teacher) {
-//        User teacher = findById(teacherId);
-//        User currentStudent = getCurrentUserDetails();
 
         AvailableTimesSlots returni = new AvailableTimesSlots();
 
@@ -641,21 +556,6 @@ public class UserService {
 
         }
     }
-
-//    public void forgotPassword(String email) throws InterjoinException {
-//        User user = repository.findByEmail(email).orElseThrow(() -> new InterjoinException("User with this emails doesn't exist"));
-////        user.setResetPasswordCode(getRandomNumberString());
-//        repository.save(user);
-//        Map<String, String> templateKeys = new HashMap<>();
-//        templateKeys.put("verificationCode", user.getResetPasswordCode());
-//        //send an email to  notify them
-//        EmailDTO emailDTO = EmailDTO.builder()
-//                .templateId(FORGOT_PASSWORD_TEMPLATE)
-//                .toEmail(email)
-//                .build();
-//
-//        emailService.sendEmail(emailDTO);
-//    }
 
     public void forgotPassword(String username) throws InterjoinException {
         this.awsService.forgotForUser(username);
@@ -823,28 +723,6 @@ public class UserService {
                     .build(), sub.getCurriculum()));
         }
 
-//        teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(isVerified)).collect(Collectors.toList());
-
-//        List<Subject> subjects = currentStudent.getSubjectCurriculums()
-//                .stream().map(SubjectCurriculum::getSubject)
-////                                              .map(Subject::getId).distinct()
-//                .collect(Collectors.toList());
-//
-//
-////        List<Long> teachers = subCurrService.getTeachersForSubjects(subjectIds);
-//        for(Subject subject : subjects) {
-//            List<TeacherDto> teachers = UserMapper.mapTeachers(repository.getTeachersPerSubject(subject.getId()));
-//            if(Optional.ofNullable(isVerified).isPresent() && teachers.size() > 0) {
-//                teachers = teachers.stream().filter(teacher -> teacher.getVerifiedTeacher().equals(isVerified)).collect(Collectors.toList());
-//            }
-//            teacherInfos.add(
-//                    TeacherInfo.builder()
-//                            .subjectName(subject.getSubjectName())
-//                            .teachers(teachers)
-//                            .build()
-//            );
-//        }
-
         return teacherInfos;
     }
 
@@ -889,7 +767,7 @@ public class UserService {
 
     public List<String> getCurriculumsOfSubjectAndTeacher(Long teacherId, String subjectName) throws InterjoinException {
         User user = getUserById(teacherId);
-//        Set<SubjectCurriculum> subjectCurriculumSet =
+
         List<Curriculum> curriculumList = user.getSubjectCurriculums().stream()
                 .filter(sc -> sc.getSubject().getSubjectName().equals(subjectName))
                 .map(SubjectCurriculum::getCurriculum)

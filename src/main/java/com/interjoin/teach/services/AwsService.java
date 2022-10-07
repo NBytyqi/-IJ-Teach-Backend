@@ -24,7 +24,6 @@ import com.interjoin.teach.entities.User;
 import com.interjoin.teach.jwt.AwsCognitoIdTokenProcessor;
 import com.interjoin.teach.utils.IdentityProviderFactory;
 import com.interjoin.teach.utils.SecretHashUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -144,7 +143,7 @@ public class AwsService {
                 new AttributeType().withName("custom:role").withValue("agency")
         ));
 
-//        ResponseEntity<AuthenticationResponseDTO> authResponse;
+
         try {
             String secretVal = SecretHashUtils.calculateSecretHash(this.cognitoCreds.getClientId(), this.cognitoCreds.getClientSecret(), requestForm.getContactEmail());
             SignUpRequest signUpRequest = new SignUpRequest();

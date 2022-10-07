@@ -18,16 +18,16 @@ import java.util.Set;
 @Builder(toBuilder = true)
 public class UserSignupRequest {
 
-    @NotNull
+    @NotNull(message = "First name cannot be empty")
     private String firstName;
 
-    @NotNull
+    @NotNull(message = "Last name cannot be empty")
     private String lastName;
 
-    @NotNull
+    @NotNull(message = "Timezone name cannot be empty")
     private String timeZone;
 
-    @NotNull
+    @NotNull(message = "Email cannot be empty")
     @Email
     private String email;
 
@@ -35,19 +35,19 @@ public class UserSignupRequest {
 
     private String phoneNumber;
 
-    @NotNull
+    @NotNull(message = "Date of birth cannot be empty")
     private LocalDate dateOfBirth;
 
     private String parentEmail;
 
     private Set<SubjectCurriculumDto> subCurrList;
 
-    @NotNull
+    @NotNull(message = "Short bio cannot be empty")
     private String shortBio;
-    @NotNull
+    @NotNull(message = "Long bio cannot be empty")
     private String longBio;
 
-    @NotNull
+    @NotNull(message = "Password cannot be empty")
     private String password;
 
     AvailableTimesSlots availableTimes;
